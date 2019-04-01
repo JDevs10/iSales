@@ -2,6 +2,7 @@ package com.rainbow_cl.i_sales.pages.home;
 
 import com.rainbow_cl.i_sales.R;
 import com.rainbow_cl.i_sales.database.AppDatabase;
+import com.rainbow_cl.i_sales.database.OfflineChecker.OfflineDatabaseHelper;
 import com.rainbow_cl.i_sales.interfaces.ClientsAdapterListener;
 import com.rainbow_cl.i_sales.interfaces.DialogCategorieListener;
 import com.rainbow_cl.i_sales.interfaces.DialogClientListener;
@@ -53,6 +54,9 @@ public class HomeActivity extends AppCompatActivity {
     private ClientProfileFragment detailsClientProfileFragment;
 
     private AppDatabase mDb;
+
+    //Offline database checker
+    private OfflineDatabaseHelper myOfflineDB;
 
     private String tabNames[] = {"clients", "panier", "categories", "commandes", "profil", "a propos"};
 
@@ -284,6 +288,8 @@ public class HomeActivity extends AppCompatActivity {
             task.execute();
         }
 
+        myOfflineDB = new OfflineDatabaseHelper(getBaseContext().getApplicationContext());
+
         initView();
 
         initToolbar();
@@ -352,5 +358,13 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        myOfflineDB.deleteDataCheckStatus(0);
+        //Log.e(ProfilFragment.class.getName(), " : User is disconnected !!!\n DB count :"+myOfflineDB.getDataChecker().getCount());
     }
 }

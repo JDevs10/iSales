@@ -3,6 +3,7 @@ package com.rainbow_cl.i_sales.pages.home.fragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ import com.github.clans.fab.FloatingActionMenu;
 import com.rainbow_cl.i_sales.R;
 import com.rainbow_cl.i_sales.adapter.ClientsAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;
+import com.rainbow_cl.i_sales.database.OfflineChecker.OfflineDatabaseHelper;
 import com.rainbow_cl.i_sales.database.entry.ClientEntry;
 import com.rainbow_cl.i_sales.decoration.MyDividerItemDecoration;
 import com.rainbow_cl.i_sales.helper.RecyclerItemTouchHelper;
@@ -92,6 +94,9 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    database instance
     private AppDatabase mDb;
+
+    //Offline database checker
+    private OfflineDatabaseHelper myOfflineDB;
 
     private static boolean isTabletMode;
 
@@ -386,6 +391,7 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
         super.onCreate(savedInstanceState);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        myOfflineDB = new OfflineDatabaseHelper(getContext().getApplicationContext());
     }
 
     @Override
@@ -539,8 +545,11 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 //            mClientParcelable = getActivity().getIntent().getParcelableExtra("client");
 //
 //        }
+
+        clientChecker();
+
 //        recuperation des clients sur le serveur
-        loadClients(null);
+        //loadClients(null);
 
         return rootView;
     }
@@ -634,6 +643,9 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
 //            recupere la liste des clients sur le serveur
                 executeFindClients();
+
+                // set checker to true
+                myOfflineDB.updateOfflineClientCheck(1);
                 return true;
             default:
                 break;
@@ -651,5 +663,91 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
     public void onDestroy() {
         cancelFind();
         super.onDestroy();
+    }
+
+    private void clientChecker(){
+        //check if the clientChercker is true
+        Cursor res = myOfflineDB.getDataChecker();
+
+        //the table exist
+        if (res.getCount() == 1){
+            Log.e(TAG, "Data record... Exist, Count: "+res.getCount());
+
+            int clientChecker = 10;
+            if(res.moveToNext()) {
+                clientChecker = res.getInt(1);
+                Log.e(TAG, "Data Client Checker db values is : "+res.getInt(1));
+            }
+
+            //if the checker is false then get clients from the server
+            if (clientChecker == 0) {
+                Log.e(TAG, "Data Client Checker is : "+clientChecker+"\nDownload clients data from server");
+                //        Si le téléphone n'est pas connecté
+                if (!ConnectionManager.isPhoneConnected(getContext())) {
+                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+//                affichage du loader dialog
+                showProgressDialog(true, null, getString(R.string.synchro_comptes_cient_encours));
+
+                List<ClientEntry> clientEntriesSynchro = mDb.clientDao().getAllClientBySynchro(0);
+                Log.e(TAG, "onOptionsItemSelected:clientEntriesSynchro size=" + clientEntriesSynchro.size());
+                if (clientEntriesSynchro.size() > 0) {
+                    for (int i = 0; i < clientEntriesSynchro.size(); i++) {
+                        ClientEntry itemClient = clientEntriesSynchro.get(i);
+
+//                  creation du document signature client
+                        Document logoClient = null;
+                        if (itemClient.getLogo_content() != null && !itemClient.getLogo_content().equals("")) {
+                            logoClient = new Document();
+
+                            logoClient.setFilecontent(itemClient.getLogo_content());
+                            logoClient.setFilename(itemClient.getLogo());
+                            logoClient.setFileencoding("base64");
+                            logoClient.setModulepart("societe");
+                        }
+
+                        Thirdpartie thirdpartie = new Thirdpartie();
+                        thirdpartie.setAddress(itemClient.getAddress());
+                        thirdpartie.setTown(itemClient.getTown());
+                        thirdpartie.setRegion(itemClient.getRegion());
+                        thirdpartie.setDepartement(itemClient.getDepartement());
+                        thirdpartie.setPays(itemClient.getPays());
+                        thirdpartie.setPhone(itemClient.getPhone());
+                        thirdpartie.setNote(itemClient.getNote());
+                        thirdpartie.setNote_private(itemClient.getNote());
+                        thirdpartie.setLogo(itemClient.getLogo());
+                        thirdpartie.setEmail(itemClient.getEmail());
+                        thirdpartie.setFirstname(itemClient.getFirstname());
+                        thirdpartie.setName(String.format("%s", itemClient.getName()));
+                        thirdpartie.setCode_client(itemClient.getCode_client());
+                        thirdpartie.setClient("1");
+                        thirdpartie.setName_alias("");
+
+                        InsertThirdpartieTask task = new InsertThirdpartieTask(getContext(), null, thirdpartie, logoClient);
+                        task.execute();
+                    }
+                }
+
+
+                mDb.clientDao().deleteAllClient();
+//              Suppression des images des clients en local
+                ISalesUtility.deleteClientsImgFolder();
+
+//              recupere la liste des clients sur le serveur
+                executeFindClients();
+
+                // set checker to true
+                myOfflineDB.updateOfflineClientCheck(1);
+            }
+
+            //if the checker is true then get clients from the local db
+            if (clientChecker == 1){
+                Log.e(TAG, "Data Client Checker is : "+clientChecker+"\nLoad stored data");
+                mLastClientId = 0;
+                loadClients(null);
+            }
+        }
     }
 }

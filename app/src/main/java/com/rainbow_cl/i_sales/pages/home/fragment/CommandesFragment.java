@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 import com.rainbow_cl.i_sales.R;
 import com.rainbow_cl.i_sales.adapter.CommandeAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;
+import com.rainbow_cl.i_sales.database.OfflineChecker.OfflineDatabaseHelper;
 import com.rainbow_cl.i_sales.database.entry.ClientEntry;
 import com.rainbow_cl.i_sales.database.entry.CommandeEntry;
 import com.rainbow_cl.i_sales.database.entry.CommandeLineEntry;
@@ -93,6 +95,9 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
     //    database instance
     private AppDatabase mDb;
+
+    //Offline database checker
+    private OfflineDatabaseHelper myOfflineDB;
 
     //    task de recuperation des produits
     private FindOrderTask mFindOrderTask = null;
@@ -523,6 +528,7 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
         super.onCreate(savedInstanceState);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        myOfflineDB = new OfflineDatabaseHelper(getContext().getApplicationContext());
     }
 
     @Override
@@ -672,9 +678,11 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
             }
         });
 
+        orderChecker();
+
 //        Recupération de la liste des commandes sur le serveur
 //        executeFindOrder();
-        loadCommandes(-1, -1, -1);
+        //loadCommandes(-1, -1, -1);
 
         return rootView;
     }
@@ -761,6 +769,9 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
 //            recupere la liste des commandes sur le serveur
                 executeFindOrder();
+
+                // set checker to true
+                myOfflineDB.updateOfflineOrderCheck(1);
                 break;
             default:
                 break;
@@ -922,5 +933,52 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
         mPageOrder++;
 
         executeFindOrder();
+    }
+
+    private void orderChecker(){
+        //check if the clientChercker is true
+        Cursor res = myOfflineDB.getDataChecker();
+
+        //the table exist
+        if (res.getCount() == 1) {
+            Log.e(TAG, "Data record... Exist, Count: " + res.getCount());
+
+            int orderChecker = 10;
+            if (res.moveToNext()) {
+                orderChecker = res.getInt(3);
+                Log.e(TAG, "Data Client Checker db values is : " + res.getInt(1));
+            }
+
+            //if the checker is false then get clients from the server
+            if (orderChecker == 0) {
+                Log.e(TAG, "Data Client Checker is : " + orderChecker + "\nDownload clients data from server");
+                // Si le téléphone n'est pas connecté
+                if (!ConnectionManager.isPhoneConnected(getContext())) {
+                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //affichage du loader dialog
+                showProgressDialog(true, null, getString(R.string.synchro_commandes_recuperer_encours));
+
+                executeSendOrderSynchro();
+
+                //Suppression des commandes dans la BD
+                mDb.commandeDao().deleteAllCmde();
+                mDb.commandeLineDao().deleteAllCmdeLine();
+
+                //recupere la liste des commandes sur le serveur
+                executeFindOrder();
+
+                // set checker to true
+                myOfflineDB.updateOfflineOrderCheck(1);
+            }
+
+            //if the checker is true then get clients from the local db
+            if (orderChecker == 1) {
+                Log.e(TAG, "Data Client Checker is : " + orderChecker + "\nLoad stored data");
+                loadCommandes(-1, -1, -1);
+            }
+        }
     }
 }

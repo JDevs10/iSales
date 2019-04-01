@@ -3,6 +3,7 @@ package com.rainbow_cl.i_sales.pages.home.fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -39,6 +40,7 @@ import com.rainbow_cl.i_sales.R;
 import com.rainbow_cl.i_sales.adapter.ProduitsAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;
 import com.rainbow_cl.i_sales.database.AppExecutors;
+import com.rainbow_cl.i_sales.database.OfflineChecker.OfflineDatabaseHelper;
 import com.rainbow_cl.i_sales.database.entry.CategorieEntry;
 import com.rainbow_cl.i_sales.database.entry.PanierEntry;
 import com.rainbow_cl.i_sales.database.entry.ProductCustPriceEntry;
@@ -105,6 +107,9 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     private CategorieParcelable mCategorieParcelable;
 
     private AppDatabase mDb;
+
+    //Offline database checker
+    private OfflineDatabaseHelper myOfflineDB;
 
     private int mLimit = 10;
     private long mLastProduitId = 0;
@@ -564,6 +569,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         showLog();
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        myOfflineDB = new OfflineDatabaseHelper(getContext().getApplicationContext());
     }
 
     @Override
@@ -708,9 +714,11 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             }
         });
 
+        productChecker();
+
 //        Recupération de la liste des produits sur le serveur
 //        executeFindProducts(0);
-        loadProduits(0, null);
+        //loadProduits(0, null);
 
         return rootView;
     }
@@ -752,6 +760,9 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
 //            recupere la liste des clients sur le serveur
                 executeFindCategorieProducts();
+
+                // set checker to true
+                myOfflineDB.updateOfflineProductCheck(1);
                 return true;
             default:
                 break;
@@ -850,5 +861,52 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     public void onDestroyView() {
         cancelFind();
         super.onDestroyView();
+    }
+
+    private void productChecker(){
+        //check if the clientChercker is true
+        Cursor res = myOfflineDB.getDataChecker();
+
+        //the table exist
+        if (res.getCount() == 1){
+            Log.e(TAG, "Data record... Exist, Count: "+res.getCount());
+
+            int productChecker = 10;
+            if(res.moveToNext()) {
+                productChecker = res.getInt(2);
+                Log.e(TAG, "Data Products Checker db values is : "+res.getInt(2));
+            }
+
+            //if the checker is false then get categories and products from the server
+            if (productChecker == 0) {
+                Log.e(TAG, "Data Product Checker is : "+productChecker);
+                //        Si le téléphone n'est pas connecté
+                if (!ConnectionManager.isPhoneConnected(getContext())) {
+                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+//                affichage du loader dialog
+                showProgressDialog(true, null, getString(R.string.synchro_produits_encours));
+
+                mDb.categorieDao().deleteAllCategorie();
+                mDb.produitDao().deleteAllProduit();
+//        Suppression des images des clients en local
+                ISalesUtility.deleteProduitsImgFolder();
+
+//            recupere la liste des clients sur le serveur
+                executeFindCategorieProducts();
+
+                // set checker to true
+                myOfflineDB.updateOfflineProductCheck(1);
+            }
+
+            //if the checker is true then get clients from the local db
+            if (productChecker == 1){
+                Log.e(TAG, "Data Products Checker is : "+productChecker+"\nLoad stored data");
+                mLastProduitId = 0;
+                loadProduits(0,null);
+            }
+        }
     }
 }

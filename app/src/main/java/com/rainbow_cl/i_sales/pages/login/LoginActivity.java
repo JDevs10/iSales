@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -28,6 +29,7 @@ import android.widget.Toast;
 
 import com.rainbow_cl.i_sales.R;
 import com.rainbow_cl.i_sales.database.AppDatabase;
+import com.rainbow_cl.i_sales.database.OfflineChecker.OfflineDatabaseHelper;
 import com.rainbow_cl.i_sales.database.entry.ServerEntry;
 import com.rainbow_cl.i_sales.database.entry.TokenEntry;
 import com.rainbow_cl.i_sales.database.entry.UserEntry;
@@ -74,6 +76,9 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     private ServerEntry mServerChoose;
 
     private AppDatabase mDb;
+
+    //Offline database checker
+    private OfflineDatabaseHelper myOfflineDB;
 
 
     /* Checks if external storage is available for read and write */
@@ -577,6 +582,25 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     mDb.userDao().deleteAllUser();
 //                    insertion du user dans la BD
                     mDb.userDao().insertUser(userEntry);
+
+                    // Init checker database && table
+                    myOfflineDB = new OfflineDatabaseHelper(getBaseContext().getApplicationContext());
+
+                    // See if the row exist
+                    Cursor res = myOfflineDB.getDataChecker();
+                    if (res.getCount() == 0){
+                        myOfflineDB.insertDataCheckStatus(0,0,0);
+                        //Log.e(TAG, "No data record... So create record");
+                        //Toast.makeText(getBaseContext().getApplicationContext(), "No data checker... So create record checker", Toast.LENGTH_SHORT).show();
+                    }
+
+                    // If the db && table exist then reset the table
+                    if (res.getCount() == 1){
+                        myOfflineDB.resetOfflineCheck();
+                        myOfflineDB.insertDataCheckStatus(0,0,0);
+//                        Log.e(TAG, "Data record... Exist, Count: "+res.getCount());
+//                        Toast.makeText(getBaseContext().getApplicationContext(), "Data record... Exist, Count: "+res.getCount(), Toast.LENGTH_SHORT).show();
+                    }
 
 //                affichage du formulaire de connexion
                     showProgress(false);
