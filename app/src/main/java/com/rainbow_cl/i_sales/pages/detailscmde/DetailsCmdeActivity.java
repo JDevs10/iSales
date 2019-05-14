@@ -17,7 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.adapter.CmdeProduitAdapter;
 import com.rainbow_cl.i_sales.adapter.CommandeAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;

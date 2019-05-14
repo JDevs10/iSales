@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.interfaces.CategorieProduitAdapterListener;
 import com.rainbow_cl.i_sales.model.CategorieParcelable;
 import com.rainbow_cl.i_sales.remote.ApiUtils;

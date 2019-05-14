@@ -4,7 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 
 public class ParametresActivity extends AppCompatActivity {
 

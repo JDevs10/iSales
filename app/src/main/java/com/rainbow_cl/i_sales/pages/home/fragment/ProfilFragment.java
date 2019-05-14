@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.database.AppDatabase;
 import com.rainbow_cl.i_sales.database.entry.UserEntry;
 import com.rainbow_cl.i_sales.pages.home.viewmodel.UserViewModel;

@@ -22,7 +22,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.adapter.ProductVirtualAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;
 import com.rainbow_cl.i_sales.database.AppExecutors;

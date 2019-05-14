@@ -16,7 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.interfaces.CommandeAdapterListener;
 import com.rainbow_cl.i_sales.model.ClientParcelable;
 import com.rainbow_cl.i_sales.model.CommandeParcelable;

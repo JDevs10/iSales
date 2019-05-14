@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.interfaces.ProductVirtualAdapterListener;
 import com.rainbow_cl.i_sales.remote.model.ProductVirtual;
 import com.rainbow_cl.i_sales.utility.ISalesUtility;

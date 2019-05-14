@@ -123,6 +123,14 @@
                     android:textStyle="bold" />
             </RelativeLayout>
 
+            <EditText
+                android:id="@+id/et_boncmde_note_prive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="Note privé"
+                android:inputType="textMultiLine" />
+
             <Switch
                 android:id="@+id/switch_boncmde_signature"
                 android:layout_width="match_parent"

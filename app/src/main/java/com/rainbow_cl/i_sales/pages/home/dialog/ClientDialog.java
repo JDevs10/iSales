@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.interfaces.DialogCategorieListener;
 import com.rainbow_cl.i_sales.interfaces.DialogClientListener;
 import com.rainbow_cl.i_sales.model.CategorieParcelable;

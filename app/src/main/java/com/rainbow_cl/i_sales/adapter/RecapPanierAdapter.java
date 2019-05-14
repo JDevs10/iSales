@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.database.entry.PanierEntry;
 import com.rainbow_cl.i_sales.interfaces.PanierProduitAdapterListener;
 import com.rainbow_cl.i_sales.utility.ISalesUtility;

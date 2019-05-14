@@ -24,7 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.adapter.CategorieProduitAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;
 import com.rainbow_cl.i_sales.database.entry.CategorieEntry;

@@ -71,6 +71,90 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
+            android:paddingStart="@dimen/form_paddingH"
+            android:paddingTop="@dimen/form_paddingV"
+            android:paddingEnd="@dimen/form_paddingH"
+            android:paddingBottom="@dimen/form_paddingV">
+
+            <EditText
+                android:id="@+id/et_client_ville"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/ville"
+                android:inputType="text|textAutoComplete|textCapWords"
+                android:text=""
+                android:textColorHint="@null"
+                android:textSize="@dimen/form_input_size" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:paddingStart="@dimen/form_paddingH"
+            android:paddingTop="@dimen/form_paddingV"
+            android:paddingEnd="@dimen/form_paddingH"
+            android:paddingBottom="@dimen/form_paddingV">
+
+            <EditText
+                android:id="@+id/et_client_region"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/region"
+                android:inputType="text|textCapWords|textAutoComplete"
+                android:text=""
+                android:textColorHint="@null"
+                android:textSize="@dimen/form_input_size" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:paddingStart="@dimen/form_paddingH"
+            android:paddingTop="@dimen/form_paddingV"
+            android:paddingEnd="@dimen/form_paddingH"
+            android:paddingBottom="@dimen/form_paddingV">
+
+            <EditText
+                android:id="@+id/et_client_departement"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/departement"
+                android:inputType="text|textCapWords|textAutoComplete"
+                android:text=""
+                android:textColorHint="@null"
+                android:textSize="@dimen/form_input_size" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:paddingStart="@dimen/form_paddingH"
+            android:paddingTop="@dimen/form_paddingV"
+            android:paddingEnd="@dimen/form_paddingH"
+            android:paddingBottom="@dimen/form_paddingV">
+
+            <EditText
+                android:id="@+id/et_client_pays"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/pays"
+                android:inputType="text|textCapWords|textAutoComplete"
+                android:text=""
+                android:textColorHint="@null"
+                android:textSize="@dimen/form_input_size" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
             android:paddingBottom="@dimen/form_paddingV"
             android:paddingEnd="@dimen/form_paddingH"
             android:paddingStart="@dimen/form_paddingH"
@@ -125,90 +209,6 @@
                 android:background="@android:color/transparent"
                 android:hint="@string/note"
                 android:inputType="text"
-                android:text=""
-                android:textColorHint="@null"
-                android:textSize="@dimen/form_input_size" />
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingBottom="@dimen/form_paddingV"
-            android:paddingEnd="@dimen/form_paddingH"
-            android:paddingStart="@dimen/form_paddingH"
-            android:paddingTop="@dimen/form_paddingV">
-
-            <EditText
-                android:id="@+id/et_client_pays"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint="@string/pays"
-                android:inputType="text|textCapWords|textAutoComplete"
-                android:text=""
-                android:textColorHint="@null"
-                android:textSize="@dimen/form_input_size" />
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingBottom="@dimen/form_paddingV"
-            android:paddingEnd="@dimen/form_paddingH"
-            android:paddingStart="@dimen/form_paddingH"
-            android:paddingTop="@dimen/form_paddingV">
-
-            <EditText
-                android:id="@+id/et_client_region"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint="@string/region"
-                android:inputType="text|textCapWords|textAutoComplete"
-                android:text=""
-                android:textColorHint="@null"
-                android:textSize="@dimen/form_input_size" />
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingBottom="@dimen/form_paddingV"
-            android:paddingEnd="@dimen/form_paddingH"
-            android:paddingStart="@dimen/form_paddingH"
-            android:paddingTop="@dimen/form_paddingV">
-
-            <EditText
-                android:id="@+id/et_client_departement"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint="@string/departement"
-                android:inputType="text|textCapWords|textAutoComplete"
-                android:text=""
-                android:textColorHint="@null"
-                android:textSize="@dimen/form_input_size" />
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingBottom="@dimen/form_paddingV"
-            android:paddingEnd="@dimen/form_paddingH"
-            android:paddingStart="@dimen/form_paddingH"
-            android:paddingTop="@dimen/form_paddingV">
-
-            <EditText
-                android:id="@+id/et_client_ville"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint="@string/ville"
-                android:inputType="text|textAutoComplete|textCapWords"
                 android:text=""
                 android:textColorHint="@null"
                 android:textSize="@dimen/form_input_size" />

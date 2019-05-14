@@ -21,7 +21,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.adapter.ClientsAdapter;
 import com.rainbow_cl.i_sales.adapter.ClientsRadioAdapter;
 import com.rainbow_cl.i_sales.database.AppDatabase;

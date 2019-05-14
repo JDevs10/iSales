@@ -1,6 +1,6 @@
 package com.rainbow_cl.i_sales.pages.home;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.database.AppDatabase;
 import com.rainbow_cl.i_sales.database.OfflineChecker.OfflineDatabaseHelper;
 import com.rainbow_cl.i_sales.interfaces.ClientsAdapterListener;

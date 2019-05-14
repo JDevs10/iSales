@@ -14,7 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 
 /**
  * A simple {@link Fragment} subclass.

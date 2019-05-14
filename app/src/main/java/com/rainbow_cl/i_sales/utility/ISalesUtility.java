@@ -15,7 +15,7 @@ import android.provider.OpenableColumns;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 

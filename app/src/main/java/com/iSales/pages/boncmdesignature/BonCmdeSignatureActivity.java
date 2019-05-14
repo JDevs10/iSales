@@ -58,7 +58,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
     private Button mAnnulerSignClientBTN, mAnnulerSignCommBTN, mEnregistrerBTN;
     private SignatureView mClientSignatureView, mCommSignatureView;
     private TextView mClientName, mCommName, mDateLivraisonTV, mModeReglementTV;
-    private EditText mAcompteET, mRemiseET;
+    private EditText mAcompteET, mRemiseET, mNotePrive;
     private Switch mSynchroServeurSW;
     private View mDateLivraisonVIEW;
     private View mModeReglementVIEW;
@@ -126,6 +126,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         if (!mAcompteET.getText().toString().equals("")) {
             cmdeEntry.setNote_public(String.format("%s a donné un acompte de %s %s", mClientParcelableSelected.getName(), mAcompteET.getText().toString(), getResources().getString(R.string.symbole_euro)));
         }
+        cmdeEntry.setNote_private(mNotePrive.getText().toString());
 
         long cmdeEntryId = mDb.commandeDao().insertCmde(cmdeEntry);
         cmdeEntry.setId(cmdeEntryId);
@@ -262,6 +263,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         if (!mAcompteET.getText().toString().equals("")) {
             newOrder.setNote_public(String.format("%s a donné un acompte de %s %s", mClientParcelableSelected.getName(), mAcompteET.getText().toString(), getResources().getString(R.string.symbole_euro)));
         }
+        newOrder.setNote_private(mNotePrive.getText().toString());
         newOrder.setLines(new ArrayList<OrderLine>());
 
 //        s'il s'agit de la relance de la commande
@@ -670,6 +672,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         mModeReglementTV = (TextView) findViewById(R.id.tv_boncmde_modereglement);
         mAcompteET = (EditText) findViewById(R.id.et_boncmde_acompte);
         mRemiseET = (EditText) findViewById(R.id.et_boncmde_remise);
+        mNotePrive = (EditText) findViewById(R.id.et_boncmde_note_prive);
 
 //        Définition des dates courantes
         Calendar calendar = Calendar.getInstance();

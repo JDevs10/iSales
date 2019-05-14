@@ -9,7 +9,7 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.Log;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 
 import java.util.Locale;
 

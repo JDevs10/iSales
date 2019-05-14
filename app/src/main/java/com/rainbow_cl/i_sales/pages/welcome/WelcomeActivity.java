@@ -10,7 +10,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
-import com.rainbow_cl.i_sales.R;
+import com.iSales.R;
 import com.rainbow_cl.i_sales.pages.login.LoginActivity;
 
 import java.io.File;

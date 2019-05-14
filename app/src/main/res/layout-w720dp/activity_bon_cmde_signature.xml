@@ -36,7 +36,7 @@
                     android:layout_centerVertical="true"
                     android:text="Date de Livraison"
                     android:textColor="@color/black"
-                    android:textSize="17sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_boncmde_datelivraison"
@@ -72,7 +72,7 @@
                     android:layout_centerVertical="true"
                     android:text="Mode de Règlement"
                     android:textColor="@color/black"
-                    android:textSize="17sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tv_boncmde_modereglement"
@@ -95,12 +95,12 @@
             <EditText
                 android:id="@+id/et_boncmde_acompte"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="38dp"
                 android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:hint="Entrer l'acompte"
-                android:inputType="number"
-                android:layout_marginStart="8dp" />
+                android:inputType="number" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -111,7 +111,7 @@
                 <EditText
                     android:id="@+id/et_boncmde_remise"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="38dp"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="4dp"
                     android:layout_toStartOf="@+id/tv_boncmde_remise"
@@ -130,6 +130,16 @@
                     android:textStyle="bold" />
             </RelativeLayout>
 
+            <EditText
+                android:id="@+id/et_boncmde_note_prive"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:hint="Note privé"
+                android:inputType="textMultiLine"/>
+
             <Switch
                 android:id="@+id/switch_boncmde_signature"
                 android:layout_width="match_parent"
@@ -146,7 +156,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="325dp"
             android:layout_weight="1"
             android:orientation="horizontal"
             android:paddingStart="8dp"
