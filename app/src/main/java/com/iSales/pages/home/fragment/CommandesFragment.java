@@ -197,10 +197,13 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
             cmdeParcelable.setRemise_percent(cmdeEntry.getRemise_percent());
             cmdeParcelable.setRemise_absolue(cmdeEntry.getRemise_absolue());
 
+            //Log.e(TAG, " JL, command ref: "+cmdeEntry.getRef()+" || command date: "+cmdeEntry.getDate_commande());
+
 //            cmdeParcelable.setId(cmdeEntry.getId());
             cmdeParcelable.setRef(cmdeEntry.getRef());
             SimpleDateFormat dateFormat = new SimpleDateFormat("'CMD'yyMMdd'-'HHmmss");
 //            if (orderItem.getDate() != null && orderItem.getDate() != "") {
+
             try {
                 Date date = dateFormat.parse(cmdeEntry.getRef());
                 cmdeParcelable.setDate(date.getTime());

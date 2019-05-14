@@ -17,6 +17,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.iSales.remote.ApiConnectionUrl;
 import com.kyanogen.signatureview.SignatureView;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
@@ -100,6 +101,28 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String refOrder = String.format("CMD%s", refOrderFormat.format(today.getTime()));
 //        String dateOrder = String.valueOf(today.getTime());
+
+/*
+        ApiConnectionUrl apiConnectionUrl = new ApiConnectionUrl(this);
+        String serverHost = mDb.serverDao().getActiveServer(true).getHostname().replace("/api/index.php", "");
+        final String refOrder = apiConnectionUrl.sendUrl("POST", serverHost, "/api/jlApi/jl_command.php?","action=getNewOrderRef");
+
+        Log.e(TAG, " JL New refOrder => "+refOrder);
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         double remisePercent = 0;
         if (!mRemiseET.getText().toString().equals("")) {
             remisePercent = Double.parseDouble(mRemiseET.getText().toString().replace(",", "."));
