@@ -28,6 +28,7 @@
     <string name="adresse_mail_invalide">Adresse mail invalide.</string>
     <string name="veuillez_remplir_libelle">Veuillez remplir le libellé.</string>
     <string name="voulez_vous_supprimer_client">Voulez-vous vraiment supprimer ce client ?</string>
+    <string name="action_risque_prendre_dutemps">Cette action risque de prendre du temps, veuillez ne pas arreter l\'application durant cette opération.</string>
     <string name="veuillez_remplir_description">Veuillez remplir la description.</string>
     <string name="veuillez_remplir_password">Veuillez remplir le mot de passe.</string>
     <string name="error_incorrect_password">This password is incorrect</string>
@@ -93,6 +94,7 @@
     <string name="commande_enregistre_succes">Bon de commande enregistré avec succès.</string>
     <string name="informations_client_modifie">Informations du client modifiées avec succès.</string>
     <string name="client_creee_succes">Client crée avec succès.</string>
+    <string name="client_creee_local_succes">Client crée en local avec succès.</string>
     <string name="enregistrement_encours">Enregistrement en cours...</string>
     <string name="enregistrement_commande_encours">Enregistrement de la commande en cours...</string>
     <string name="validation_commande_encours">Validation de la commande en cours...</string>
@@ -200,6 +202,10 @@
     <string name="client_en_attente_synchronisation">Des clients sont en attente de synchronisation. Veuillez synchroniser les clients.</string>
     <string name="valider_le_panier">Valider le panier</string>
     <string name="vider_le_panier">Vider le panier</string>
+    <string name="nom_compagnie_incorrect">Nom Compagnie Incorrect.</string>
+    <string name="nom_compagnie">Nom Compagnie</string>
+    <string name="miseajour_images_produits">Mise a jour des images produits en cours</string>
+    <string name="miseajour_images_produits_effectuee">Mise a jour des images produits éffectuée avec succès.</string>
 
     <!-- Strings related to Settings -->
 
