@@ -99,7 +99,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         Log.e(TAG, "pushCommande: dateCrea=" + today.getTime() + " dateLivraison=" + dateLivraison.getTime() + " livraisonYear=" + livraisonYear + " livraisonMonth=" + livraisonMonth + " livraisonDay=" + livraisonDay);
         final SimpleDateFormat refOrderFormat = new SimpleDateFormat("yyMMdd-HHmmss");
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        final String refOrder = String.format("CMD%s", refOrderFormat.format(today.getTime()));
+        final String refOrder = String.format("PROV%s", refOrderFormat.format(today.getTime()));
 //        String dateOrder = String.valueOf(today.getTime());
 
 /*
@@ -144,7 +144,9 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         cmdeEntry.setMode_reglement_id(paymentTypesChoosed.getId());
         cmdeEntry.setTotal_ttc("" + mTotalPanier);
         cmdeEntry.setIs_synchro(0);
-        cmdeEntry.setStatut("1");
+        cmdeEntry.setStatut("0");
+
+        cmdeEntry.setBrouillon("1");
         cmdeEntry.setRemise_percent(""+remisePercent);
         if (!mAcompteET.getText().toString().equals("")) {
             cmdeEntry.setNote_public(String.format("%s a donné un acompte de %s %s", mClientParcelableSelected.getName(), mAcompteET.getText().toString(), getResources().getString(R.string.symbole_euro)));
@@ -287,6 +289,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
             newOrder.setNote_public(String.format("%s a donné un acompte de %s %s", mClientParcelableSelected.getName(), mAcompteET.getText().toString(), getResources().getString(R.string.symbole_euro)));
         }
         newOrder.setNote_private(mNotePrive.getText().toString());
+        newOrder.setStatut("0");
+        newOrder.setBrouillon("1");
         newOrder.setLines(new ArrayList<OrderLine>());
 
 //        s'il s'agit de la relance de la commande

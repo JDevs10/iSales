@@ -28,6 +28,7 @@ public class CommandeEntry {
     private String total_tva;
     private String total_ttc;
     private String statut;
+    private String brouillon;
     private String remise_absolue;
     private String remise_percent;
     private String remise;
@@ -146,6 +147,14 @@ public class CommandeEntry {
 
     public void setStatut(String statut) {
         this.statut = statut;
+    }
+
+    public String getBrouillon() {
+        return brouillon;
+    }
+
+    public void setBrouillon(String brouillion) {
+        this.brouillon = brouillion;
     }
 
     public String getMode_reglement() {

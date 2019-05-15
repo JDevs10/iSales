@@ -25,6 +25,7 @@ public class Order {
     public String total_tva;
     public String total_ttc;
     public String statut;
+    public String brouillon;
     public List<OrderLine> lines;
     private String remise_absolue;
     private String remise_percent;
@@ -127,6 +128,14 @@ public class Order {
 
     public void setStatut(String statut) {
         this.statut = statut;
+    }
+
+    public String getBrouillon() {
+        return brouillon;
+    }
+
+    public void setBrouillon(String brouillon) {
+        this.brouillon = brouillon;
     }
 
     public String getMode_reglement() {

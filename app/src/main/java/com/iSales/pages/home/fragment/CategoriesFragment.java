@@ -88,7 +88,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     private int mPageCategorie = 0;
     private int mCountRequestPdt = 0;
 
-    ProgressDialog mProgressDialog;
+    ProgressDialog mProgressDialog, mProgressDialogLoagin;
 
     //    position courante de la requete de recuperation des produit
     private int mCurrentPdtQuery = 0;
@@ -631,11 +631,22 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 //        Fermeture du loader
                 //        Fermeture du loader
-                showProgressDialog(false, null, null);
+                //showProgressDialog(false, null, null);
+
+                //initContent();
+                //Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
+
+                Log.e(TAG, " onFindProductsCompleted() || findImage() => Start");
+                //showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
+
+//        Suppression des images des clients en local
+                ISalesUtility.deleteProduitsImgFolder();
+
+                findImage();
+                Log.e(TAG, " onFindProductsCompleted() || findImage() => End");
 
                 initContent();
-                Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
-
+                //Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
                 return;
             }
         } else {
@@ -676,6 +687,8 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 FindImagesProductsTask task = new FindImagesProductsTask(getContext(), CategoriesFragment.this, produitEntry);
                 task.execute();
             }
+
+            //end here
             return;
         } else {
             showProgressDialog(false, null, null);
@@ -917,66 +930,43 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 //        redirige le user vers la page de synchronisation
             case R.id.action_fragcategorie_sync:
 
-//        Si le téléphone n'est pas connecté
-                if (!ConnectionManager.isPhoneConnected(getContext())) {
-                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-                    return true;
-                }
-//                Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
-                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                } else {
-                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                }
-
-//                affichage du loader dialog
-                showProgressDialog(true, null, getString(R.string.synchro_produits_encours));
-
-                mDb.categorieDao().deleteAllCategorie();
-                mDb.produitDao().deleteAllProduit();
-
-//            recupere la liste des clients sur le serveur
-                executeFindCategorieProducts();
-                return true;
-            case R.id.action_fragcategorie_sync_image:
-
-                final AlertDialog dialog = new AlertDialog.Builder(getContext())
-                        .setTitle("Confirmer la mise a jour des images produits. ")
+                final AlertDialog dialog1 = new AlertDialog.Builder(getContext())
+                        .setTitle("Confirmer la synchronisation des produits.")
                         .setMessage(String.format("%s", getResources().getString(R.string.action_risque_prendre_dutemps)))
                         .setCancelable(false)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-//        Si le téléphone n'est pas connecté
-                                if (!ConnectionManager.isPhoneConnected(getContext())) {
-                                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-
-//                                Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
-                                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                                } else {
-                                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                                }
-
-//                affichage du loader dialog
-                                showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
-
-//        Suppression des images des clients en local
-                                ISalesUtility.deleteProduitsImgFolder();
-
-                                findImage();
-                            }
-                        })
                         .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
 
                             }
                         })
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Si le téléphone n'est pas connecté
+                                if (!ConnectionManager.isPhoneConnected(getContext())) {
+                                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                //Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
+                                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                } else {
+                                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                }
+
+                                //affichage du loader dialog
+                                showProgressDialog(true, null, getString(R.string.synchro_produits_encours));
+
+                                mDb.categorieDao().deleteAllCategorie();
+                                mDb.produitDao().deleteAllProduit();
+
+                                //recupere la liste des clients sur le serveur
+                                executeFindCategorieProducts();
+                            }
+                        })
                         .create();
-                dialog.show();
+                dialog1.show();
                 break;
             default:
                 break;

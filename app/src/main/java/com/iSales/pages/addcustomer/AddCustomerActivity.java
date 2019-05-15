@@ -380,7 +380,7 @@ public class AddCustomerActivity extends AppCompatActivity {
             queryBody.setEmail(email);
             queryBody.setFirstname(nom);
             queryBody.setName(String.format("%s", nom));
-            queryBody.setCode_client(codeCLient);
+            queryBody.setCode_client("auto");
             queryBody.setClient("1");
 //                    queryBody.setName_alias(responseLogoClientBody);659331009
             queryBody.setName_alias("");

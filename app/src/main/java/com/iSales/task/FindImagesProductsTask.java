@@ -17,7 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class FindImagesProductsTask extends AsyncTask<Void, Void, String> {
-    private static final String TAG = FindDocumentTask.class.getSimpleName();
+    private static final String TAG = FindImagesProductsTask.class.getSimpleName();
 
     private FindImagesProductsListener task;
     private ProduitEntry produitEntry;
