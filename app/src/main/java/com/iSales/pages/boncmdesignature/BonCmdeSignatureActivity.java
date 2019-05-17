@@ -100,28 +100,6 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         final SimpleDateFormat refOrderFormat = new SimpleDateFormat("yyMMdd-HHmmss");
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String refOrder = String.format("PROV%s", refOrderFormat.format(today.getTime()));
-//        String dateOrder = String.valueOf(today.getTime());
-
-/*
-        ApiConnectionUrl apiConnectionUrl = new ApiConnectionUrl(this);
-        String serverHost = mDb.serverDao().getActiveServer(true).getHostname().replace("/api/index.php", "");
-        final String refOrder = apiConnectionUrl.sendUrl("POST", serverHost, "/api/jlApi/jl_command.php?","action=getNewOrderRef");
-
-        Log.e(TAG, " JL New refOrder => "+refOrder);
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         double remisePercent = 0;
         if (!mRemiseET.getText().toString().equals("")) {
