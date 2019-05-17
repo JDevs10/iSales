@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.pages.profile.ProfileActivity;
 import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.pages.parametres.ParametresActivity;
 import com.iSales.pages.synchronisation.SynchronisationActivity;
@@ -33,7 +34,7 @@ import java.util.List;
 public class ProfilFragment extends Fragment {
     private TextView mNameTV, mAdressTV;
 
-    private LinearLayout mDeconnexionView, mSynchroView, mParametresView;
+    private LinearLayout mDeconnexionView, mSynchroView, mParametresView, mProfleView;
 
     private AppDatabase mDb;
 
@@ -90,9 +91,18 @@ public class ProfilFragment extends Fragment {
 //        Referencement des vues
         mNameTV = rootView.findViewById(R.id.tv_user_profile_name);
         mAdressTV = rootView.findViewById(R.id.tv_user_profile_address);
+        mProfleView = rootView.findViewById(R.id.view_user_profile_moncompte);
         mParametresView = rootView.findViewById(R.id.view_user_profile_parametre);
         mSynchroView = rootView.findViewById(R.id.view_user_profile_synchronisation);
         mDeconnexionView = rootView.findViewById(R.id.view_user_profile_deconnecter);
+
+        mProfleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), ProfileActivity.class);
+                startActivity(intent);
+            }
+        });
 
         mSynchroView.setOnClickListener(new View.OnClickListener() {
             @Override

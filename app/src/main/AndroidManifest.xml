@@ -90,6 +90,14 @@
                 android:value="com.iSales.pages.home.HomeActivity" />
         </activity>
         <activity
+            android:name="com.iSales.pages.profile.ProfileActivity"
+            android:label="@string/profile"
+            android:parentActivityName="com.iSales.pages.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.iSales.pages.home.HomeActivity" />
+        </activity>
+        <activity
             android:name="com.iSales.pages.synchronisation.SynchronisationActivity"
             android:label="@string/synchronisation"
             android:parentActivityName="com.iSales.pages.home.HomeActivity">

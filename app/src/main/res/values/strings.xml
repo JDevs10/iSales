@@ -206,6 +206,7 @@
     <string name="nom_compagnie">Nom Compagnie</string>
     <string name="miseajour_images_produits">Mise a jour des images produits en cours</string>
     <string name="miseajour_images_produits_effectuee">Mise a jour des images produits éffectuée avec succès.</string>
+    <string name="profile">Profile</string>
 
     <!-- Strings related to Settings -->
 
