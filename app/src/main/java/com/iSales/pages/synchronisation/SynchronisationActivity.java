@@ -1,7 +1,11 @@
 package com.iSales.pages.synchronisation;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -18,9 +22,11 @@ import com.iSales.database.entry.CommandeLineEntry;
 import com.iSales.database.entry.ProduitEntry;
 import com.iSales.database.entry.SignatureEntry;
 import com.iSales.interfaces.FindCategorieListener;
+import com.iSales.interfaces.FindImagesProductsListener;
 import com.iSales.interfaces.FindOrdersListener;
 import com.iSales.interfaces.FindProductsListener;
 import com.iSales.interfaces.FindThirdpartieListener;
+import com.iSales.pages.home.fragment.CategoriesFragment;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Categorie;
@@ -35,6 +41,7 @@ import com.iSales.remote.rest.FindOrdersREST;
 import com.iSales.remote.rest.FindProductsREST;
 import com.iSales.remote.rest.FindThirdpartieREST;
 import com.iSales.task.FindCategorieTask;
+import com.iSales.task.FindImagesProductsTask;
 import com.iSales.task.FindOrderLinesTask;
 import com.iSales.task.FindOrderTask;
 import com.iSales.task.FindProductsTask;
@@ -48,12 +55,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class SynchronisationActivity extends AppCompatActivity
-        implements FindThirdpartieListener, FindProductsListener, FindCategorieListener, FindOrdersListener {
+        implements FindThirdpartieListener, FindProductsListener, FindCategorieListener, FindOrdersListener, FindImagesProductsListener {
 
     private static final String TAG = com.iSales.pages.synchronisation.SynchronisationActivity.class.getSimpleName();
-    private Button mSyncClientBtn, mSyncProduitsBtn, mSyncCmdeRecupererBtn, mSyncCmdePousserBtn;
+    private Button mSyncClientBtn, mSyncProduitsBtn, mSyncImagesBtn, mSyncCmdeRecupererBtn, mSyncCmdePousserBtn;
 
     ProgressDialog mProgressDialog;
 
@@ -75,6 +83,9 @@ public class SynchronisationActivity extends AppCompatActivity
     //    position courante de la requete de recuperation des produit
     private int mCurrentPdtQuery = 0;
     private int mTotalPdtQuery = 0;
+
+    private int mCountRequestImg;
+    private int mCountRequestImgTotal;
 
     //    database instance
     private AppDatabase mDb;
@@ -695,6 +706,7 @@ public class SynchronisationActivity extends AppCompatActivity
 //        referencement des vues
         mSyncClientBtn = (Button) findViewById(R.id.btn_synchro_client);
         mSyncProduitsBtn = (Button) findViewById(R.id.btn_synchro_produits);
+        mSyncImagesBtn = (Button) findViewById(R.id.btn_synchro_images);
         mSyncCmdeRecupererBtn = (Button) findViewById(R.id.btn_recuperer_cmde);
         mSyncCmdePousserBtn = (Button) findViewById(R.id.btn_pousser_cmde);
 
@@ -723,6 +735,45 @@ public class SynchronisationActivity extends AppCompatActivity
             }
         });
 
+        mSyncImagesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Si le téléphone n'est pas connecté
+                if (!ConnectionManager.isPhoneConnected(getApplicationContext())) {
+                    Toast.makeText(getApplicationContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    return;
+                }
+                //Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    Objects.requireNonNull(SynchronisationActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                } else {
+                    Objects.requireNonNull(SynchronisationActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                }
+
+                //affichage du loader dialog
+                showProgressDialog(true, null, getString(R.string.synchro_produits_encours));
+
+                /*
+                mDb.categorieDao().deleteAllCategorie();
+                mDb.produitDao().deleteAllProduit();
+
+                //recupere la liste des clients sur le serveur
+                executeFindCategorieProducts();
+                */
+
+                Log.e(TAG, " onFindProductsCompleted() || findImage() => Start");
+                //showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
+
+                //        Suppression des images des clients en local
+                ISalesUtility.deleteProduitsImgFolder();
+
+                findImage();
+                Log.e(TAG, " onFindProductsCompleted() || findImage() => End");
+
+                //initContent();
+            }
+        });
+
         mSyncCmdeRecupererBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -746,6 +797,54 @@ public class SynchronisationActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    void findImage() {
+
+        final List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
+        mCountRequestImg = 0;
+        mCountRequestImgTotal = produitEntries.size();
+        Log.e(TAG, "findImage: produitEntriesSize=" + produitEntries.size() + " mCountRequestImgTotal=" + mCountRequestImgTotal);
+        if (produitEntries.size() > 0) {
+//            setAutoOrientationEnabled(getContext(), true);
+            for (ProduitEntry produitEntry : produitEntries) {
+
+//        Si le téléphone n'est pas connecté
+                if (!ConnectionManager.isPhoneConnected(getApplicationContext())) {
+                    showProgressDialog(false, null, null);
+                    Toast.makeText(getApplicationContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    break;
+                }
+
+                FindImagesProductsTask task = new FindImagesProductsTask(getApplicationContext(), SynchronisationActivity.this, produitEntry);
+                task.execute();
+            }
+
+            //end here
+            return;
+        } else {
+            showProgressDialog(false, null, null);
+            Toast.makeText(getApplicationContext(), "Aucun produits", Toast.LENGTH_LONG).show();
+            return;
+        }
+    }
+
+    @Override
+    public void onFindImagesProductsComplete(String pathFile) {
+        mCountRequestImg++;
+//        Log.e(TAG, "onFindImagesProductsComplete: pathFile="+pathFile+" mCountRequestImg="+mCountRequestImg+" mCountRequestImgTotal="+mCountRequestImgTotal);
+        if (mProgressDialog != null) {
+            mProgressDialog.setMessage(String.format("%s. %s / %s ", getString(R.string.miseajour_images_produits), mCountRequestImg, mCountRequestImgTotal));
+        }
+        if (mCountRequestImg >= mCountRequestImgTotal) {
+            Objects.requireNonNull(SynchronisationActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+
+            //initContent();
+            showProgressDialog(false, null, null);
+//            setAutoOrientationEnabled(getContext(), false);
+            Toast.makeText(getApplicationContext(), getString(R.string.miseajour_images_produits_effectuee)+" "+mCountRequestImg+"/"+mCountRequestImgTotal, Toast.LENGTH_LONG).show();
+            return;
+        }
     }
 
     @Override

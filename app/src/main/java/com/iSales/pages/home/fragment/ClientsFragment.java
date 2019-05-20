@@ -36,6 +36,7 @@ import com.iSales.R;
 import com.iSales.adapter.ClientsAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.decoration.MyDividerItemDecoration;
 import com.iSales.helper.RecyclerItemTouchHelper;
 import com.iSales.interfaces.ClientsAdapterListener;
@@ -96,6 +97,11 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    Recupération de la liste des produits
     private void executeFindClients() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" executeFindClients() => called."));
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
@@ -113,6 +119,12 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    Recupere la lsite des clients dans la bd locale
     private void loadClients() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" loadClients() => called."));
+
         showProgress(true);
 //        Log.e(TAG, "loadClients: clientParcelableList=" + clientParcelableList.size() + " clientParcelableListFiltered=" + clientParcelableListFiltered.size());
         if (clientParcelableList.size() > 0) {
@@ -130,6 +142,12 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    Recupere la lsite des clients dans la bd locale
     private void initClients() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" initClients() => called."));
+
         List<ClientEntry> clientEntries = mDb.clientDao().getAllClient();
         clientParcelableList = new ArrayList<>();
 

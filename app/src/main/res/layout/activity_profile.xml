@@ -204,7 +204,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:text="5/15/2019 @ 10:26:05"
+                    android:text=""
                     android:textColor="@color/black"
                     android:textSize="20dp" />
 
@@ -218,7 +218,8 @@
                 android:layout_marginBottom="1dp"
                 android:background="@color/white"
                 android:orientation="horizontal"
-                android:padding="15dp">
+                android:padding="15dp"
+                android:visibility="gone">
 
                 <Switch
                     android:id="@+id/activity_profile_switch_msg_debogage"
@@ -240,7 +241,8 @@
                 android:layout_marginBottom="1dp"
                 android:background="@color/white"
                 android:orientation="horizontal"
-                android:padding="15dp">
+                android:padding="15dp"
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="wrap_content"

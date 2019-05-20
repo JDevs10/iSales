@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.iSales.R;
+import com.iSales.helper.DebugMe;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -38,6 +39,7 @@ public class AProposFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new DebugMe(getContext(), "WL", TAG+" onCreate() => called.").execute();
     }
 
     @Override

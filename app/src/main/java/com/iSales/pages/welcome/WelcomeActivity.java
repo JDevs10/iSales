@@ -7,8 +7,11 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
 
@@ -92,8 +95,18 @@ public class WelcomeActivity extends AppCompatActivity {
 
         mContentView = findViewById(R.id.fullscreen_content);
 
+        //init debug settings
+        initDebugSettings();
+
 //        checkExternalMedia();
 //        writeToSDFile();
+    }
+
+    private void initDebugSettings(){
+        AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().deleteDebugSettings();
+        AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().insertDebugSettings(new DebugSettingsEntry(1, 0));
+
+        Log.e(TAG, " initDebugSettings(): checkDebug = "+AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug());
     }
 
 //    @Override

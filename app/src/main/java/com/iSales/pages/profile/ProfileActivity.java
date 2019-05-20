@@ -6,8 +6,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,12 +20,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.R;
+import com.iSales.adapter.DebugAdapter;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
+import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;
+import com.iSales.remote.model.DebugItem;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -41,6 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     //database instance
     private AppDatabase mDB;
+    private int mTotalPdtQuery;
 
     private UserEntry mUserEntry;
 
@@ -50,50 +58,15 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        ly_admin3 = (LinearLayout) findViewById(R.id.activity_profile_layout_admin_3);
+        mDB = AppDatabase.getInstance(getApplicationContext());
 
         tv_mail = (TextView) findViewById(R.id.activity_profile_text_view_email);
-        tv_societe = (TextView) findViewById(R.id.activity_profile_text_view_email);
-        tv_server = (TextView) findViewById(R.id.activity_profile_text_view_email);
-        tv_nom = (TextView) findViewById(R.id.activity_profile_text_view_email);
-        tv_login = (TextView) findViewById(R.id.activity_profile_text_view_email);
-        tv_lastConnexion = (TextView) findViewById(R.id.activity_profile_text_view_email);
-        sw_msgDebogage = (Switch) findViewById(R.id.activity_profile_switch_msg_debogage);
-        btn_winDebogage = (Button) findViewById(R.id.activity_profile_btn_debogage);
-        rv_debogage = (RecyclerView) findViewById(R.id.activity_profile_recycle_view_debogage);
+        tv_societe = (TextView) findViewById(R.id.activity_profile_text_view_societe);
+        tv_server = (TextView) findViewById(R.id.activity_profile_text_view_serveur);
+        tv_nom = (TextView) findViewById(R.id.activity_profile_text_view_nom);
+        tv_login = (TextView) findViewById(R.id.activity_profile_text_view_login);
+        tv_lastConnexion = (TextView) findViewById(R.id.activity_profile_text_view_derniere_connexion);
 
-        sw_msgDebogage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b){
-                    Toast.makeText(ProfileActivity.this, "Le mode débogage est activé !", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(ProfileActivity.this, "Le mode débogage est désactivé !", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        btn_winDebogage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if(!debugWin) {
-                    btn_winDebogage.setBackgroundColor(Color.RED);
-                    btn_winDebogage.setText("Fermer");
-                    ly_admin3.setVisibility(View.VISIBLE);
-                    debugWin = true;
-                    Toast.makeText(ProfileActivity.this, "La fenêtre des logs est ouverte!", Toast.LENGTH_SHORT).show();
-                }else{
-                    btn_winDebogage.setBackgroundColor(Color.GREEN);
-                    btn_winDebogage.setText("Ouvert");
-                    ly_admin3.setVisibility(View.GONE);
-                    debugWin = false;
-                    Toast.makeText(ProfileActivity.this, "La fenêtre des logs est fermé!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        mDB = AppDatabase.getInstance(getApplicationContext());
 
         //Get current user information
         loadUser();
@@ -114,6 +87,10 @@ public class ProfileActivity extends AppCompatActivity {
 
                 mUserEntry = userEntries.get(0);
 
+                //check if current user is SuperAdmin
+                SuperAdmin(mUserEntry.getLastname());
+
+                //init
                 initUserValues();
             }
         });
@@ -122,18 +99,108 @@ public class ProfileActivity extends AppCompatActivity {
     public void initUserValues() {
         ServerEntry mServerEntry = mDB.serverDao().getActiveServer(true);
         String server = (mServerEntry.getHostname().replace("http://","")).replace("/api/index.php","");
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd @ HHmmss");
-        SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyMMdd-HHmmss");
+
+        long millisecond = Long.parseLong(mUserEntry.getDatelastlogin());
+        String dateString = DateFormat.format("dd-MM-yyyy @ hh:mm:ss", new Date(millisecond*1000)).toString();
 
         tv_mail.setText(mUserEntry.getEmail());
         tv_societe.setText(mServerEntry.getRaison_sociale());
         tv_server.setText(server);
         tv_nom.setText(mUserEntry.getLastname());
         tv_login.setText(mUserEntry.getLogin());
-        tv_lastConnexion.setText(mUserEntry.getDatelastlogin());
+        tv_lastConnexion.setText(dateString);
 
-//        Log.e(TAG, " last login : "+mUserEntry.getDatelastlogin()+"\n" +
-//                "in format : "+dateFormat1.format(mUserEntry.getDatelastlogin()));
+        //Log.e(TAG, "Last Connexion : "+dateString);
+    }
+
+    private void SuperAdmin(String name){
+        if (name.equals("SuperAdmin")){
+            //addDebugStaticData();
+
+            //init superAdmin accesses
+            ly_admin1 = (LinearLayout) findViewById(R.id.activity_profile_layout_admin_1);
+            ly_admin2 = (LinearLayout) findViewById(R.id.activity_profile_layout_admin_2);
+            ly_admin3 = (LinearLayout) findViewById(R.id.activity_profile_layout_admin_3);
+
+            sw_msgDebogage = (Switch) findViewById(R.id.activity_profile_switch_msg_debogage);
+            btn_winDebogage = (Button) findViewById(R.id.activity_profile_btn_debogage);
+            rv_debogage = (RecyclerView) findViewById(R.id.activity_profile_recycle_view_debogage);
+
+            ly_admin1.setVisibility(View.VISIBLE);
+            ly_admin2.setVisibility(View.VISIBLE);
+
+            // check if the debug check is checked
+            if (mDB.debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug() == 1){
+                sw_msgDebogage.setChecked(true);
+            }
+            sw_msgDebogage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (b){
+                        mDB.debugSettingsDao().updateDebugSettings(new DebugSettingsEntry(1, 1));
+                        Toast.makeText(ProfileActivity.this, "Le mode débogage est activé !\nDébogage état: "+mDB.debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug(), Toast.LENGTH_SHORT).show();
+                    }else{
+                        mDB.debugSettingsDao().updateDebugSettings(new DebugSettingsEntry(1, 0));
+                        Toast.makeText(ProfileActivity.this, "Le mode débogage est désactivé !\nDébogage état: "+mDB.debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+            btn_winDebogage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    if(!debugWin) {
+                        btn_winDebogage.setBackgroundColor(Color.GREEN);
+                        btn_winDebogage.setText("Ouvert");
+                        ly_admin3.setVisibility(View.VISIBLE);
+                        debugWin = true;
+
+                        DebugAdapter debugAdapter = new DebugAdapter(getApplicationContext(), getDebugData());
+                        rv_debogage.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                        rv_debogage.setAdapter(debugAdapter);
+                        debugAdapter.notifyDataSetChanged();
+
+                        Toast.makeText(ProfileActivity.this, "La fenêtre des logs est ouverte!", Toast.LENGTH_SHORT).show();
+                    }else{
+                        btn_winDebogage.setBackgroundColor(Color.RED);
+                        btn_winDebogage.setText("Fermer");
+                        ly_admin3.setVisibility(View.GONE);
+                        debugWin = false;
+                        Toast.makeText(ProfileActivity.this, "La fenêtre des logs est fermé!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+        }
+    }
+
+    private void addDebugStaticData(){
+        mDB.debugMessageDao().deleteAllDebugMessages();
+
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
+    }
+
+    private List<DebugItemEntry> getDebugData(){
+        List<DebugItemEntry> debugItemEntries = mDB.debugMessageDao().getAllDebugMessages();
+        mTotalPdtQuery = debugItemEntries.size();
+
+        Log.e(TAG, "getDebugData():: debugItemEntries=" + debugItemEntries.size() +
+                " mTotalPdtQuery=" + mTotalPdtQuery);
+
+        for (int i=0; i<debugItemEntries.size(); i++){
+            DebugItemEntry debugItemEntry = debugItemEntries.get(i);
+            Log.e(TAG, " getDebugData():: mCurrentPdtQuery = "+i+" debugMessageID = "+debugItemEntry.getRowId());
+
+
+        }
+    return debugItemEntries;
     }
 
     @Override

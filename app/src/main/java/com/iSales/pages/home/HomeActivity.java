@@ -1,6 +1,7 @@
 package com.iSales.pages.home;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.ClientsAdapterListener;
 import com.iSales.interfaces.DialogCategorieListener;
 import com.iSales.interfaces.DialogClientListener;
@@ -40,6 +41,8 @@ import android.graphics.drawable.StateListDrawable;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.content.Context;
+
+import java.util.Calendar;
 
 
 public class HomeActivity extends AppCompatActivity {
@@ -351,5 +354,12 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDb.debugMessageDao().deleteAllDebugMessages();
+        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, (System.currentTimeMillis()/1000), "DEB", TAG+" onDestroy() called"));
     }
 }

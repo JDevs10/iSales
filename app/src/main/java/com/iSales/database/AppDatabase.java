@@ -9,6 +9,8 @@ import com.iSales.database.dao.CategorieDao;
 import com.iSales.database.dao.ClientDao;
 import com.iSales.database.dao.CommandeDao;
 import com.iSales.database.dao.CommandeLineDao;
+import com.iSales.database.dao.DebugMessageDao;
+import com.iSales.database.dao.DebugSettingsDao;
 import com.iSales.database.dao.PanierDao;
 import com.iSales.database.dao.PaymentTypesDao;
 import com.iSales.database.dao.ProductCustPriceDao;
@@ -21,6 +23,8 @@ import com.iSales.database.entry.CategorieEntry;
 import com.iSales.database.entry.ClientEntry;
 import com.iSales.database.entry.CommandeEntry;
 import com.iSales.database.entry.CommandeLineEntry;
+import com.iSales.database.entry.DebugItemEntry;
+import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.PaymentTypesEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
@@ -34,7 +38,7 @@ import com.iSales.database.entry.UserEntry;
  * Created by netserve on 21/09/2018.
  */
 
-@Database(entities = {ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
+@Database(entities = {DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
         version = 13,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
@@ -96,4 +100,9 @@ public abstract class AppDatabase extends RoomDatabase {
     //    ProductCustomerPrice DAO
     public abstract ProductCustPriceDao productCustPriceDao();
 
+    //DebugMessage Dao
+    public abstract DebugMessageDao debugMessageDao();
+
+    //DebugSettingsDao Dao
+    public abstract DebugSettingsDao debugSettingsDao();
 }

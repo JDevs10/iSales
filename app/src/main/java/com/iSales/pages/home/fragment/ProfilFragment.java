@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.profile.ProfileActivity;
 import com.iSales.pages.home.viewmodel.UserViewModel;
@@ -32,6 +33,8 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class ProfilFragment extends Fragment {
+    private String TAG = ProfileActivity.class.getSimpleName();
+
     private TextView mNameTV, mAdressTV;
 
     private LinearLayout mDeconnexionView, mSynchroView, mParametresView, mProfleView;
@@ -55,12 +58,15 @@ public class ProfilFragment extends Fragment {
 
                 mUserEntry = userEntries.get(0);
 
+                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" onDestroy() called"));
+
                 initUserValues();
             }
         });
     }
 
     public void initUserValues() {
+        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" initUserValues() called"));
         String firstName = !mUserEntry.getFirstname().equals("") ? mUserEntry.getFirstname() : "";
         mNameTV.setText(String.format("%s %s", ISalesUtility.strCapitalize(firstName), mUserEntry.getLastname().toUpperCase()));
 //        mAdressTV.setText(String.format("%s, %s", mUserEntry.getTown(), mUserEntry.getCountry()));
@@ -83,10 +89,12 @@ public class ProfilFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_profil, container, false);
 
         mDb = AppDatabase.getInstance(getActivity().getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" onCreateView() called"));
 
 //        Referencement des vues
         mNameTV = rootView.findViewById(R.id.tv_user_profile_name);
@@ -157,7 +165,9 @@ public class ProfilFragment extends Fragment {
         });
 
 //        recuperation du user et chargement de ses infos
+        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" About to load => loadUser()"));
         loadUser();
+        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" Done loading => loadUser()"));
 
         return rootView;
     }

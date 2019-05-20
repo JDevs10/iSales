@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
@@ -258,6 +259,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
 //        Ajout les serveurs dans la BD
         initServerUrl();
+
     }
 
     /**
@@ -488,6 +490,8 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             }
         }
     }
+
+
 
     private void executeLogin(String username, String password) {
 //        masquage du formulaire de connexion

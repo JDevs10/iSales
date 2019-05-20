@@ -25,6 +25,7 @@ import com.iSales.adapter.PanierProduitAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.AppExecutors;
 import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.interfaces.DialogClientListener;
 import com.iSales.interfaces.PanierProduitAdapterListener;
@@ -82,6 +83,8 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
 
     //    recuperation des produits du panier
     private void loadPanier() {
+        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" loadPanier() called"));
+
         mProgressIV.setVisibility(View.VISIBLE);
         List<PanierEntry> panierEntries = mDb.panierDao().getAllPanier();
 //        ajout des clientParcelables dans la liste
@@ -133,9 +136,11 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
                             @Override
                             public void run() {
 //                suppression du produit dans la liste
+                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" product "+panierEntriesList.get(position).getRef()+" was remove from the basket."));
                                 panierEntriesList.remove(position);
 
 //                mise a jour de la vue
+                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" recycle view updated."));
                                 mAdapter.notifyDataSetChanged();
                                 mCountProduits.setText(String.format("%s produit(s) dans le panier", panierEntriesList.size()));
                             }
@@ -156,6 +161,11 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
     @Override
     public void onChangeQuantityItemPanier(final int position, final int quantity) {
         Log.e(TAG, "onChangeQuantityItemPanier: getQuantity=" + panierEntriesList.get(position).getQuantity() + " quantity=" + quantity);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" onChangeQuantityItemPanier: getQuantity=" + panierEntriesList.get(position).getQuantity() + " quantity=" + quantity));
 
 //        Mise a jour du montant total du panier
         setMontantTotalPanier();
@@ -341,6 +351,12 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
     public void onResume() {
         super.onResume();
 
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" onResume() => called."));
+
 //        recuperation des clients sur le serveur
         loadPanier();
 
@@ -379,6 +395,12 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
     @Override
     public void onPause() {
         super.onPause();
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" onPause() => called."));
     }
 
     void changePanierQuntity() {
