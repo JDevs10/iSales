@@ -107,6 +107,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         //Get current user information
         loadUser();
+
     }
 
     //    recuperation du user connecté dans la BD
@@ -123,9 +124,33 @@ public class ProfileActivity extends AppCompatActivity {
                 }
 
                 mUserEntry = userEntries.get(0);
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(),
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                TAG+" Server : Id : "+mUserEntry.getId()+"\n" +
+                                        "Status : "+mUserEntry.getStatut()+"\n " +
+                                        "Employee : "+mUserEntry.getEmployee()+"\n" +
+                                        "Gender : "+mUserEntry.getGender()+"\n" +
+                                        "Birth : "+mUserEntry.getBirth()+"\n" +
+                                        "Email : "+mUserEntry.getEmail()+"\n" +
+                                        "Firstname : "+mUserEntry.getFirstname()+"\n" +
+                                        "Lastname : "+mUserEntry.getLastname()+"\n" +
+                                        "Name : "+mUserEntry.getName()+"\n" +
+                                        "Country : "+mUserEntry.getCountry()+"\n" +
+                                        "Date employment : "+mUserEntry.getDateemployment()+"\n" +
+                                        "Photo : "+mUserEntry.getPhoto()+"\n" +
+                                        "Dernière connexion : "+mUserEntry.getDatelastlogin()+"\n" +
+                                        "Date c : "+mUserEntry.getDatec()+"\n" +
+                                        "Date m :"+mUserEntry.getDatem()+"\n" +
+                                        "Admin : "+mUserEntry.getAdmin()+"\n" +
+                                        "Login : "+mUserEntry.getLogin()+"\n" +
+                                        "Ville : "+mUserEntry.getTown()+"\n" +
+                                        "Address : "+mUserEntry.getAddress()));
+
 
                 //check if current user is SuperAdmin
-                SuperAdmin(mUserEntry.getLastname());
+                SuperAdmin(mUserEntry.getAdmin());
 
                 //init
                 initUserValues();
@@ -170,8 +195,8 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void SuperAdmin(String name){
-        if (name.equals("SuperAdmin")){
+    private void SuperAdmin(String isAdmin){
+        if (isAdmin.equals("1")){
             //addDebugStaticData();
 
             //init superAdmin accesses

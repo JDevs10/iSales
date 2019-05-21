@@ -25,6 +25,7 @@ public class UserEntry {
     public String datelastlogin;
     public String datec;
     public String datem;
+    public String admin;
     public String login;
     public String town;
     public String address;
@@ -150,6 +151,14 @@ public class UserEntry {
 
     public void setDatem(String datem) {
         this.datem = datem;
+    }
+
+    public String getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(String admin) {
+        this.admin = admin;
     }
 
     public String getLogin() {

@@ -559,6 +559,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                 if (response.isSuccessful()) {
                     ArrayList<User> responseBody = response.body();
                     User user = responseBody.get(0);
+                    Log.e(TAG , " response: "+responseBody.get(0));
 
 //                    Enregistrement du user dans la BD
                     UserEntry userEntry = new UserEntry();
@@ -575,6 +576,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     userEntry.setGender(user.getGender());
                     userEntry.setId(Long.parseLong(user.getId()));
                     userEntry.setLastname(user.getLastname());
+                    userEntry.setAdmin(user.getAdmin());
                     userEntry.setLogin(user.getLogin());
                     userEntry.setName(user.getName());
                     userEntry.setPhoto(user.getPhoto());
