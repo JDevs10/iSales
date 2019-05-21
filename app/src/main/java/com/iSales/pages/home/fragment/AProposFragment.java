@@ -39,7 +39,7 @@ public class AProposFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new DebugMe(getContext(), "WL", TAG+" onCreate() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onCreate() => called.").execute();
     }
 
     @Override

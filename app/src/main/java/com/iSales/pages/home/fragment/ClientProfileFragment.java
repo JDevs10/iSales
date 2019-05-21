@@ -266,7 +266,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     }
 
     public void dialPhoneNumber(String phoneNumber) {
-        new DebugMe(getContext(), "WL", TAG+" dialPhoneNumber() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" dialPhoneNumber() => called.").execute();
 
         Intent intent = new Intent(Intent.ACTION_DIAL);
         intent.setData(Uri.parse("tel:" + phoneNumber));
@@ -278,7 +278,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     }
 
     public void mapAddress(String address) {
-        new DebugMe(getContext(), "WL", TAG+" mapAddress() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" mapAddress() => called.").execute();
         String map = "http://maps.google.co.in/maps?q=" + address;
 
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(map));
@@ -290,7 +290,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     }
 
     public void sendMail(String email) {
-        new DebugMe(getContext(), "WL", TAG+" sendMail() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" sendMail() => called.").execute();
 
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + email));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "");
@@ -307,7 +307,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 
     private void initViewContent() {
 //        Log.e(TAG, "initViewContent: poster="+mClientParcelable.getPoster().getContent());
-        new DebugMe(getContext(), "WL", TAG+" initViewContent() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" initViewContent() => called.").execute();
 
         if (mClientParcelable.getPoster().getContent() != null) {
 //            si le fichier existe dans la memoire locale
@@ -501,7 +501,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 
     //    modifi le logo du client sur le serveur
     private void updateLogoClient(Bitmap logoBitmap) {
-        new DebugMe(getContext(), "WL-LL", TAG+" updateLogoClient() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" updateLogoClient() => called.").execute();
 
         //        Si le téléphone n'est pas connecté
         if (!com.iSales.remote.ConnectionManager.isPhoneConnected(getContext())) {
@@ -624,7 +624,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 
 
     private void validateForm() {
-        new DebugMe(getContext(), "WL-LL", TAG+" validateForm() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" validateForm() => called.").execute();
 
         // Reset errors.
         mNomEntreprise.setError(null);
@@ -654,7 +654,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         if (TextUtils.isEmpty(nomEntreprise)) {
             mNomEntreprise.setError(getString(R.string.veuillez_remplir_ce_champs));
             focusView = mNomEntreprise;
-            new DebugMe(getContext(), "WL", TAG+" Le champ du nom d'entreprise est à ,une erreur.").execute();
+            new DebugMe(getActivity() ,getContext(), "WL", TAG+" Le champ du nom d'entreprise est à ,une erreur.").execute();
             cancel = true;
         }
         // Test de validité de l'adresse
@@ -710,7 +710,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
             // form field with an error.
             focusView.requestFocus();
         } else {
-            new DebugMe(getContext(), "WL-LL", TAG+" updateClient() => calling.").execute();
+            new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" updateClient() => calling.").execute();
             updateClient(nomEntreprise, adresse, email, telephone, note, pays, region, departement, ville);
         }
     }
@@ -720,7 +720,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-            new DebugMe(getContext(), "WL-LL", TAG+" "+getString(R.string.erreur_connexion)).execute();
+            new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" "+getString(R.string.erreur_connexion)).execute();
             return;
         }
         final ProgressDialog progressDialog = new ProgressDialog(getContext());
@@ -767,7 +767,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
                     initViewContent();
 
                     Toast.makeText(getContext(), getString(R.string.informations_client_modifie), Toast.LENGTH_LONG).show();
-                    new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.informations_client_modifie)).execute();
+                    new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.informations_client_modifie)).execute();
                 } else {
                     progressDialog.dismiss();
 
@@ -778,16 +778,16 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
                     }
                     if (response.code() == 404) {
                         Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-                        new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                        new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
                         return;
                     }
                     if (response.code() == 401) {
                         Toast.makeText(getContext(), getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
-                        new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                        new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
                         return;
                     } else {
                         Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-                        new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                        new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
                         return;
                     }
                 }
@@ -798,7 +798,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
                 progressDialog.dismiss();
 
                 Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-                new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.erreur_connexion)).execute();
+                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.erreur_connexion)).execute();
                 return;
             }
         });

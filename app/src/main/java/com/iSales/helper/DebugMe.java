@@ -1,5 +1,6 @@
 package com.iSales.helper;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -10,17 +11,18 @@ import com.iSales.database.entry.DebugItemEntry;
 
 public class DebugMe extends AsyncTask<Void, Void, Void> {
     private String TAG = DebugMe.class.getSimpleName();
-
+    private Activity mActivity;
     private Context mContext;
     private String msg;
     private String part;
 
     private AppDatabase mDB;
 
-    public DebugMe(Context context, String part, String message){
+    public DebugMe(Activity theActivity, Context context, String part, String message){
         this.mContext = context;
         this.part = part;
         this.msg = message;
+        this.mActivity = theActivity;
         mDB = AppDatabase.getInstance(context);
     }
 
@@ -48,6 +50,12 @@ public class DebugMe extends AsyncTask<Void, Void, Void> {
     }
 
     private void LiveLogs(){
-        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 }

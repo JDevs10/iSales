@@ -151,7 +151,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
     }
 
     private void loadCategories() {
-        new DebugMe(getContext(), "WL-LL", TAG+" loadCategories() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories() => called.").execute();
 
 //        Getting the sharedPreference value
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -167,11 +167,11 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
             categorieEntries = mDb.categorieDao().getAllCategories();
         }
         Log.e(TAG, "loadCategories: categorieEntries=" + categories.size());
-        new DebugMe(getContext(), "WL-LL", TAG+" loadCategories: categorieEntries=" + categories.size()).execute();
+        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories: categorieEntries=" + categories.size()).execute();
 
         if (categorieEntries.size() <= 0) {
             Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
-            new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
+            new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
 //        affichage de l'image d'attente
             showProgress(false);
             return;
@@ -212,7 +212,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
     @Override
     public void onFindCategorieCompleted(FindCategoriesREST findCategoriesREST) {
-        new DebugMe(getContext(), "WL", TAG+" onFindCategorieCompleted() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onFindCategorieCompleted() => called.").execute();
 
         mFindCategorieTask = null;
 //        affichage du formulaire de connexion
@@ -221,28 +221,28 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 //        Si la recupération echoue, on renvoi un message d'erreur
         if (findCategoriesREST == null) {
             Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-            new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+            new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
             return;
         }
         if (findCategoriesREST.getCategories() == null) {
             if (findCategoriesREST.getErrorCode() == 404) {
                 Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
-                new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
+                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
                 return;
             }
             if (findCategoriesREST.getErrorCode() == 401) {
                 Toast.makeText(getContext(), getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
-                new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.echec_authentification)).execute();
+                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.echec_authentification)).execute();
                 return;
             } else {
                 Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-                new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
                 return;
             }
         }
         if (findCategoriesREST.getCategories().size() == 0) {
             Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
-            new DebugMe(getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
+            new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
             return;
         }
 
@@ -268,7 +268,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
         this.mCategorieAdapter.notifyDataSetChanged();
         Log.e(TAG, "onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size());
-        new DebugMe(getContext(), "WL-LL", TAG+" onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size()).execute();
+        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size()).execute();
 
     }
 
@@ -300,7 +300,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
         showLog();
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
-        new DebugMe(getContext(), "WL", TAG+" onCreate() => called.").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onCreate() => called.").execute();
     }
 
     @Override
@@ -393,7 +393,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
     @Override
     public void onFindProductsCompleted(FindProductsREST findProductsREST) {
         Log.e(TAG, "onFindProductsCompleted: in categorieProdutiFragment");
-        new DebugMe(getContext(), "WL", TAG+" onFindProductsCompleted: in categorieProdutiFragment").execute();
+        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onFindProductsCompleted: in categorieProdutiFragment").execute();
 
 //        Recupération de la liste des categorie produits sur le serveur
         loadCategories();
