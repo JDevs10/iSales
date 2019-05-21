@@ -3,7 +3,10 @@ package com.iSales.pages.profile;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,6 +30,7 @@ import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;
+import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.DebugItem;
 
 import java.text.SimpleDateFormat;
@@ -39,12 +43,15 @@ public class ProfileActivity extends AppCompatActivity {
 
     private LinearLayout ly_admin1, ly_admin2, ly_admin3;
 
-    private TextView tv_mail, tv_societe, tv_server, tv_nom, tv_login, tv_lastConnexion;
+    private TextView tv_mail, tv_societe, tv_server, tv_nom, tv_login, tv_lastConnexion, tv_etatConn;
     private Switch sw_msgDebogage;
     private Button btn_winDebogage;
     private RecyclerView rv_debogage;
 
+    private DebugAdapter debugAdapter;
     private boolean debugWin = false;
+    private boolean checkDebugAdapter = false;
+    private Handler handler;
 
     //database instance
     private AppDatabase mDB;
@@ -66,6 +73,36 @@ public class ProfileActivity extends AppCompatActivity {
         tv_nom = (TextView) findViewById(R.id.activity_profile_text_view_nom);
         tv_login = (TextView) findViewById(R.id.activity_profile_text_view_login);
         tv_lastConnexion = (TextView) findViewById(R.id.activity_profile_text_view_derniere_connexion);
+        tv_etatConn = (TextView) findViewById(R.id.activity_profile_connexion_etat);
+
+
+        //check if the device is connected to the internet every 10secs
+        handler = new Handler();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                connexionState();
+                                if(checkDebugAdapter) {
+                                    debugAdapter = new DebugAdapter(getApplicationContext(), getDebugData());
+                                    rv_debogage.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                                    rv_debogage.setAdapter(debugAdapter);
+                                }
+                            }
+                        });
+                        Thread.sleep(10000);
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                }
+            }
+        }).start();
 
 
         //Get current user information
@@ -113,6 +150,26 @@ public class ProfileActivity extends AppCompatActivity {
         //Log.e(TAG, "Last Connexion : "+dateString);
     }
 
+    private void connexionState(){
+        //Si le téléphone n'est pas connecté
+        if (!ConnectionManager.isPhoneConnected(this)) {
+            tv_etatConn.setBackgroundResource(R.drawable.circle_red);
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(this,
+                            (System.currentTimeMillis()/1000),
+                            "DEB",
+                            TAG+" connexionState() => called.\nConnexion offline"));
+            Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+        }else{
+            tv_etatConn.setBackgroundResource(R.drawable.circle_green);
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(this,
+                            (System.currentTimeMillis()/1000),
+                            "DEB",
+                            TAG+" connexionState() => called.\nConnexion online"));
+        }
+    }
+
     private void SuperAdmin(String name){
         if (name.equals("SuperAdmin")){
             //addDebugStaticData();
@@ -156,10 +213,10 @@ public class ProfileActivity extends AppCompatActivity {
                         ly_admin3.setVisibility(View.VISIBLE);
                         debugWin = true;
 
-                        DebugAdapter debugAdapter = new DebugAdapter(getApplicationContext(), getDebugData());
+                        debugAdapter = new DebugAdapter(getApplicationContext(), getDebugData());
                         rv_debogage.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
                         rv_debogage.setAdapter(debugAdapter);
-                        debugAdapter.notifyDataSetChanged();
+                        checkDebugAdapter = true;
 
                         Toast.makeText(ProfileActivity.this, "La fenêtre des logs est ouverte!", Toast.LENGTH_SHORT).show();
                     }else{
@@ -167,24 +224,13 @@ public class ProfileActivity extends AppCompatActivity {
                         btn_winDebogage.setText("Fermer");
                         ly_admin3.setVisibility(View.GONE);
                         debugWin = false;
+                        checkDebugAdapter = false;
                         Toast.makeText(ProfileActivity.this, "La fenêtre des logs est fermé!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
 
         }
-    }
-
-    private void addDebugStaticData(){
-        mDB.debugMessageDao().deleteAllDebugMessages();
-
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, 1558356921, "DEB", "Hello world Hello world Hello world Hello worldHello world Hello world Hello world "));
     }
 
     private List<DebugItemEntry> getDebugData(){

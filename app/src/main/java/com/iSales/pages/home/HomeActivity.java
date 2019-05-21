@@ -360,6 +360,5 @@ public class HomeActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mDb.debugMessageDao().deleteAllDebugMessages();
-        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(this, (System.currentTimeMillis()/1000), "DEB", TAG+" onDestroy() called"));
     }
 }
