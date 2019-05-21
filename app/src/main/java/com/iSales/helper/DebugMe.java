@@ -50,12 +50,15 @@ public class DebugMe extends AsyncTask<Void, Void, Void> {
     }
 
     private void LiveLogs(){
-        mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
-            }
-        });
-
+        //check if the live debugging settings from SuperAdmin are active
+        if (mDB.debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug() == 1) {
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //show debug message through the activity UI thread
+                    Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }
