@@ -5,29 +5,31 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:id="@+id/view_produitdetails"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="horizontal"
     tools:mContext="com.iSales.pages.detailsproduit.DetailsProduitActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_weight="1">
 
         <ImageView
             android:id="@+id/iv_produitdetails_poster"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="@drawable/isales_no_image"
             android:fitsSystemWindows="true"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:layout_marginTop="0dp"/>
 
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_produitdetails_shopping"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_margin="12dp"
             android:src="@drawable/ic_add_shopping_cart_white_24dp"

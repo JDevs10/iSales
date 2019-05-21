@@ -440,6 +440,10 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                                             mDb.panierDao().deleteAllPanier();
                                                         }
 
+
+                                                        //// DO SOMETHING SOMETHING TO SEND THE ORDER BY EMAIL TO THE CLIENT........
+
+
 //                                                        retour a la page d'accueil
                                                         finish();
                                                     } else {
