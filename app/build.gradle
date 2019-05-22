@@ -69,4 +69,9 @@ dependencies {
 //    Carousel library
 //    implementation 'com.synnapps:carouselview:0.1.5'
 
+    //To send emails
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files('libs/activation.jar')
+    implementation files('libs/additionnal.jar')
+    implementation files('libs/mail.jar')
 }

@@ -58,7 +58,11 @@ public class ProfilFragment extends Fragment {
 
                 mUserEntry = userEntries.get(0);
 
-                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" onDestroy() called"));
+                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(
+                        getContext(),
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" onDestroy() called"));
 
                 initUserValues();
             }

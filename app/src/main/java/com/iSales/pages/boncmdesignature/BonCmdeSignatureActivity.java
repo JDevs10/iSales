@@ -17,7 +17,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.remote.ApiConnectionUrl;
+import com.iSales.task.SendMail;
 import com.kyanogen.signatureview.SignatureView;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
@@ -60,7 +62,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
     private SignatureView mClientSignatureView, mCommSignatureView;
     private TextView mClientName, mCommName, mDateLivraisonTV, mModeReglementTV;
     private EditText mAcompteET, mRemiseET, mNotePrive;
-    private Switch mSynchroServeurSW;
+    private Switch mSynchroServeurSW, mPartageParMailSW;
     private View mDateLivraisonVIEW;
     private View mModeReglementVIEW;
 
@@ -245,7 +247,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
         progressDialog.setMessage("Synchronisation de la commande avec le serveur...");
 
-        Order newOrder = new Order();
+        final Order newOrder = new Order();
 
         Log.e(TAG, "pushCommande:Serveur refOrder=" + refOrder +
                 " date=" + dateFormat.format(today.getTime())+" dateLivraisonOrder="+dateFormat.format(dateLivraison.getTime())+
@@ -360,9 +362,16 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                 Log.e(TAG, "onResponse: validateCustomerOrder orderRef=" + responseValiBody.getRef() +
                                         " orderId=" + responseValiBody.getId());
 
+                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(
+                                        getApplicationContext(),
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        TAG+" callValidate() || onResponse responseValiBody => "+responseValiBody.toString()));
+
 //                                Mise a jour mode statut de la commande en local
-//                                mDb.commandeDao().updateCmde(cmdeEntry);
-//                                mDb.commandeDao().updateStatutCmde(cmdeEntry.getId(), cmdeEntry.getStatut());
+                                mDb.commandeDao().deleteAllCmde();
+                                //mDb.commandeDao().updateCmde(cmdeEntry);
+                                //mDb.commandeDao().updateStatutCmde(cmdeEntry.getId(), cmdeEntry.getStatut());
                                 progressDialog.dismiss();
 
                                 Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.commande_enregistre_succes), Toast.LENGTH_LONG).show();
@@ -441,7 +450,16 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                                         }
 
 
-                                                        //// DO SOMETHING SOMETHING TO SEND THE ORDER BY EMAIL TO THE CLIENT........
+                                                        // DO SOMETHING SOMETHING TO SEND THE ORDER BY EMAIL TO THE CLIENT........
+                                                        if (mPartageParMailSW.isChecked()){
+                                                            SendMail sm = new SendMail(
+                                                                    getApplicationContext(),
+                                                                    mClientParcelableSelected.getEmail(),
+                                                                    "Devis Commande Ref: "+newOrder.getRef(),
+                                                                    "Test message @JL oeauhvuiqhvuidhç_reuivhkjfvqghvieogvio");
+                                                            sm.execute();
+                                                        }
+
 
 
 //                                                        retour a la page d'accueil
@@ -675,6 +693,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         mClientName = (TextView) findViewById(R.id.tv_boncmde_signature_client_name);
         mCommName = (TextView) findViewById(R.id.tv_boncmde_signature_commercial_name);
         mSynchroServeurSW = (Switch) findViewById(R.id.switch_boncmde_signature);
+        mPartageParMailSW = (Switch) findViewById(R.id.switch_boncmde_partagerParEmail);
         mDateLivraisonVIEW = findViewById(R.id.view_boncmde_datelivraison);
         mDateLivraisonTV = (TextView) findViewById(R.id.tv_boncmde_datelivraison);
         mModeReglementVIEW = findViewById(R.id.view_boncmde_modereglement);

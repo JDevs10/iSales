@@ -16,7 +16,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="2.2"
+            android:layout_weight="1.9"
             android:orientation="vertical"
             android:padding="8dp">
 
@@ -138,6 +138,16 @@
                 android:checked="true"
                 android:includeFontPadding="true"
                 android:text="Synchroniser avec le serveur"
+                android:textOff="Non"
+                android:textOn="Oui" />
+
+            <Switch
+                android:id="@+id/switch_boncmde_partagerParEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:includeFontPadding="true"
+                android:text="Partager la commande par Email"
                 android:textOff="Non"
                 android:textOn="Oui" />
         </LinearLayout>
