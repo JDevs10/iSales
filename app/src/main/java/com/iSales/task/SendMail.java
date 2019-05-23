@@ -5,8 +5,19 @@ import javax.mail.Session;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.design.widget.TabLayout;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.iSales.model.ClientParcelable;
+import com.iSales.remote.model.Order;
+import com.iSales.remote.model.OrderLine;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -28,34 +39,52 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     //Information to send email
     private String email;
     private String subject;
-    private String message;
+    private ClientParcelable userSelected;
+    private Order data;
 
     //Progressdialog to show while sending email
     private ProgressDialog progressDialog;
 
     //Class Constructor
-    public SendMail(Context context, String email, String subject, String message){
+    public SendMail(Context context, String email, String subject, ClientParcelable userSelected, Order data){
         //Initializing variables
         this.context = context;
         this.email = email;
         this.subject = subject;
-        this.message = message;
+        this.userSelected = userSelected;
+        this.data = data;
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        //Showing progress dialog while sending email
-        //progressDialog = ProgressDialog.show(context,"Sending message","Please wait...",false,false);
+    private String getMessage(Order data){
+        List<OrderLine> listOrderLine = data.getLines();
+        String orderLineMessage = "";
+
+        for (int i=0; i<listOrderLine.size(); i++){
+            orderLineMessage += "   • Ref: "+listOrderLine.get(i).getRef()+
+                                ", Label: "+listOrderLine.get(i).getLabel()+
+                                ", Quantité: "+listOrderLine.get(i).getQty()+
+                                ", Prix: "+priceFormat(listOrderLine.get(i).getPrice())+" €\n";
+        }
+        orderLineMessage += "\nEquivalent d'un prix total de "+priceFormat(data.getTotal_ttc())+" € par "+data.getMode_reglement();
+
+        return  "Bonjour Madame, Monsieur "+userSelected.getName()+"\n\n" +
+                "Veuillez trouver, ci-joint la commande référence: "+data.getRef()+" effectué le "+data.getDate_commande()+" avec vos produits selectionné :\n"+
+                orderLineMessage + "\n\n\nCordialement.";
     }
 
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        //Dismissing the progress dialog
-        //progressDialog.dismiss();
-        //Showing a success message
-        //Toast.makeText(context,"Message Sent",Toast.LENGTH_LONG).show();
+    private String priceFormat(String priceST){
+        DecimalFormat df = new DecimalFormat("#.00");
+        return df.format(Double.valueOf(priceST));
+    }
+
+
+
+    private String dateFormat(String dateInLong){
+        Log.e("SendMail", "deteFormat: date before => "+dateInLong);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        long dateLong = Long.valueOf(dateInLong);
+        Log.e("SendMail", "deteFormat: date before => "+dateLong);
+        return sdf.format(dateLong);
     }
 
     @Override
@@ -91,7 +120,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
             //Adding subject
             mm.setSubject(subject);
             //Adding message
-            mm.setText(message);
+            mm.setText(getMessage(data));
 
             //Sending email
             Transport.send(mm);

@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -95,6 +96,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         final List<PanierEntry> panierEntryList = mDb.panierDao().getAllPanier();
 
         Calendar today = Calendar.getInstance();
+        long todayDateInLong = today.getTimeInMillis();
         Calendar dateLivraison = Calendar.getInstance();
 
         dateLivraison.set(livraisonYear, livraisonMonth, livraisonDay);
@@ -115,8 +117,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         final CommandeEntry cmdeEntry = new CommandeEntry();
 
         cmdeEntry.setSocid(mClientParcelableSelected.getId());
-        cmdeEntry.setDate_commande(today.getTimeInMillis());
-        cmdeEntry.setDate(today.getTimeInMillis());
+        cmdeEntry.setDate_commande(todayDateInLong);
+        cmdeEntry.setDate(todayDateInLong);
         cmdeEntry.setDate_livraison(dateLivraison.getTimeInMillis());
         cmdeEntry.setRef(refOrder);
         cmdeEntry.setMode_reglement(paymentTypesChoosed.getLabel());
@@ -357,7 +359,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                         @Override
                         public void onResponse(Call<Order> call, Response<Order> responseValidate) {
                             if (responseValidate.isSuccessful()) {
-                                Order responseValiBody = responseValidate.body();
+                                final Order responseValiBody = responseValidate.body();
 
                                 Log.e(TAG, "onResponse: validateCustomerOrder orderRef=" + responseValiBody.getRef() +
                                         " orderId=" + responseValiBody.getId());
@@ -450,13 +452,14 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                                         }
 
 
-                                                        // DO SOMETHING SOMETHING TO SEND THE ORDER BY EMAIL TO THE CLIENT........
+                                                        // SEND THE ORDER BY EMAIL TO THE CLIENT........
                                                         if (mPartageParMailSW.isChecked()){
                                                             SendMail sm = new SendMail(
                                                                     getApplicationContext(),
                                                                     mClientParcelableSelected.getEmail(),
-                                                                    "Devis Commande Ref: "+newOrder.getRef(),
-                                                                    "Test message @JL oeauhvuiqhvuidhç_reuivhkjfvqghvieogvio");
+                                                                    "Devis Commande Ref: "+responseValiBody.getRef(),
+                                                                    mClientParcelableSelected,
+                                                                    responseValiBody);
                                                             sm.execute();
                                                         }
 
@@ -717,6 +720,18 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         mCommName.setText(String.format("%s %s", ISalesUtility.strCapitalize(mUserEntry.getFirstname()), mUserEntry.getLastname().toUpperCase()));
         mDateLivraisonTV.setText("Chosir une date ");
 
+        mSynchroServeurSW.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    mPartageParMailSW.setEnabled(true);
+                }else{
+                    mPartageParMailSW.setChecked(false);
+                    mPartageParMailSW.setEnabled(false);
+                }
+            }
+        });
+
 //        suppresion de la signature lorsqu'on clique sur le btn annuler
         mAnnulerSignCommBTN.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -877,4 +892,5 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
             pushCommande();
         }
     }
+
 }
