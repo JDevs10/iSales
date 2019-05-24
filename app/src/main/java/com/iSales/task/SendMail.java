@@ -68,7 +68,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
         orderLineMessage += "\nEquivalent d'un prix total de "+priceFormat(data.getTotal_ttc())+" € par "+data.getMode_reglement();
 
         return  "Bonjour Madame, Monsieur "+userSelected.getName()+"\n\n" +
-                "Veuillez trouver, ci-joint la commande référence: "+data.getRef()+" effectué le "+data.getDate_commande()+" avec vos produits selectionné :\n"+
+                "Veuillez trouver, ci-joint la commande référence: "+data.getRef()+" effectué le "+dateFormat(data.getDate_commande())+" avec vos produits selectionné :\n"+
                 orderLineMessage + "\n\n\nCordialement.";
     }
 
@@ -79,12 +79,12 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
 
 
-    private String dateFormat(String dateInLong){
-        Log.e("SendMail", "deteFormat: date before => "+dateInLong);
+    private String dateFormat(String dateInString){
+        Log.e("SendMail", "deteFormat: date before => "+dateInString);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        long dateLong = Long.valueOf(dateInLong);
-        Log.e("SendMail", "deteFormat: date before => "+dateLong);
-        return sdf.format(dateLong);
+        //long dateLong = Long.valueOf(dateInLong);
+        Log.e("SendMail", "deteFormat: date before => "+sdf.format(dateInString));
+        return sdf.format(dateInString);
     }
 
     @Override

@@ -21,6 +21,7 @@ import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.profile.ProfileActivity;
 import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.pages.parametres.ParametresActivity;
@@ -37,7 +38,7 @@ public class ProfilFragment extends Fragment {
 
     private TextView mNameTV, mAdressTV;
 
-    private LinearLayout mDeconnexionView, mSynchroView, mParametresView, mProfleView;
+    private LinearLayout mDeconnexionView, mSynchroView, mParametresView, mProfleView, mAgenda;
 
     private AppDatabase mDb;
 
@@ -104,6 +105,7 @@ public class ProfilFragment extends Fragment {
         mNameTV = rootView.findViewById(R.id.tv_user_profile_name);
         mAdressTV = rootView.findViewById(R.id.tv_user_profile_address);
         mProfleView = rootView.findViewById(R.id.view_user_profile_moncompte);
+        mAgenda = rootView.findViewById(R.id.view_user_profile_agenda);
         mParametresView = rootView.findViewById(R.id.view_user_profile_parametre);
         mSynchroView = rootView.findViewById(R.id.view_user_profile_synchronisation);
         mDeconnexionView = rootView.findViewById(R.id.view_user_profile_deconnecter);
@@ -112,6 +114,14 @@ public class ProfilFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getContext(), ProfileActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mAgenda.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), CalendarActivity.class);
                 startActivity(intent);
             }
         });
