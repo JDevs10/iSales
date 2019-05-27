@@ -5,15 +5,15 @@
     android:layout_height="match_parent"
     android:padding="20dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Créer un événement"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:gravity="center"
-        android:padding="20dp"/>
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Créer un événement"-->
+        <!--android:textColor="@color/black"-->
+        <!--android:textStyle="bold"-->
+        <!--android:textSize="20sp"-->
+        <!--android:gravity="center"-->
+        <!--android:padding="20dp"/>-->
 
     <EditText
         android:id="@+id/dialog_add_new_event_libelle"
@@ -41,6 +41,7 @@
         android:layout_height="wrap_content"
         android:text="Événement sur la(les) journée(s)"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"/>
 
@@ -49,6 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Votre Disponibilité - Occupé"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"

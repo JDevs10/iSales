@@ -3,21 +3,27 @@ package com.iSales.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.iSales.R;
 import com.iSales.interfaces.ItemClickListenerAgendaEvents;
 import com.iSales.pages.calendar.Events;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapter.AngendaEventViewHolder> {
     private final String TAG = AngendaEventAdapter.class.getSimpleName();
@@ -27,9 +33,10 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
     private List<Events> events;
     private ArrayList<Events> dataEvents;
 
-    private ItemClickListenerAgendaEvents itemClickListenerAgendaEvents;
+    private ItemClickListenerAgendaEvents itemClickListenerAgendaEvents = null;
 
     public AngendaEventAdapter(Context context, List<Date> dates, Calendar currentDate, List<Events> events){
+        Log.e(TAG, " AngendaEventAdapter (context, dates size: "+dates.size()+", currentDate: "+currentDate.getTime()+", events size: "+events.size()+")");
         this.mContext = context;
         this.dates = dates;
         this.currentDate = currentDate;
@@ -39,11 +46,15 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
 
     public class AngendaEventViewHolder extends RecyclerView.ViewHolder {
         TextView Day_Number;
+        TextView eventNumber;
+        LinearLayout cellLayout;
 
         public AngendaEventViewHolder(View view) {
             super(view);
 
+            cellLayout = view.findViewById(R.id.custom_calendar_cell_layout);
             Day_Number = view.findViewById(R.id.custom_calendar_day);
+            eventNumber = view.findViewById(R.id.custom_calendar_events_id);
 
         }
     }
@@ -56,36 +67,59 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
     }
 
     @Override
-    public void onBindViewHolder(@NonNull AngendaEventViewHolder holder, final int i) {
+    public void onBindViewHolder(@NonNull final AngendaEventViewHolder holder, final int i) {
 
         Date monthDate = dates.get(i);
-        Calendar dateCalendar = Calendar.getInstance();
+        Calendar dateCalendar = Calendar.getInstance(Locale.FRENCH);
         dateCalendar.setTime(monthDate);
         int DayNo = dateCalendar.get(Calendar.DAY_OF_MONTH);
-        int displayMonth = dateCalendar.get(Calendar.MONTH);
-        int displayYear = dateCalendar.get(Calendar.YEAR)+1;
+        int displayMonth = dateCalendar.get(Calendar.MONTH)+1;
+        int displayYear = dateCalendar.get(Calendar.YEAR);
         int currentMonth = currentDate.get(Calendar.MONTH)+1;
         int currentYear = currentDate.get(Calendar.YEAR);
 
-        holder.Day_Number.setText(String.valueOf(DayNo));
-
         if (displayMonth == currentMonth && displayYear == currentYear){
-            holder.itemView.setBackgroundColor(mContext.getResources().getColor(R.color.click_selector));
+            holder.itemView.setBackgroundColor(mContext.getResources().getColor(R.color.white));
         }else{
             holder.itemView.setBackgroundColor(Color.parseColor("#cccccc"));
         }
 
-        /*
-        final int position = holder.getAdapterPosition();
-        final Events dataEvent = events.get(i);
+        holder.Day_Number.setText(String.valueOf(DayNo));
+        Calendar eventCalendar = Calendar.getInstance();
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        //select the days in the calendar
+        holder.cellLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                itemClickListenerAgendaEvents.OnItemClickAgendaEventView(position, dataEvent);
+                Log.e(TAG, " Item touched: "+i);
+                itemClickListenerAgendaEvents.OnItemClickAgendaEventAdd(i);
+                holder.cellLayout.setBackground(ContextCompat.getDrawable(mContext, R.drawable.calendar_event_notification_circle));
             }
         });
-        */
+
+/*
+        //populate the agenda with the events
+        ArrayList<String> arrayList = new ArrayList<>();
+        for (int y=0; i<events.size(); y++){
+            eventCalendar.setTime(convertStringToDate(events.get(y).getDATE()));
+
+            Log.e(TAG, "Day Number: "+DayNo+"\n" +
+                    "eventCalendar Day of Month: "+eventCalendar.get(Calendar.DAY_OF_MONTH)+"\n" +
+                    "displayMonth: "+displayMonth+"\n" +
+                    "eventCalendar Month: "+eventCalendar.get(Calendar.MONTH)+1+"\n" +
+                    "displayYear: "+displayYear+"\n" +
+                    "eventCalendar Year: "+eventCalendar.get(Calendar.YEAR));
+
+            if (DayNo == eventCalendar.get(Calendar.DAY_OF_MONTH) && displayMonth == eventCalendar.get(Calendar.MONTH)+1 && displayYear == eventCalendar.get(Calendar.YEAR)){
+                arrayList.add(events.get(y).getEVENT());
+                holder.eventNumber.setText(arrayList.get(y)+" Events");
+                Log.e(TAG, "Event id: "+arrayList.get(y));
+            }
+        }
+
+*/
+
+
     }
 
     @Override
@@ -96,5 +130,16 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
 
     public void setOnItemClickListener(ItemClickListenerAgendaEvents itemClickListenerAgendaEvents){
         this.itemClickListenerAgendaEvents = itemClickListenerAgendaEvents;
+    }
+
+    private Date convertStringToDate(String eventDate){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-ddd", Locale.FRENCH);
+        Date date = null;
+        try {
+            date = sdf.parse(eventDate);
+        }catch (ParseException e){
+            e.printStackTrace();
+        }
+        return date;
     }
 }
