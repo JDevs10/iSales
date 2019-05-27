@@ -118,7 +118,6 @@ public class CalendarActivity extends AppCompatActivity {
 
     }
 
-
     private void initCalendar(){
         String currentDate = dateFormat.format(calendar.getTime());
         this.currentDate.setText(currentDate);
@@ -130,7 +129,8 @@ public class CalendarActivity extends AppCompatActivity {
         int FirsDayOfTheMonth = monthCalendar.get(Calendar.DAY_OF_WEEK)-1;
         monthCalendar.add(Calendar.DAY_OF_MONTH, -FirsDayOfTheMonth);
 
-        collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
+        //collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
+        getStaticEvents();
 
         while (dates.size() < MAX_CALENDAR_DAYS){
             dates.add(monthCalendar.getTime());
@@ -162,16 +162,14 @@ public class CalendarActivity extends AppCompatActivity {
         res.close();
     }
 
-    private ArrayList<Events> getStaticEvents(){
-        ArrayList<Events> list = new ArrayList<>();
+    private void getStaticEvents(){
+        eventsList.clear();
+        eventsList.add(new Events("Test Event 0", "3:34 AM", "2019-05-22", "mai", "2019"));
+        eventsList.add(new Events("Test Event 2", "4:34 AM", "2019-05-22", "mai", "2019"));
+        eventsList.add(new Events("Test Event 6", "10:34 PM", "2019-05-21", "mai", "2019"));
+        eventsList.add(new Events("Test Event 4", "9:34 PM", "2019-05-20", "mai", "2019"));
+        eventsList.add(new Events("Test Event 9", "6:00 AM", "2019-05-15", "mai", "2019"));
 
-        list.add(new Events("Test Event 1", "3:34 AM", "2019-05-22", "mai", "2019"));
-        list.add(new Events("Test Event 1", "4:34 AM", "2019-05-22", "mai", "2019"));
-        list.add(new Events("Test Event 1", "10:34 PM", "2019-05-21", "mai", "2019"));
-        list.add(new Events("Test Event 1", "9:34 PM", "2019-05-20", "mai", "2019"));
-        list.add(new Events("Test Event 1", "6:00 AM", "2019-05-15", "mai", "2019"));
-
-        return list;
     }
 
     private void saveEvent(String event, String time, String date, String month, String year){
@@ -218,7 +216,7 @@ public class CalendarActivity extends AppCompatActivity {
                 timePickerDialog.show();
             }
         });
-        final String date = dateFormat.format(dates.get(position));
+        final String date = eventDateFormat.format(dates.get(position));
         final String month = dateFormat.format(dates.get(position));
         final String year = dateFormat.format(dates.get(position));
 

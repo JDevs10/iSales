@@ -87,20 +87,9 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
         holder.Day_Number.setText(String.valueOf(DayNo));
         Calendar eventCalendar = Calendar.getInstance();
 
-        //select the days in the calendar
-        holder.cellLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e(TAG, " Item touched: "+i);
-                itemClickListenerAgendaEvents.OnItemClickAgendaEventAdd(i);
-                holder.cellLayout.setBackground(ContextCompat.getDrawable(mContext, R.drawable.calendar_event_notification_circle));
-            }
-        });
-
-/*
         //populate the agenda with the events
         ArrayList<String> arrayList = new ArrayList<>();
-        for (int y=0; i<events.size(); y++){
+        for (int y=0; y < events.size(); y++){
             eventCalendar.setTime(convertStringToDate(events.get(y).getDATE()));
 
             Log.e(TAG, "Day Number: "+DayNo+"\n" +
@@ -108,17 +97,25 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
                     "displayMonth: "+displayMonth+"\n" +
                     "eventCalendar Month: "+eventCalendar.get(Calendar.MONTH)+1+"\n" +
                     "displayYear: "+displayYear+"\n" +
-                    "eventCalendar Year: "+eventCalendar.get(Calendar.YEAR));
+                    "eventCalendar Year: "+eventCalendar.get(Calendar.YEAR)+"\n" +
+                    "Index: "+y+"/"+events.size());
 
             if (DayNo == eventCalendar.get(Calendar.DAY_OF_MONTH) && displayMonth == eventCalendar.get(Calendar.MONTH)+1 && displayYear == eventCalendar.get(Calendar.YEAR)){
                 arrayList.add(events.get(y).getEVENT());
-                holder.eventNumber.setText(arrayList.get(y)+" Events");
-                Log.e(TAG, "Event id: "+arrayList.get(y));
+                holder.eventNumber.setText(arrayList.size()+" Events");
+                holder.Day_Number.setBackground(ContextCompat.getDrawable(mContext, R.drawable.calendar_event_notification_circle));
             }
         }
 
-*/
 
+        //select the days in the calendar
+        holder.cellLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e(TAG, " Item touched: "+i);
+                itemClickListenerAgendaEvents.OnItemClickAgendaEventAdd(i);
+            }
+        });
 
     }
 
@@ -133,7 +130,8 @@ public class AngendaEventAdapter extends RecyclerView.Adapter<AngendaEventAdapte
     }
 
     private Date convertStringToDate(String eventDate){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-ddd", Locale.FRENCH);
+        Log.e(TAG, " convertStringToDate( "+eventDate+" )");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
         Date date = null;
         try {
             date = sdf.parse(eventDate);
