@@ -6,7 +6,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 @Entity(tableName = "agenda_userassigned",
         foreignKeys = {
-                @ForeignKey(entity = AgendaEntry.class, parentColumns = "id", childColumns = "id", onDelete = ForeignKey.CASCADE)})
+                @ForeignKey(entity = AgendaEventEntry.class, parentColumns = "id", childColumns = "id", onDelete = ForeignKey.CASCADE)})
 public class AgendaUserassignedEntry {
     @PrimaryKey(autoGenerate = true)
     private Long id;

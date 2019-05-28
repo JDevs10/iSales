@@ -1,15 +1,19 @@
 package com.iSales.pages.calendar;
 
+import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,11 +24,12 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.iSales.R;
-import com.iSales.adapter.AngendaEventAdapter;
+import com.iSales.adapter.AgendaAdapter;
+import com.iSales.adapter.AgendaEventAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.DBHelper.DatabaseHelper;
-import com.iSales.database.entry.AgendaEntry;
-import com.iSales.interfaces.ItemClickListenerAgendaEvents;
+import com.iSales.database.entry.AgendaEventEntry;
+import com.iSales.interfaces.ItemClickListenerAgenda;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +41,6 @@ import java.util.TimeZone;
 
 public class CalendarActivity extends AppCompatActivity {
     private String TAG = CalendarActivity.class.getSimpleName();
-    private Context mContext;
 
     private ImageButton previousBtn,nextBtn;
     private TextView currentDate;
@@ -52,11 +56,12 @@ public class CalendarActivity extends AppCompatActivity {
     private SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.FRENCH);
     private SimpleDateFormat eventDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
 
-    private AngendaEventAdapter mAngendaEventAdapter;
+    private AgendaAdapter mAgendaAdapter;
     private RecyclerView.LayoutManager mLayoutManager_rv;
 
     private AlertDialog.Builder builder;
     private AlertDialog dialog;
+    private Dialog mDialog;
 
     private AppDatabase mDB;
     private DatabaseHelper db;
@@ -66,7 +71,6 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar_view);
 
-        mContext = getBaseContext();
         mDB = AppDatabase.getInstance(getApplicationContext());
         db = new DatabaseHelper(this);
 
@@ -89,20 +93,6 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        mAngendaEventAdapter.setOnItemClickListener(new ItemClickListenerAgendaEvents() {
-            @Override
-            public void OnItemClickAgendaEventAdd(int position) {
-
-                builder = new AlertDialog.Builder(CalendarActivity.this, R.style.AppTheme); //, R.style.Theme_AppCompat
-                builder.setTitle("Créer un événement");
-                builder.setCancelable(false);
-                View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_add_new_event_layout,null,false);
-                InitAddAgendaDialog(view, position);
-                builder.setView(view);
-                dialog = builder.create();
-                dialog.show();
-            }
-        });
 
     }
 
@@ -114,7 +104,6 @@ public class CalendarActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.calendar_activity_recycler_view);
         mLayoutManager_rv = new GridLayoutManager(getApplicationContext(), 7);
         recyclerView.setLayoutManager(mLayoutManager_rv);
-
 
     }
 
@@ -129,68 +118,140 @@ public class CalendarActivity extends AppCompatActivity {
         int FirsDayOfTheMonth = monthCalendar.get(Calendar.DAY_OF_WEEK)-1;
         monthCalendar.add(Calendar.DAY_OF_MONTH, -FirsDayOfTheMonth);
 
-        //collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
-        getStaticEvents();
+        collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
 
         while (dates.size() < MAX_CALENDAR_DAYS){
             dates.add(monthCalendar.getTime());
             monthCalendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
-        mAngendaEventAdapter = new AngendaEventAdapter(getApplicationContext(), dates, calendar, eventsList);
-        recyclerView.setAdapter(mAngendaEventAdapter);
+        mAgendaAdapter = new AgendaAdapter(getApplicationContext(), dates, calendar, eventsList);
+        recyclerView.setAdapter(mAgendaAdapter);
+
+        mAgendaAdapter.setOnItemClickListener(new ItemClickListenerAgenda() {
+            @Override
+            public void OnItemClickAgendaEventAdd(int position) {
+                mDialog = new Dialog(CalendarActivity.this);
+                mDialog.setContentView(R.layout.dialog_add_new_event_layout);
+                mDialog.setTitle("Créer un événement");
+                InitAddAgendaDialog(mDialog, position);
+                mDialog.show();
+            }
+
+            @Override
+            public void OnItemLongClickAgendaEvent(int position) {
+                String date = eventDateFormat.format(dates.get(position));
+
+                mDialog = new Dialog(CalendarActivity.this);
+                mDialog.setContentView(R.layout.custom_show_events_layout);
+//                mDialog.setTitle("Créer un événement");
+
+                RecyclerView recyclerViewEvents = mDialog.findViewById(R.id.custom_show_events_layout_recycle_view);
+                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mDialog.getContext());
+                recyclerViewEvents.setLayoutManager(layoutManager);
+                recyclerViewEvents.setHasFixedSize(true);
+
+                AgendaEventAdapter mAgendaEventAdapter = new AgendaEventAdapter(mDialog.getContext(), collectEventsByDate(date));
+                recyclerViewEvents.setAdapter(mAgendaEventAdapter);
+
+                InitViewAgendaDialog(mDialog, position);
+                mDialog.show();
+            }
+        });
+    }
+
+    private void saveEvent(String event, String time, String date, String month, String year) {
+        Log.e(TAG, " SaveEvent() event: " + event + " time: " + time + " date: " + date + " month: " + month + " year: " + year);
+        try{
+            long i = mDB.agendaEventsDao().insertNewEvent(new AgendaEventEntry(event, time, date, month, year));
+            List<AgendaEventEntry> test = mDB.agendaEventsDao().getEventsById((long) 1);
+
+            String log = "List size: "+test.size()+"\n" +
+                    "Id: "+i+"\n"+
+                    "Event: "+test.get(0).getEVENT()+"\n" +
+                    "Time: "+test.get(0).getTIME()+"\n" +
+                    "Date: "+test.get(0).getDATE()+"\n" +
+                    "Month: "+test.get(0).getMONTH()+"\n" +
+                    "Year: "+test.get(0).getYEAR()+"\n\n";
+
+            Log.e(TAG, " "+log);
+            Toast.makeText(this, "Event Saved!!!", Toast.LENGTH_SHORT).show();
+
+        } catch (SQLException e){
+            e.getStackTrace();
+            Toast.makeText(this, "Event Not Saved!!!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e){
+            e.getStackTrace();
+            Toast.makeText(this, "Event Not Saved!!!", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+
+    private ArrayList<Events> collectEventsByDate(String Date){
+        Log.e(TAG, " start collectEventsByDate()");
+        List<AgendaEventEntry> listEvents = mDB.agendaEventsDao().getEventsByDate(Date);
+        ArrayList<Events> arrayList = new ArrayList<>();
+
+        for (int i=0; i<listEvents.size(); i++){
+            Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
+                    "Event: "+listEvents.get(i).getEVENT()+"\n" +
+                    "Time: "+listEvents.get(i).getTIME()+"\n" +
+                    "Date: "+listEvents.get(i).getDATE()+"\n" +
+                    "Month: "+listEvents.get(i).getMONTH()+"\n" +
+                    "Year: "+listEvents.get(i).getYEAR()+"\n\n");
+
+                String event = listEvents.get(i).getEVENT();
+                String time = listEvents.get(i).getTIME();
+                String date = listEvents.get(i).getDATE();
+                String month = listEvents.get(i).getMONTH();
+                String year = listEvents.get(i).getYEAR();
+
+                arrayList.add(new Events(event, time, date, month, year));
+        }
+        return arrayList;
     }
 
     private void collectEventsPerMonth(String Month, String Year){
-        eventsList.clear();
         Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+")");
         Log.e(TAG, " clearing event list status: "+eventsList.size());
-        Cursor res = db.getEventsMonth(Month, Year);
-        Log.e(TAG, " Results size: "+res.getCount());
+        eventsList.clear();
 
-        while(res.moveToNext()){
-            String event = res.getString(res.getColumnIndex(db.EVENT));
-            String time = res.getString(res.getColumnIndex(db.TIME));
-            String date = res.getString(res.getColumnIndex(db.DATE));
-            String month = res.getString(res.getColumnIndex(db.MONTH));
-            String year = res.getString(res.getColumnIndex(db.YEAR));
+        List<AgendaEventEntry> listEvents = mDB.agendaEventsDao().getEventsByMonth(Month, Year);
+        Log.e(TAG, " Results size: "+listEvents.size());
+
+        for (int i=0; i<listEvents.size(); i++){
+            Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
+                    "Event: "+listEvents.get(i).getEVENT()+"\n" +
+                    "Time: "+listEvents.get(i).getTIME()+"\n" +
+                    "Date: "+listEvents.get(i).getDATE()+"\n" +
+                    "Month: "+listEvents.get(i).getMONTH()+"\n" +
+                    "Year: "+listEvents.get(i).getYEAR()+"\n\n");
+
+            //Log.e(TAG, " Event List Month: "+listEvents.get(i).getMONTH()+" == "+Month+" && "+listEvents.get(i).getYEAR()+" == "+Year);
+            String event = listEvents.get(i).getEVENT();
+            String time = listEvents.get(i).getTIME();
+            String date = listEvents.get(i).getDATE();
+            String month = listEvents.get(i).getMONTH();
+            String year = listEvents.get(i).getYEAR();
 
             Events events = new Events(event, time, date, month, year);
             eventsList.add(events);
         }
         Log.e(TAG," eventList size: "+eventsList.size());
-        res.close();
     }
 
-    private void getStaticEvents(){
-        eventsList.clear();
-        eventsList.add(new Events("Test Event 0", "3:34 AM", "2019-05-22", "mai", "2019"));
-        eventsList.add(new Events("Test Event 2", "4:34 AM", "2019-05-22", "mai", "2019"));
-        eventsList.add(new Events("Test Event 6", "10:34 PM", "2019-05-21", "mai", "2019"));
-        eventsList.add(new Events("Test Event 4", "9:34 PM", "2019-05-20", "mai", "2019"));
-        eventsList.add(new Events("Test Event 9", "6:00 AM", "2019-05-15", "mai", "2019"));
-
-    }
-
-    private void saveEvent(String event, String time, String date, String month, String year){
-        Log.e(TAG, " SaveEvent() event: "+event+" time: "+time+" date: "+date+" month: "+month+" year: "+year);
-        db.saveEvents(event, time, date, month, year);
-        Toast.makeText(mContext, "Event Saved!!!", Toast.LENGTH_SHORT).show();
-        //mDB.agendaDao().insertCategorie(agendaEntry);
-    }
-
-
-    private void InitAddAgendaDialog(View view, int position){
-        final EditText libelle_et = view.findViewById(R.id.dialog_add_new_event_libelle);
-        EditText lieu_et = view.findViewById(R.id.dialog_add_new_event_lieu);
-        Switch journe_st = view.findViewById(R.id.dialog_add_new_event_journee_st);
-        Switch disponible_st = view.findViewById(R.id.dialog_add_new_event_disponible_st);
-        ImageButton setTime = view.findViewById(R.id.dialog_add_new_event_clock_ib);
-        EditText clockStatus_et = view.findViewById(R.id.dialog_add_new_event_clock_status_tv);
-        final TextView time_et = view.findViewById(R.id.dialog_add_new_event_time_tv);
-        EditText description_et = view.findViewById(R.id.dialog_add_new_event_description_et);
-        final Button add_btn = view.findViewById(R.id.dialog_add_new_event_addevent_btn);
-        Button cancel_btn = view.findViewById(R.id.dialog_add_new_event_cancelevent_btn);
+    private void InitAddAgendaDialog(final Dialog dialog, int position){
+        final EditText libelle_et = dialog.findViewById(R.id.dialog_add_new_event_libelle);
+        EditText lieu_et = dialog.findViewById(R.id.dialog_add_new_event_lieu);
+        Switch journe_st = dialog.findViewById(R.id.dialog_add_new_event_journee_st);
+        Switch disponible_st = dialog.findViewById(R.id.dialog_add_new_event_disponible_st);
+        ImageButton setTime = dialog.findViewById(R.id.dialog_add_new_event_clock_ib);
+        EditText clockStatus_et = dialog.findViewById(R.id.dialog_add_new_event_clock_status_tv);
+        final TextView time_et = dialog.findViewById(R.id.dialog_add_new_event_time_tv);
+        EditText description_et = dialog.findViewById(R.id.dialog_add_new_event_description_et);
+        final Button add_btn = dialog.findViewById(R.id.dialog_add_new_event_addevent_btn);
+        Button cancel_btn = dialog.findViewById(R.id.dialog_add_new_event_cancelevent_btn);
 
         setTime.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,8 +278,8 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
         final String date = eventDateFormat.format(dates.get(position));
-        final String month = dateFormat.format(dates.get(position));
-        final String year = dateFormat.format(dates.get(position));
+        final String month = monthFormat.format(dates.get(position));
+        final String year = yearFormat.format(dates.get(position));
 
 
         //save the Event in database
@@ -239,5 +300,27 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void InitViewAgendaDialog(final Dialog dialog, int position) {
+        Button close_btn;
+
+        close_btn = dialog.findViewById(R.id.custom_show_events_layout_close_btn);
+
+        close_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

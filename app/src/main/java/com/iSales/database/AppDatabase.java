@@ -5,7 +5,7 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
-import com.iSales.database.dao.AgendaDao;
+import com.iSales.database.dao.AgendaEventsDao;
 import com.iSales.database.dao.AgendaUserassignedEntryDao;
 import com.iSales.database.dao.CategorieDao;
 import com.iSales.database.dao.ClientDao;
@@ -21,7 +21,7 @@ import com.iSales.database.dao.ServerDao;
 import com.iSales.database.dao.SignatureDao;
 import com.iSales.database.dao.TokenDao;
 import com.iSales.database.dao.UserDao;
-import com.iSales.database.entry.AgendaEntry;
+import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.AgendaUserassignedEntry;
 import com.iSales.database.entry.CategorieEntry;
 import com.iSales.database.entry.ClientEntry;
@@ -42,7 +42,7 @@ import com.iSales.database.entry.UserEntry;
  * Created by netserve on 21/09/2018.
  */
 
-@Database(entities = {AgendaUserassignedEntry.class, AgendaEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
+@Database(entities = {AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
         version = 13,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
@@ -111,7 +111,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract DebugSettingsDao debugSettingsDao();
 
     //Agenda Dao
-    public abstract AgendaDao agendaDao();
+    public abstract AgendaEventsDao agendaEventsDao();
 
     public abstract AgendaUserassignedEntryDao agendaUserassignedEntryDao();
 }
