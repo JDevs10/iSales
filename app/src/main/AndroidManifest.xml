@@ -21,6 +21,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".pages.calendar.AgendaEventDetails"></activity>
         <activity
             android:name=".pages.welcome.WelcomeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -32,7 +33,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".pages.calendar.CalendarActivity"></activity>
+        <activity android:name=".pages.calendar.CalendarActivity" />
         <activity
             android:name=".pages.login.LoginActivity"
             android:label="@string/title_activity_login" />

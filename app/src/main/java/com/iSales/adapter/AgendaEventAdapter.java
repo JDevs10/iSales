@@ -1,14 +1,18 @@
 package com.iSales.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.iSales.R;
+import com.iSales.pages.calendar.AgendaEventDetails;
 import com.iSales.pages.calendar.Events;
 
 import java.util.ArrayList;
@@ -28,14 +32,18 @@ public class AgendaEventAdapter extends RecyclerView.Adapter<AgendaEventAdapter.
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
+        LinearLayout eventLayout;
         TextView DateTxt, Event, Time;
+        ImageButton close_btn;
 
         public MyViewHolder(View itemView) {
             super(itemView);
 
+            eventLayout = itemView.findViewById(R.id.custome_event_layout);
             DateTxt = itemView.findViewById(R.id.custome_event_eventdate);
             Event = itemView.findViewById(R.id.custome_event_eventname);
             Time = itemView.findViewById(R.id.custome_event_eventtime);
+            close_btn = itemView.findViewById(R.id.custome_event_back_btn);
         }
     }
 
@@ -53,10 +61,30 @@ public class AgendaEventAdapter extends RecyclerView.Adapter<AgendaEventAdapter.
         holder.Event.setText(events.getEVENT());
         holder.Time.setText(events.getTIME());
 
+        //all on click events
+        holder.eventLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, AgendaEventDetails.class);
+                mContext.startActivity(intent);
+            }
+        });
+
+        holder.close_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteEvent(position);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return eventList.size();
+    }
+
+    private void deleteEvent(int position) {
+        eventList.remove(position);
+        notifyDataSetChanged();
     }
 }
