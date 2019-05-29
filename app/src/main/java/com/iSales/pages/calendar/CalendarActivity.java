@@ -11,8 +11,11 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -187,7 +190,6 @@ public class CalendarActivity extends AppCompatActivity {
 
     }
 
-
     private ArrayList<Events> collectEventsByDate(String Date){
         Log.e(TAG, " start collectEventsByDate()");
         List<AgendaEventEntry> listEvents = mDB.agendaEventsDao().getEventsByDate(Date);
@@ -314,6 +316,7 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

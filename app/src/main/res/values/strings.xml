@@ -207,6 +207,8 @@
     <string name="miseajour_images_produits">Mise a jour des images produits en cours</string>
     <string name="miseajour_images_produits_effectuee">Mise a jour des images produits éffectuée avec succès.</string>
     <string name="profile">Profile</string>
+    <string name="title_activity_calendar">Mon Agenda</string>
+    <string name="title_activity_calendar_details">Mon Evénement</string>
 
     <!-- Strings related to Settings -->
 

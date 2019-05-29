@@ -21,7 +21,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".pages.calendar.AgendaEventDetails"></activity>
         <activity
             android:name=".pages.welcome.WelcomeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -33,7 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".pages.calendar.CalendarActivity" />
         <activity
             android:name=".pages.login.LoginActivity"
             android:label="@string/title_activity_login" />
@@ -93,6 +91,22 @@
             android:name=".pages.profile.ProfileActivity"
             android:label="@string/profile"
             android:parentActivityName=".pages.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.iSales.pages.home.HomeActivity" />
+        </activity>
+        <activity
+            android:name=".pages.calendar.CalendarActivity"
+            android:label="@string/title_activity_calendar"
+            android:parentActivityName=".pages.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.iSales.pages.home.HomeActivity" />
+        </activity>
+        <activity
+            android:name=".pages.calendar.AgendaEventDetails"
+            android:label="@string/title_activity_calendar_details"
+            android:parentActivityName=".pages.calendar.CalendarActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.iSales.pages.home.HomeActivity" />
