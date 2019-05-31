@@ -150,12 +150,12 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
         }
     }
 
-    private void loadCategories() {
+    public void loadCategories() {
         new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories() => called.").execute();
 
-//        Getting the sharedPreference value
+        //Getting the sharedPreference value
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-//        String mode = sharedPreferences.getString(getContext().getString(R.string.commande_mode), "online");
+        //String mode = sharedPreferences.getString(getContext().getString(R.string.commande_mode), "online");
         Boolean catazero = sharedPreferences.getBoolean(getContext().getString(R.string.parametres_categories_azero), false);
         Log.e(TAG, "loadCategories: catazero=" + catazero);
 
@@ -279,12 +279,12 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
         dialogCategorieListener.onCategorieDialogSelected(categorieParcelable);
     }
 
-    public static com.iSales.pages.home.fragment.CategorieProduitFragment newInstance(DialogCategorieListener onDialogCategorieListener, String type) {
+    public static CategorieProduitFragment newInstance(DialogCategorieListener onDialogCategorieListener, String type) {
 //        passage des parametres de la requete au fragment
         mType = type;
         Bundle args = new Bundle();
 
-        com.iSales.pages.home.fragment.CategorieProduitFragment fragment = new com.iSales.pages.home.fragment.CategorieProduitFragment();
+        CategorieProduitFragment fragment = new CategorieProduitFragment();
         dialogCategorieListener = onDialogCategorieListener;
         fragment.setArguments(args);
         return fragment;
@@ -320,7 +320,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 //        initialisation de la liste des categories
         categorieParcelableList = new ArrayList<>();
 
-        mCategorieAdapter = new CategorieProduitAdapter(getContext(), categorieParcelableList, com.iSales.pages.home.fragment.CategorieProduitFragment.this);
+        mCategorieAdapter = new CategorieProduitAdapter(getContext(), categorieParcelableList, CategorieProduitFragment.this);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         mrecyclerView.setLayoutManager(mLayoutManager);
@@ -372,8 +372,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
             }
         });
 
-//        Recupération de la liste des categorie produits sur le serveur
-//        executeFindCategorieProducts();
+        //Recupération de la liste des categorie produits sur le serveur
+        //executeFindCategorieProducts();
         loadCategories();
 
         return view;

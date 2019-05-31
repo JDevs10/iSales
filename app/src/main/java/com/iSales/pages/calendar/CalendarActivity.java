@@ -1,10 +1,14 @@
 package com.iSales.pages.calendar;
 
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,8 +23,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -165,6 +171,9 @@ public class CalendarActivity extends AppCompatActivity {
 
     private void saveEvent(String event, String time, String date, String month, String year) {
         Log.e(TAG, " SaveEvent() event: " + event + " time: " + time + " date: " + date + " month: " + month + " year: " + year);
+
+
+
         try{
             long i = mDB.agendaEventsDao().insertNewEvent(new AgendaEventEntry(event, time, date, month, year));
             List<AgendaEventEntry> test = mDB.agendaEventsDao().getEventsById((long) 1);
@@ -248,14 +257,44 @@ public class CalendarActivity extends AppCompatActivity {
         EditText lieu_et = dialog.findViewById(R.id.dialog_add_new_event_lieu);
         Switch journe_st = dialog.findViewById(R.id.dialog_add_new_event_journee_st);
         Switch disponible_st = dialog.findViewById(R.id.dialog_add_new_event_disponible_st);
-        ImageButton setTime = dialog.findViewById(R.id.dialog_add_new_event_clock_ib);
+        ImageButton setTimeStart = dialog.findViewById(R.id.dialog_add_new_event_display_startevent_ib);
+        ImageButton setTimeEnd = dialog.findViewById(R.id.dialog_add_new_event_display_endevent_ib);
+
+        final TextView dateStart = dialog.findViewById(R.id.dialog_add_new_event_display_starteventday_tv);
+        final TextView timeStart = dialog.findViewById(R.id.dialog_add_new_event_display_starteventtime_tv);
+
+        final TextView dateEnd = dialog.findViewById(R.id.dialog_add_new_event_display_endeventday_tv);
+        final TextView timeEnd = dialog.findViewById(R.id.dialog_add_new_event_display_endeventtime_tv);
+
         EditText clockStatus_et = dialog.findViewById(R.id.dialog_add_new_event_clock_status_tv);
-        final TextView time_et = dialog.findViewById(R.id.dialog_add_new_event_time_tv);
+        //final TextView time_et = dialog.findViewById(R.id.dialog_add_new_event_time_tv);
         EditText description_et = dialog.findViewById(R.id.dialog_add_new_event_description_et);
         final Button add_btn = dialog.findViewById(R.id.dialog_add_new_event_addevent_btn);
         Button cancel_btn = dialog.findViewById(R.id.dialog_add_new_event_cancelevent_btn);
 
-        setTime.setOnClickListener(new View.OnClickListener() {
+        final DatePickerDialog.OnDateSetListener mDateSetListenerm;
+        final TimePickerDialog.OnTimeSetListener mTimeSetListenerm;
+
+        /*
+        dateStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar calendar = Calendar.getInstance();
+                int year = calendar.get(Calendar.YEAR);
+                int month = calendar.get(calendar.MONTH);
+                int day = calendar.get(calendar.DAY_OF_MONTH);
+
+                DatePickerDialog mDatePickerDialog = new DatePickerDialog(add_btn.getContext(), R.style.Theme_AppCompat_DayNight_Dialog,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+
+                            }
+                        });
+            }
+        });
+*/
+        timeStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Calendar calendar = Calendar.getInstance();
@@ -273,12 +312,54 @@ public class CalendarActivity extends AppCompatActivity {
                                 SimpleDateFormat hformate = new SimpleDateFormat("K:mm a", Locale.FRENCH);
                                 String event_Time = hformate.format(c.getTime());
 
-                                time_et.setText(event_Time);
+                                timeStart.setText(event_Time);
                             }
                         }, hours, minutes,false);
                 timePickerDialog.show();
             }
         });
+
+        mDateSetListenerm = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                month = month+1;
+//                timeEnd.setText(month+"/"+day+"/"+year);
+                dateEnd.setText(year+"/"+month+"/"+day);
+            }
+        };
+
+        mTimeSetListenerm = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                dateEnd.setText(i+":"+i1);
+            }
+        };
+
+        timeEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar calendar = Calendar.getInstance();
+                int hours = calendar.get(calendar.HOUR_OF_DAY);
+                int minutes = calendar.get(calendar.MINUTE);
+                TimePickerDialog timePickerDialog = new TimePickerDialog(add_btn.getContext(), R.style.Theme_AppCompat_DayNight_Dialog,
+                        new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                                Calendar c = Calendar.getInstance();
+                                c.set(Calendar.HOUR_OF_DAY, i);
+                                c.set(Calendar.MINUTE, i1);
+                                c.setTimeZone(TimeZone.getDefault());
+
+                                SimpleDateFormat hformate = new SimpleDateFormat("K:mm a", Locale.FRENCH);
+                                String event_Time = hformate.format(c.getTime());
+
+                                timeEnd.setText(event_Time);
+                            }
+                        }, hours, minutes,false);
+                timePickerDialog.show();
+            }
+        });
+
         final String date = eventDateFormat.format(dates.get(position));
         final String month = monthFormat.format(dates.get(position));
         final String year = yearFormat.format(dates.get(position));
@@ -288,7 +369,7 @@ public class CalendarActivity extends AppCompatActivity {
         add_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveEvent(libelle_et.getText().toString(), time_et.getText().toString(), date, month, year);
+                saveEvent(libelle_et.getText().toString(), timeStart.getText().toString(), date, month, year);
                 initCalendar();
                 dialog.dismiss();
             }

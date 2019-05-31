@@ -128,7 +128,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="38dp"
                 android:ems="10"
-                android:hint="Note privé"
+                android:hint="Note privée"
                 android:inputType="textMultiLine" />
 
             <Switch
@@ -147,7 +147,7 @@
                 android:layout_height="wrap_content"
                 android:checked="false"
                 android:includeFontPadding="true"
-                android:text="Partager la commande par Email"
+                android:text="Partager la commande par adresse mail"
                 android:textOff="Non"
                 android:textOn="Oui" />
         </LinearLayout>
@@ -155,7 +155,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="1.3"
             android:orientation="vertical"
             android:paddingStart="8dp"
             android:paddingEnd="8dp">

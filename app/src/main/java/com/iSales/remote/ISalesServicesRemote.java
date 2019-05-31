@@ -1,6 +1,9 @@
 package com.iSales.remote;
 
+import android.arch.persistence.room.Insert;
+
 import com.iSales.remote.ApiUtils;
+import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.model.Categorie;
 import com.iSales.remote.model.Document;
 import com.iSales.remote.model.DolPhoto;
@@ -131,6 +134,23 @@ public interface ISalesServicesRemote {
     //  Recupération d'un user a partir de son login
     @GET("users")
     Call<ArrayList<User>> findUserByLogin(@Query(ApiUtils.sqlfilters) String sqlfilters);
+
+    // ========  Agenda Events  =========
+    @POST("agendaevents")
+    Call<ArrayList<AgendaEvents>> createEvent(@Body AgendaEvents agendaEvents);
+
+    @GET("agendaevents")
+    Call<ArrayList<AgendaEvents>> getAllEvents(@Query(ApiUtils.sqlfilters) String sqlfilters,
+                                               @Query(ApiUtils.sortfield) String sortfield,
+                                               @Query(ApiUtils.sortorder) String sortorder,
+                                               @Query(ApiUtils.limit) long limit,
+                                               @Query(ApiUtils.page) long page);
+
+    @GET("agendaevents/{eventId}")
+    Call<ArrayList<AgendaEvents>> getEventById(@Path("eventId") Long eventId);
+
+    @DELETE("agendaevents/{eventId}")
+    Call<Long> deleteEvent(@Path("eventId") Long eventId);
 
     // ======== RYImg endpoinds  ==========
 

@@ -81,7 +81,7 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
     private ImageButton mIBDateDebut, mIBDateFin, mShowClientsDialog;
     private TextView mTVDateDebut, mTVDateFin, mSelectedClientTV;
     private EditText searchET;
-    private ArrayList<com.iSales.model.CommandeParcelable> commandeParcelableList;
+    private ArrayList<CommandeParcelable> commandeParcelableList;
     private com.iSales.adapter.CommandeAdapter mAdapter;
 
     private int mCalendrierFiltreYearDebut, mCalendrierFiltreMonthDebut, mCalendrierFiltreDayDebut,
@@ -101,6 +101,16 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
     private int mPageOrder = 0;
     private long mLastCmdeId = 0;
 
+
+    private String getServeurHostname(){
+        /*
+        * Returns food (France Food Company) || soifexpress (Soif Express) || asiafood (Asia Food) || bdc (BDC)
+        */
+        String hostname = mDb.serverDao().getActiveServer(true).getHostname();
+        String new_str;
+        new_str = hostname.replace("http://"," ");
+        return new_str.replace(".apps-dev.fr/api/index.php"," ");
+    }
 
     //    Recupération de la liste des produits
     private void executeFindOrder() {
@@ -204,24 +214,37 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
             SimpleDateFormat dateFormat = new SimpleDateFormat("'CMD'yyMMdd'-'HHmmss");
 //            if (orderItem.getDate() != null && orderItem.getDate() != "") {
 
-            try {
-                Date date = dateFormat.parse(cmdeEntry.getRef());
-                cmdeParcelable.setDate(date.getTime());
-//                Log.e(TAG, "onFindOrdersTaskComplete: order date="+date.toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
-                cmdeParcelable.setDate(cmdeEntry.getDate());
-            }
-//            } else cmdeParcelable.setDate(-1);
-//            if (orderItem.getDate_commande() != null && orderItem.getDate_commande() != "") {
-            try {
-                Date date = dateFormat.parse(cmdeEntry.getRef());
-                cmdeParcelable.setDate_commande(date.getTime());
-//                Log.e(TAG, "onFindOrdersTaskComplete: order date_commande="+date.toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
+            /*
+             * getServeurHostname()
+             * Returns food (France Food Company) || soifexpress (Soif Express) || asiafood (Asia Food) || bdc (BDC)
+             */
+            Log.e(TAG, " simple hostname: "+getServeurHostname());
+            if (getServeurHostname().contains("asiafood")){
+                cmdeParcelable.setDate(cmdeEntry.getDate_commande());
                 cmdeParcelable.setDate_commande(cmdeEntry.getDate_commande());
+                Log.e(TAG, " switch => getServeurHostname(): "+cmdeParcelable.getDate());
+            }else{
+                Log.e(TAG, " getServeurHostname()::else");
+                try {
+                    Date date = dateFormat.parse(cmdeEntry.getRef());
+                    cmdeParcelable.setDate(date.getTime());
+                    //Log.e(TAG, "onFindOrdersTaskComplete: order date="+date.toString());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    cmdeParcelable.setDate(cmdeEntry.getDate());
+                }
+                //} else cmdeParcelable.setDate(-1);
+                //if (orderItem.getDate_commande() != null && orderItem.getDate_commande() != "") {
+                try {
+                    Date date = dateFormat.parse(cmdeEntry.getRef());
+                    cmdeParcelable.setDate_commande(date.getTime());
+                    //Log.e(TAG, "onFindOrdersTaskComplete: order date_commande="+date.toString());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    cmdeParcelable.setDate_commande(cmdeEntry.getDate_commande());
+                }
             }
+
 //            } else cmdeParcelable.setDate_commande(-1);
             if (cmdeEntry.getDate_livraison() != null) {
                 cmdeParcelable.setDate_livraison(cmdeEntry.getDate_livraison());

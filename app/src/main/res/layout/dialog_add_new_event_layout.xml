@@ -64,7 +64,7 @@
         android:layout_marginBottom="10dp">
 
         <ImageButton
-            android:id="@+id/dialog_add_new_event_clock_ib"
+            android:id="@+id/dialog_add_new_event_display_startevent_ib"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/ic_access_time_black"/>
@@ -77,15 +77,91 @@
             android:textColor="@color/black"
             android:layout_gravity="center"
             android:layout_marginLeft="10dp"/>
-        <TextView
-            android:id="@+id/dialog_add_new_event_time_tv"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/dialog_add_new_event_display_starteventday_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lundi xx Avril"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginRight="10dp"/>
+
+            <TextView
+                android:id="@+id/dialog_add_new_event_display_starteventtime_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:35 AM"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="00:00 AM"
+            android:orientation="horizontal"
+            android:layout_weight="3">
+
+            <ImageButton
+                android:id="@+id/dialog_add_new_event_display_endevent_ib"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/ic_access_time_black"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fin : "
+                android:textSize="20sp"
+                android:textColor="@color/black"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:textSize="30sp"
-            android:textColor="@color/black"
-            android:textStyle="bold"/>
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/dialog_add_new_event_display_endeventday_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lundi xx Avril"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginRight="10dp"/>
+
+            <TextView
+                android:id="@+id/dialog_add_new_event_display_endeventtime_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:35 AM"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <EditText
