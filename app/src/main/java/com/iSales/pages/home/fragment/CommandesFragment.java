@@ -861,12 +861,12 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
             cmdeEntry.setRemise(orderItem.getRemise());
             cmdeEntry.setRemise_absolue(orderItem.getRemise_absolue());
 
-            /* Log.e(TAG, "onFindOrdersTaskComplete: timestamp=" + orderItem.getDate() +
+             Log.e(TAG, "onFindOrdersTaskComplete JL: timestamp=" + orderItem.getDate() +
                     " ref=" + orderItem.getRef() +
                     " dateCmde=" + orderItem.getDate_commande() +
                     " total=" + orderItem.getTotal_ttc() +
                     " orderStatut=" + orderItem.getStatut() +
-                    " cmdeEntryStatut=" + cmdeEntry.getStatut()); */
+                    " cmdeEntryStatut=" + cmdeEntry.getStatut());
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("'CMD'yyMMdd'-'HHmmss");
 //            if (orderItem.getDate() != null && orderItem.getDate() != "") {

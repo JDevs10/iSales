@@ -162,8 +162,15 @@ public class ProfileActivity extends AppCompatActivity {
         ServerEntry mServerEntry = mDB.serverDao().getActiveServer(true);
         String server = (mServerEntry.getHostname().replace("http://","")).replace("/api/index.php","");
 
-        long millisecond = Long.parseLong(mUserEntry.getDatelastlogin());
-        String dateString = DateFormat.format("dd-MM-yyyy @ hh:mm:ss", new Date(millisecond*1000)).toString();
+        Log.e(TAG, " mUserEntry.getDatelastlogin() => "+mUserEntry.getDatelastlogin());
+        String dateString;
+        if (!mUserEntry.getDatelastlogin().contains("")){
+            long millisecond = Long.parseLong(mUserEntry.getDatelastlogin());
+            dateString = DateFormat.format("dd-MM-yyyy @ hh:mm:ss", new Date(millisecond*1000)).toString();
+        }else{
+            dateString = "dd-MM-yyyy @ hh:mm:ss";
+        }
+
 
         tv_mail.setText(mUserEntry.getEmail());
         tv_societe.setText(mServerEntry.getRaison_sociale());

@@ -14,6 +14,8 @@ import com.iSales.remote.rest.FindOrdersREST;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.security.auth.login.LoginException;
+
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -53,6 +55,7 @@ public class FindOrderTask extends AsyncTask<Void, Void, FindOrdersREST> {
 
         String sqlfilters = "fk_user_author="+userEntry.getId();
 //        Requete de connexion de l'internaute sur le serveur
+        Log.e(TAG, " JL:: sqlfilters="+sqlfilters+" || sortfield="+sortfield+" || sortorder="+sortorder+" || limit="+limit+" || page="+page);
         Call<ArrayList<Order>> call = ApiUtils.getISalesService(context).findOrders(sqlfilters, sortfield, sortorder, limit, page);
         try {
             Response<ArrayList<Order>> response = call.execute();
