@@ -23,11 +23,11 @@ public interface AgendaEventsDao {
     @Query("SELECT * FROM agenda_events WHERE id = :id")
     List<AgendaEventEntry> getEventsById(Long id);
 
-    @Query("SELECT * FROM agenda_events WHERE DATE = :date")
-    List<AgendaEventEntry> getEventsByDate(String date);
+    @Query("SELECT * FROM agenda_events WHERE datec = :date")
+    List<AgendaEventEntry> getEventsByDate(Long date);
 
-    @Query("SELECT * FROM agenda_events WHERE MONTH = :month and YEAR = :year")
-    List<AgendaEventEntry> getEventsByMonth(String month, String year);
+    @Query("SELECT * FROM agenda_events WHERE datec = :month ")
+    List<AgendaEventEntry> getEventsByMonth(Long month);    //,Long year    and datec = :year
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     void updateEvent(AgendaEventEntry events);

@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.R;
+import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.interfaces.ItemClickListenerAgenda;
 import com.iSales.pages.calendar.Events;
 
@@ -30,12 +31,15 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
     private Context mContext;
     private List<Date> dates;
     private Calendar currentDate;
-    private List<Events> events;
+    private List<AgendaEventEntry> events;
     private ArrayList<Events> dataEvents;
 
     private ItemClickListenerAgenda itemClickListenerAgenda = null;
 
-    public AgendaAdapter(Context context, List<Date> dates, Calendar currentDate, List<Events> events){
+    private String[] monthString = {"Janvier", "Février", "Mars", "Avril", "May", "Juin", "Juilet", "Août", "September", "Octobre", "Novembre", "Décembre"};
+    private Integer[] monthInt = {2678400,2419200,2678400,2592000,2678400,2592000,2678400,2678400,2592000,2678400,2592000};
+
+    public AgendaAdapter(Context context, List<Date> dates, Calendar currentDate, List<AgendaEventEntry> events){
         Log.e(TAG, " AgendaAdapter (context, dates size: "+dates.size()+", currentDate: "+currentDate.getTime()+", events size: "+events.size()+")");
         this.mContext = context;
         this.dates = dates;
@@ -92,7 +96,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
         //populate the agenda with the events
         final ArrayList<String> arrayList = new ArrayList<>();
         for (int y=0; y < events.size(); y++){
-            eventCalendar.setTime(convertStringToDate(events.get(y).getDATE()));
+            eventCalendar.setTime(convertStringToDate(events.get(y).getDatec()));
 
             Log.e(TAG, "Day Number: "+DayNo+"\n" +
                     "eventCalendar Day of Month: "+eventCalendar.get(Calendar.DAY_OF_MONTH)+"\n" +
@@ -103,7 +107,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
                     "Index: "+y+"/"+events.size());
 
             if (DayNo == eventCalendar.get(Calendar.DAY_OF_MONTH) && displayMonth == eventCalendar.get(Calendar.MONTH)+1 && displayYear == eventCalendar.get(Calendar.YEAR)){
-                arrayList.add(events.get(y).getEVENT());
+                arrayList.add(events.get(y).getLabel());
                 holder.eventNumber.setText(arrayList.size()+" Events");
 
                 //calendar notification
@@ -151,15 +155,18 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
         this.itemClickListenerAgenda = itemClickListenerAgenda;
     }
 
-    private Date convertStringToDate(String eventDate){
+    private Date convertStringToDate(Long eventDate){
         Log.e(TAG, " convertStringToDate( "+eventDate+" )");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
         Date date = null;
+        date = new Date(eventDate);
+        /*
         try {
-            date = sdf.parse(eventDate);
+            date = sdf.parse(String.valueOf(eventDate));
         }catch (ParseException e){
             e.printStackTrace();
         }
+        */
         return date;
     }
 }

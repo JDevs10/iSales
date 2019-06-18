@@ -210,7 +210,7 @@ public class HomeActivity extends AppCompatActivity {
             case 2:
                 if(isLayoutInDualPaneMode(true)) {
 
-                    final com.iSales.pages.home.fragment.CategoriesFragment detailsFragment = com.iSales.pages.home.fragment.CategoriesFragment.newInstance();
+                    final CategoriesFragment detailsFragment = CategoriesFragment.newInstance();
                     fragmentTransaction.replace(R.id.master_frame, CategorieProduitFragment.newInstance(new DialogCategorieListener() {
                         @Override
                         public void onCategorieDialogSelected(CategorieParcelable categorieParcelable) {

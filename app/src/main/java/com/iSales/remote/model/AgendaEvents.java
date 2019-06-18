@@ -11,12 +11,12 @@ public class AgendaEvents {
     private String type_color;
     private String code;
     private String label;
-    private String datec;
-    private String datem;
+    private Long datec;
+    private Long datem;
     private String authorid;
     private String usermodid;
-    private String datep;
-    private String datef;
+    private Long datep;
+    private Long datef;
     private String durationp;
     private String fulldayevent;
     private String punctual;
@@ -104,19 +104,19 @@ public class AgendaEvents {
         this.label = label;
     }
 
-    public String getDatec() {
+    public Long getDatec() {
         return datec;
     }
 
-    public void setDatec(String datec) {
+    public void setDatec(Long datec) {
         this.datec = datec;
     }
 
-    public String getDatem() {
+    public Long getDatem() {
         return datem;
     }
 
-    public void setDatem(String datem) {
+    public void setDatem(Long datem) {
         this.datem = datem;
     }
 
@@ -136,19 +136,19 @@ public class AgendaEvents {
         this.usermodid = usermodid;
     }
 
-    public String getDatep() {
+    public Long getDatep() {
         return datep;
     }
 
-    public void setDatep(String datep) {
+    public void setDatep(Long datep) {
         this.datep = datep;
     }
 
-    public String getDatef() {
+    public Long getDatef() {
         return datef;
     }
 
-    public void setDatef(String datef) {
+    public void setDatef(Long datef) {
         this.datef = datef;
     }
 

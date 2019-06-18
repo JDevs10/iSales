@@ -251,6 +251,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         showProgress(true);
         initProduits();
         loadProduits(0, null, 0);
+        reloadCategorieFragment();
         showProgress(false);
     }
 
@@ -370,6 +371,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         } else {
             this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, produitsParcelableListFiltered.size()), clearing);
         }
+
     }
 
     private List<ProduitParcelable> filterByCategorieAZero(long categorieId) {
@@ -954,7 +956,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
             case R.id.action_fragcategorie_sync_image:
                 final AlertDialog dialog = new AlertDialog.Builder(getContext())
-                        .setTitle("Confirmer la mise a jour des images produits. ")
+                        .setTitle("Confirmer la mise a jour des images produits.")
                         .setMessage(String.format("%s", getResources().getString(R.string.action_risque_prendre_dutemps)))
                         .setCancelable(false)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -980,6 +982,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                                 ISalesUtility.deleteProduitsImgFolder();
 
                                 findImage();
+                                reloadCategorieFragment();
                             }
                         })
                         .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -1084,5 +1087,14 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     public void onDestroyView() {
         cancelFind();
         super.onDestroyView();
+    }
+
+    private void reloadCategorieFragment(){
+        Log.e(TAG, "JL reloadCategorieFragment() ");
+        Fragment currentFragment = getActivity().getSupportFragmentManager().findFragmentById(R.id.master_frame);
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.detach(currentFragment);
+        fragmentTransaction.attach(currentFragment);
+        fragmentTransaction.commit();
     }
 }

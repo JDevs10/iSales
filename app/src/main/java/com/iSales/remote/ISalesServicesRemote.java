@@ -135,9 +135,11 @@ public interface ISalesServicesRemote {
     @GET("users")
     Call<ArrayList<User>> findUserByLogin(@Query(ApiUtils.sqlfilters) String sqlfilters);
 
-    // ========  Agenda Events  =========
+
+
+    // =======================  Agenda Events  ==============================
     @POST("agendaevents")
-    Call<ArrayList<AgendaEvents>> createEvent(@Body AgendaEvents agendaEvents);
+    Call<AgendaEvents> createEvent(@Body AgendaEvents agendaEvents);
 
     @GET("agendaevents")
     Call<ArrayList<AgendaEvents>> getAllEvents(@Query(ApiUtils.sqlfilters) String sqlfilters,
@@ -151,6 +153,8 @@ public interface ISalesServicesRemote {
 
     @DELETE("agendaevents/{eventId}")
     Call<Long> deleteEvent(@Path("eventId") Long eventId);
+
+
 
     // ======== RYImg endpoinds  ==========
 
