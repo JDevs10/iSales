@@ -105,7 +105,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
                     "Index: "+y+"/"+events.size());
 
             if (DayNo == eventCalendar.get(Calendar.DAY_OF_MONTH) && displayMonth == eventCalendar.get(Calendar.MONTH)+1 && displayYear == eventCalendar.get(Calendar.YEAR)){
-                arrayList.add(events.get(y).getEVENT());
+                arrayList.add(events.get(y).getLABEL());
                 holder.eventNumber.setText(arrayList.size()+" Events");
 
                 //calendar notification

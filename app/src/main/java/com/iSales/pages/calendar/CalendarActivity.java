@@ -200,16 +200,17 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
-    private void saveEvent(String event, String time, String date, String month, String year) {
-        Log.e(TAG, " SaveEvent() event: " + event + " time: " + time + " date: " + date + " month: " + month + " year: " + year);
+    private void saveEvent(String label, String location, String percentage, String fullDayEvent, String time, String date, String month, String year, Long startEvent, Long endEvent, String description) {
+        Log.e(TAG, " SaveEvent() label: "+label+" location: "+location+" percentage: "+percentage+" fullDayEvent: "+fullDayEvent +
+                " time: "+time+" date: "+date+" month: "+month+" year: "+year+" description: "+description);
 
         try{
-            long i = mDB.eventsDao().insertNewEvent(new EventsEntry(event, time, date, month, year));
+            long i = mDB.eventsDao().insertNewEvent(new EventsEntry(label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description));
             List<EventsEntry> test = mDB.eventsDao().getEventsById((long) 1);
 
             String log = "List size: "+test.size()+"\n" +
                     "Id: "+i+"\n"+
-                    "Event: "+test.get(0).getEVENT()+"\n" +
+                    "Event: "+test.get(0).getLABEL()+"\n" +
                     "Time: "+test.get(0).getTIME()+"\n" +
                     "Date: "+test.get(0).getDATE()+"\n" +
                     "Month: "+test.get(0).getMONTH()+"\n" +
@@ -235,19 +236,25 @@ public class CalendarActivity extends AppCompatActivity {
 
         for (int i=0; i<listEvents.size(); i++){
             Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
-                    "Event: "+listEvents.get(i).getEVENT()+"\n" +
+                    "Event: "+listEvents.get(i).getLABEL()+"\n" +
                     "Time: "+listEvents.get(i).getTIME()+"\n" +
                     "Date: "+listEvents.get(i).getDATE()+"\n" +
                     "Month: "+listEvents.get(i).getMONTH()+"\n" +
                     "Year: "+listEvents.get(i).getYEAR()+"\n\n");
 
-            String event = listEvents.get(i).getEVENT();
+            String label = listEvents.get(i).getLABEL();
+            String location = listEvents.get(i).getLIEU();
+            String percentage = listEvents.get(i).getPERCENTAGE();
+            String fullDayEvent = listEvents.get(i).getFULLDAYEVENT();
             String time = listEvents.get(i).getTIME();
             String date = listEvents.get(i).getDATE();
             String month = listEvents.get(i).getMONTH();
             String year = listEvents.get(i).getYEAR();
+            Long startEvent = listEvents.get(i).getSTART_EVENT();
+            Long endEvent = listEvents.get(i).getEND_EVENT();
+            String description = listEvents.get(i).getDESCRIPTION();
 
-            arrayList.add(new Events(event, time, date, month, year));
+            arrayList.add(new Events(label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description));
         }
         return arrayList;
     }
@@ -263,20 +270,26 @@ public class CalendarActivity extends AppCompatActivity {
 
         for (int i=0; i<listEvents.size(); i++){
             Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
-                    "Event: "+listEvents.get(i).getEVENT()+"\n" +
+                    "Event: "+listEvents.get(i).getLABEL()+"\n" +
                     "Time: "+listEvents.get(i).getTIME()+"\n" +
                     "Date: "+listEvents.get(i).getDATE()+"\n" +
                     "Month: "+listEvents.get(i).getMONTH()+"\n" +
                     "Year: "+listEvents.get(i).getYEAR()+"\n\n");
 
             //Log.e(TAG, " Event List Month: "+listEvents.get(i).getMONTH()+" == "+Month+" && "+listEvents.get(i).getYEAR()+" == "+Year);
-            String event = listEvents.get(i).getEVENT();
+            String label = listEvents.get(i).getLABEL();
+            String location = listEvents.get(i).getLIEU();
+            String percentage = listEvents.get(i).getPERCENTAGE();
+            String fullDayEvent = listEvents.get(i).getFULLDAYEVENT();
             String time = listEvents.get(i).getTIME();
             String date = listEvents.get(i).getDATE();
             String month = listEvents.get(i).getMONTH();
             String year = listEvents.get(i).getYEAR();
+            Long startEvent = listEvents.get(i).getSTART_EVENT();
+            Long endEvent = listEvents.get(i).getEND_EVENT();
+            String description = listEvents.get(i).getDESCRIPTION();
 
-            Events events = new Events(event, time, date, month, year);
+            Events events = new Events(label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description);
             eventsList.add(events);
         }
         Log.e(TAG," eventList size: "+eventsList.size());
@@ -430,8 +443,8 @@ public class CalendarActivity extends AppCompatActivity {
         add_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //saveEvent(libelle_et.getText().toString(), lieu_et.getText().toString(), disponible_st.isChecked(), combinedCalStart.getTimeInMillis(), combinedCalEnd.getTimeInMillis(), description_et.getText().toString());
-                saveEvent(libelle_et.getText().toString(), timeStart.getText().toString(), date, month, year);
+                saveEvent(libelle_et.getText().toString(), lieu_et.getText().toString(), "-1", Boolean.toString(journe_st.isChecked()),
+                        Boolean.toString(disponible_st.isChecked()), date, month, year, combinedCalStart.getTimeInMillis(), combinedCalEnd.getTimeInMillis(), description_et.getText().toString());
                 initCalendar();
                 dialog.dismiss();
             }
