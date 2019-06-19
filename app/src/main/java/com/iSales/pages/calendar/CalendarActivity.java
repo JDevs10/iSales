@@ -46,6 +46,7 @@ import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.AgendaEvents;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,7 +74,7 @@ public class CalendarActivity extends AppCompatActivity {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.FRENCH);
     private SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.FRENCH);
     private SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.FRENCH);
-    private SimpleDateFormat eventDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
+    private SimpleDateFormat eventDateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.FRENCH);
 
     private AgendaAdapter mAgendaAdapter;
     private RecyclerView.LayoutManager mLayoutManager_rv;
@@ -84,7 +85,6 @@ public class CalendarActivity extends AppCompatActivity {
 
     private ProgressDialog mProgressDialog;
     private AppDatabase mDB;
-    private DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +92,6 @@ public class CalendarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_calendar_view);
 
         mDB = AppDatabase.getInstance(getApplicationContext());
-        db = new DatabaseHelper(this);
 
         initLayout();
         initCalendar();
@@ -200,7 +199,8 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
-    private void saveEvent(String label, String location, String percentage, String fullDayEvent, String time, String date, String month, String year, Long startEvent, Long endEvent, String description) {
+
+    private void saveEvent(String label, String location, String percentage, String fullDayEvent, String disponibility, String time, String date, String month, String year, Long startEvent, Long endEvent, String description) {
         Log.e(TAG, " SaveEvent() label: "+label+" location: "+location+" percentage: "+percentage+" fullDayEvent: "+fullDayEvent +
                 " time: "+time+" date: "+date+" month: "+month+" year: "+year+" description: "+description);
 
@@ -242,6 +242,7 @@ public class CalendarActivity extends AppCompatActivity {
                     "Month: "+listEvents.get(i).getMONTH()+"\n" +
                     "Year: "+listEvents.get(i).getYEAR()+"\n\n");
 
+            Long id = listEvents.get(i).getId();
             String label = listEvents.get(i).getLABEL();
             String location = listEvents.get(i).getLIEU();
             String percentage = listEvents.get(i).getPERCENTAGE();
@@ -254,7 +255,7 @@ public class CalendarActivity extends AppCompatActivity {
             Long endEvent = listEvents.get(i).getEND_EVENT();
             String description = listEvents.get(i).getDESCRIPTION();
 
-            arrayList.add(new Events(label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description));
+            arrayList.add(new Events(id, label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description));
         }
         return arrayList;
     }
@@ -276,7 +277,7 @@ public class CalendarActivity extends AppCompatActivity {
                     "Month: "+listEvents.get(i).getMONTH()+"\n" +
                     "Year: "+listEvents.get(i).getYEAR()+"\n\n");
 
-            //Log.e(TAG, " Event List Month: "+listEvents.get(i).getMONTH()+" == "+Month+" && "+listEvents.get(i).getYEAR()+" == "+Year);
+            Long id = listEvents.get(i).getId();
             String label = listEvents.get(i).getLABEL();
             String location = listEvents.get(i).getLIEU();
             String percentage = listEvents.get(i).getPERCENTAGE();
@@ -289,7 +290,7 @@ public class CalendarActivity extends AppCompatActivity {
             Long endEvent = listEvents.get(i).getEND_EVENT();
             String description = listEvents.get(i).getDESCRIPTION();
 
-            Events events = new Events(label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description);
+            Events events = new Events(id, label, location, percentage, fullDayEvent, time, date, month, year, startEvent, endEvent, description);
             eventsList.add(events);
         }
         Log.e(TAG," eventList size: "+eventsList.size());
@@ -345,10 +346,13 @@ public class CalendarActivity extends AppCompatActivity {
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                                 Calendar c = Calendar.getInstance(Locale.FRENCH);
                                 c.set(Calendar.YEAR, year);
-                                c.set(Calendar.MONTH, year);
-                                c.set(Calendar.DAY_OF_MONTH, year);
+                                c.set(Calendar.MONTH, month);
+                                c.set(Calendar.DAY_OF_MONTH, day);
 
-                                SimpleDateFormat hformate = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
+                                Log.e(TAG, " JL DatePickerDialog:: date=> "+ DateFormat.getDateInstance().format(c.getTime())+"\n" +
+                                        "year: "+year+" || month: "+(month+1)+" || day: "+day);
+
+                                SimpleDateFormat hformate = new SimpleDateFormat("dd-MM-yyyy", Locale.FRENCH);
                                 String event_date = hformate.format(c.getTime());
 
                                 dateStart.setText(event_date);
@@ -395,10 +399,10 @@ public class CalendarActivity extends AppCompatActivity {
                             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
                                 Calendar c = Calendar.getInstance(Locale.FRENCH);
                                 c.set(Calendar.YEAR, year);
-                                c.set(Calendar.MONTH, year);
-                                c.set(Calendar.DAY_OF_MONTH, year);
+                                c.set(Calendar.MONTH, month);
+                                c.set(Calendar.DAY_OF_MONTH, day);
 
-                                SimpleDateFormat hformate = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
+                                SimpleDateFormat hformate = new SimpleDateFormat("dd-MM-yyyy", Locale.FRENCH);
                                 String event_date = hformate.format(c.getTime());
 
                                 dateEnd.setText(event_date);
@@ -444,7 +448,7 @@ public class CalendarActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 saveEvent(libelle_et.getText().toString(), lieu_et.getText().toString(), "-1", Boolean.toString(journe_st.isChecked()),
-                        Boolean.toString(disponible_st.isChecked()), date, month, year, combinedCalStart.getTimeInMillis(), combinedCalEnd.getTimeInMillis(), description_et.getText().toString());
+                        Boolean.toString(disponible_st.isChecked()), timeStart.getText().toString(), date, month, year, combinedCalStart.getTimeInMillis(), combinedCalEnd.getTimeInMillis(), description_et.getText().toString());
                 initCalendar();
                 dialog.dismiss();
             }

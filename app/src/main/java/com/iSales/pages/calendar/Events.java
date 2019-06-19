@@ -1,6 +1,9 @@
 package com.iSales.pages.calendar;
 
-public class Events {
+import java.io.Serializable;
+
+public class Events implements Serializable {
+    private Long ID;
     private String LABEL;
     private String LIEU;
     private String PERCENTAGE;
@@ -13,7 +16,8 @@ public class Events {
     private Long END_EVENT;
     private String DESCRIPTION;
 
-    public Events(String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String DESCRIPTION) {
+    public Events(Long ID, String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String DESCRIPTION) {
+        this.ID = ID;
         this.LABEL = LABEL;
         this.LIEU = LIEU;
         this.PERCENTAGE = PERCENTAGE;
@@ -25,6 +29,14 @@ public class Events {
         this.START_EVENT = START_EVENT;
         this.END_EVENT = END_EVENT;
         this.DESCRIPTION = DESCRIPTION;
+    }
+
+    public Long getID() {
+        return ID;
+    }
+
+    public void setID(Long ID) {
+        this.ID = ID;
     }
 
     public String getLABEL() {
