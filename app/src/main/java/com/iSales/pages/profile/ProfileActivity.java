@@ -164,9 +164,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         Log.e(TAG, " mUserEntry.getDatelastlogin() => "+mUserEntry.getDatelastlogin());
         String dateString;
-        if (!mUserEntry.getDatelastlogin().contains("")){
+        if (mUserEntry.getDatelastlogin().matches("[0-9]+") && mUserEntry.getDatelastlogin().length() > 8){
             long millisecond = Long.parseLong(mUserEntry.getDatelastlogin());
-            dateString = DateFormat.format("dd-MM-yyyy @ hh:mm:ss", new Date(millisecond*1000)).toString();
+            dateString = DateFormat.format("EEEE, dd MMMM yyy @ K:mm a", new Date(millisecond*1000)).toString();
         }else{
             dateString = "dd-MM-yyyy @ hh:mm:ss";
         }
