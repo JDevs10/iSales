@@ -222,7 +222,7 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
             if (getServeurHostname().contains("asiafood")){
                 cmdeParcelable.setDate(cmdeEntry.getDate_commande());
                 cmdeParcelable.setDate_commande(cmdeEntry.getDate_commande());
-                Log.e(TAG, " switch => getServeurHostname(): "+cmdeParcelable.getDate());
+                Log.e(TAG, " loadCommandes() => Commande Date: "+cmdeParcelable.getDate());
             }else{
                 Log.e(TAG, " getServeurHostname()::else");
                 try {
@@ -870,23 +870,34 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("'CMD'yyMMdd'-'HHmmss");
 //            if (orderItem.getDate() != null && orderItem.getDate() != "") {
-            try {
-                Date date = dateFormat.parse(orderItem.getRef());
-                cmdeEntry.setDate(date.getTime());
+            /*
+             * getServeurHostname()
+             * Returns food (France Food Company) || soifexpress (Soif Express) || asiafood (Asia Food) || bdc (BDC)
+             */
+            Log.e(TAG, " simple hostname: "+getServeurHostname());
+            if (getServeurHostname().contains("asiafood")) {
+                cmdeEntry.setDate(Long.valueOf(orderItem.getDate())*1000);
+                cmdeEntry.setDate_commande(Long.valueOf(orderItem.getDate_commande())*1000);
+                Log.e(TAG, " switch => onFindOrdersTaskComplete(): " + cmdeEntry.getDate());
+            }else {
+                try {
+                    Date date = dateFormat.parse(orderItem.getRef());
+                    cmdeEntry.setDate(date.getTime());
 //                Log.e(TAG, "onFindOrdersTaskComplete: order date="+date.toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
-                cmdeEntry.setDate(Long.parseLong(orderItem.getDate()));
-            }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    cmdeEntry.setDate(Long.parseLong(orderItem.getDate()));
+                }
 //            } else cmdeParcelable.setDate(-1);
 //            if (orderItem.getDate_commande() != null && orderItem.getDate_commande() != "") {
-            try {
-                Date date = dateFormat.parse(orderItem.getRef());
-                cmdeEntry.setDate_commande(date.getTime());
+                try {
+                    Date date = dateFormat.parse(orderItem.getRef());
+                    cmdeEntry.setDate_commande(date.getTime());
 //                Log.e(TAG, "onFindOrdersTaskComplete: order date_commande="+date.toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
-                cmdeEntry.setDate_commande(Long.parseLong(orderItem.getDate_commande()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    cmdeEntry.setDate_commande(Long.parseLong(orderItem.getDate_commande()));
+                }
             }
 //            } else cmdeParcelable.setDate_commande(-1);
             if (orderItem.getDate_livraison() != null && orderItem.getDate_livraison() != "") {
