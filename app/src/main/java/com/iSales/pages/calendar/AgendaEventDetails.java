@@ -228,10 +228,10 @@ public class AgendaEventDetails extends AppCompatActivity {
         eventLocation.setFocusable(isChecked);
         eventLocation.setFocusableInTouchMode(isChecked);
         //////////////////////////////////////////////
-        eventAssignTo.setClickable(isChecked);
-        eventAssignTo.setCursorVisible(isChecked);
-        eventAssignTo.setFocusable(isChecked);
-        eventAssignTo.setFocusableInTouchMode(isChecked);
+        eventAssignTo.setClickable(false);
+        eventAssignTo.setCursorVisible(false);
+        eventAssignTo.setFocusable(false);
+        eventAssignTo.setFocusableInTouchMode(false);
         ////////////////////////////////////////////
         eventConcernTier.setEnabled(isChecked);
         /////////////////////////////////////////////
