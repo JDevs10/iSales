@@ -20,9 +20,10 @@
             android:layout_weight="1">
 
             <ImageView
+                android:id="@+id/activity_agenda_event_details_event_img_iv"
                 android:layout_width="125dp"
                 android:layout_height="125dp"
-                android:src="@drawable/isales_no_image"/>
+                android:src="@drawable/isales_no_image" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -33,18 +34,21 @@
                 android:layout_weight="1">
 
                 <TextView
+                    android:id="@+id/activity_agenda_event_details_ref_tv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Ref"
-                    android:textSize="20dp"
                     android:textColor="@color/black"
-                    android:textStyle="bold"/>
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+
                 <TextView
+                    android:id="@+id/activity_agenda_event_details_label_tv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Label"
-                    android:textSize="20dp"
                     android:textColor="@color/black"
+                    android:textSize="20dp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -68,11 +72,14 @@
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:layout_weight="1"/>
+
                 <CheckBox
+                    android:id="@+id/activity_agenda_event_details_fulldayevent_cb"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/non"
-                    android:layout_weight="5"/>
+                    android:layout_weight="5"
+                    android:text="@string/oui"
+                    android:clickable="false"/>
             </LinearLayout>
 
             <LinearLayout
@@ -88,10 +95,12 @@
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:layout_weight="2"/>
+
                 <EditText
+                    android:id="@+id/activity_agenda_event_details_startevent_et"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -107,10 +116,12 @@
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:layout_weight="2"/>
+
                 <EditText
+                    android:id="@+id/activity_agenda_event_details_endevent_et"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -126,16 +137,12 @@
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:layout_weight="4"/>
+
                 <EditText
+                    android:id="@+id/activity_agenda_event_details_locationevent_et"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    app:srcCompat="@drawable/ic_edit_black"
-                    android:layout_weight="4"/>
+                    android:layout_weight="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -151,10 +158,36 @@
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:layout_weight="2"/>
+
                 <EditText
+                    android:id="@+id/activity_agenda_event_details_eventassigneto_et"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="2" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/activity_agenda_event_details_disponibilityevent_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Disponibilité: "
+                    android:clickable="false"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:layout_weight="1"/>
+
+                <CheckBox
+                    android:id="@+id/activity_agenda_event_details_disponibilityevent_cb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:text="Occupé"
+                    android:clickable="false"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -171,12 +204,13 @@
                 android:cursorVisible="false"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:layout_weight="2"/>
+                android:layout_weight="3"/>
+
             <Spinner
+                android:id="@+id/activity_agenda_event_details_concerntier_sp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
-            </Spinner>
+                android:layout_weight="2"></Spinner>
         </LinearLayout>
 
         <LinearLayout
@@ -192,17 +226,13 @@
                 android:focusable="false"
                 android:focusableInTouchMode="false"
                 android:layout_weight="3"/>
+
             <EditText
+                android:id="@+id/activity_agenda_event_details_eventdescription_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:layout_weight="2"/>
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                app:srcCompat="@drawable/ic_edit_black"
-                android:layout_weight="4"/>
+                android:layout_weight="2"
+                android:inputType="textMultiLine" />
         </LinearLayout>
 
         <LinearLayout
@@ -225,7 +255,7 @@
                 android:layout_marginRight="10sp"/>
 
             <Button
-                android:id="@+id/activity_agenda_event_details_valider_btn"
+                android:id="@+id/activity_agenda_event_details_modifier_valider_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="35dp"
                 android:text="Enregister"
@@ -239,12 +269,12 @@
                 android:id="@+id/activity_agenda_event_details_supprimer_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="35dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="20sp"
+                android:background="@color/red_background"
                 android:text="Supprimer"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:background="@color/red_background"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="20sp"/>
+                android:textColor="@color/white" />
 
         </LinearLayout>
 

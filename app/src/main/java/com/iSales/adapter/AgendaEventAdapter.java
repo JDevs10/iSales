@@ -2,6 +2,7 @@ package com.iSales.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,22 +13,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.iSales.R;
+import com.iSales.database.entry.EventsEntry;
 import com.iSales.pages.calendar.AgendaEventDetails;
 import com.iSales.pages.calendar.Events;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AgendaEventAdapter extends RecyclerView.Adapter<AgendaEventAdapter.MyViewHolder> {
     private String TAG = AgendaEventAdapter.class.getSimpleName();
     private Context mContext;
 
-    private ArrayList<Events> eventList;
+    private List<EventsEntry> eventList;
 
 
-    public AgendaEventAdapter (Context context, ArrayList<Events> eventsArrayList){
+    public AgendaEventAdapter (Context context, List<EventsEntry> eventsArrayList){
         this.mContext = context;
         this.eventList = eventsArrayList;
-
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
@@ -56,9 +58,9 @@ public class AgendaEventAdapter extends RecyclerView.Adapter<AgendaEventAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull AgendaEventAdapter.MyViewHolder holder, final int position) {
-        Events events = eventList.get(position);
+        final EventsEntry events = eventList.get(position);
         holder.DateTxt.setText(events.getDATE());
-        holder.Event.setText(events.getEVENT());
+        holder.Event.setText(events.getLABEL());
         holder.Time.setText(events.getTIME());
 
         //all on click events
@@ -66,6 +68,7 @@ public class AgendaEventAdapter extends RecyclerView.Adapter<AgendaEventAdapter.
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AgendaEventDetails.class);
+                intent.putExtra("eventObj", events);
                 mContext.startActivity(intent);
             }
         });

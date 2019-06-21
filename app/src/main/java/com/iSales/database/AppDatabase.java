@@ -13,6 +13,7 @@ import com.iSales.database.dao.CommandeDao;
 import com.iSales.database.dao.CommandeLineDao;
 import com.iSales.database.dao.DebugMessageDao;
 import com.iSales.database.dao.DebugSettingsDao;
+import com.iSales.database.dao.EventsDao;
 import com.iSales.database.dao.PanierDao;
 import com.iSales.database.dao.PaymentTypesDao;
 import com.iSales.database.dao.ProductCustPriceDao;
@@ -29,6 +30,7 @@ import com.iSales.database.entry.CommandeEntry;
 import com.iSales.database.entry.CommandeLineEntry;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.DebugSettingsEntry;
+import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.PaymentTypesEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
@@ -42,7 +44,7 @@ import com.iSales.database.entry.UserEntry;
  * Created by netserve on 21/09/2018.
  */
 
-@Database(entities = {AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
+@Database(entities = {EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
         version = 13,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
@@ -114,4 +116,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract AgendaEventsDao agendaEventsDao();
 
     public abstract AgendaUserassignedEntryDao agendaUserassignedEntryDao();
+
+    //EventsEntry
+    public abstract EventsDao eventsDao();
 }

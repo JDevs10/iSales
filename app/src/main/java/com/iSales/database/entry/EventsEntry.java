@@ -1,9 +1,15 @@
-package com.iSales.pages.calendar;
+package com.iSales.database.entry;
+
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 
 import java.io.Serializable;
 
-public class Events implements Serializable {
-    private Long ID;
+@Entity(tableName = "events")
+public class EventsEntry implements Serializable {
+    @PrimaryKey(autoGenerate = true)
+    private Long id;
+    private String REF;
     private String LABEL;
     private String LIEU;
     private String PERCENTAGE;
@@ -15,10 +21,13 @@ public class Events implements Serializable {
     private String YEAR;
     private Long START_EVENT;
     private Long END_EVENT;
+    private String TIER;
     private String DESCRIPTION;
 
-    public Events(Long ID, String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TRANSPARENCY, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String DESCRIPTION) {
-        this.ID = ID;
+    public EventsEntry() {
+    }
+
+    public EventsEntry(String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TRANSPARENCY, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String TIER, String DESCRIPTION) {
         this.LABEL = LABEL;
         this.LIEU = LIEU;
         this.PERCENTAGE = PERCENTAGE;
@@ -30,15 +39,24 @@ public class Events implements Serializable {
         this.YEAR = YEAR;
         this.START_EVENT = START_EVENT;
         this.END_EVENT = END_EVENT;
+        this.TIER = TIER;
         this.DESCRIPTION = DESCRIPTION;
     }
 
-    public Long getID() {
-        return ID;
+    public Long getId() {
+        return id;
     }
 
-    public void setID(Long ID) {
-        this.ID = ID;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getREF() {
+        return REF;
+    }
+
+    public void setREF(String REF) {
+        this.REF = REF;
     }
 
     public String getLABEL() {
@@ -127,6 +145,14 @@ public class Events implements Serializable {
 
     public void setEND_EVENT(Long END_EVENT) {
         this.END_EVENT = END_EVENT;
+    }
+
+    public String getTIER() {
+        return TIER;
+    }
+
+    public void setTIER(String TIER) {
+        this.TIER = TIER;
     }
 
     public String getDESCRIPTION() {
