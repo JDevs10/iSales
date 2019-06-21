@@ -63,7 +63,6 @@ public class AgendaEventDetails extends AppCompatActivity {
     final Calendar combinedCalEnd = Calendar.getInstance(Locale.FRENCH);
 
     private AppDatabase mDB;
-
     private UserEntry mUserEntry;
     private String concernTier;
 

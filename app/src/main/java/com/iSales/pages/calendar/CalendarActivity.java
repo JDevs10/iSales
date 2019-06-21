@@ -51,6 +51,7 @@ import com.iSales.interfaces.ItemClickListenerAgenda;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.AgendaEvents;
+import com.iSales.utility.ISalesUtility;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -208,6 +209,14 @@ public class CalendarActivity extends AppCompatActivity {
     private void saveEvent(String label, String location, String percentage, String fullDayEvent, String disponibility,
                            String time, String date, String month, String year, Long startEvent, Long endEvent, String concernTier, String description) {
 
+        final ProgressDialog progressDialog = new ProgressDialog(CalendarActivity.this);
+        progressDialog.setMessage("Enregistrement de l'évenement en cours...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
+        progressDialog.show();
+
         Log.e(TAG, " SaveEvent() label: "+label+" location: "+location+" percentage: "+percentage+" fullDayEvent: "+fullDayEvent +
                 " time: "+time+" date: "+date+" month: "+month+" year: "+year+" startEvent: "+startEvent+" endEvent: "+endEvent+" concernTier socId: "+concernTier+" description: "+description);
 
@@ -217,25 +226,66 @@ public class CalendarActivity extends AppCompatActivity {
             long i = mDB.eventsDao().insertNewEvent(newEvent);
             List<EventsEntry> test = mDB.eventsDao().getEventsById((long) 1);
 
-            String log = "List size: "+test.size()+"\n" +
-                    "Id: "+i+"\n"+
-                    "Event: "+test.get(0).getLABEL()+"\n" +
-                    "Time: "+test.get(0).getTIME()+"\n" +
-                    "Date: "+test.get(0).getDATE()+"\n" +
-                    "Month: "+test.get(0).getMONTH()+"\n" +
-                    "Year: "+test.get(0).getYEAR()+"\n\n";
+            /**
+             * Nee to save to the server side now
+             *
+            //save event on the server side....
+            AgendaEvents mAgendaEvents = new AgendaEvents();
+            mAgendaEvents.setId(newEvent.getId());
+            mAgendaEvents.setLabel(newEvent.getLABEL());
+            mAgendaEvents.setLocation(newEvent.getLIEU());
+            mAgendaEvents.setPercentage(newEvent.getPERCENTAGE());
+            mAgendaEvents.setFulldayevent(newEvent.getFULLDAYEVENT());
+            mAgendaEvents.setTransparency(newEvent.getTRANSPARENCY());
 
-            Log.e(TAG, " "+log);
-            Toast.makeText(this, "Event Saved!!!", Toast.LENGTH_SHORT).show();
+            Calendar calendar = Calendar.getInstance(Locale.FRENCH);
+            mAgendaEvents.setDatec(calendar.getTimeInMillis());
+            mAgendaEvents.setDatem(calendar.getTimeInMillis());
+            mAgendaEvents.setDatep(newEvent.getSTART_EVENT());
+            mAgendaEvents.setDatef(newEvent.getEND_EVENT());
+            mAgendaEvents.setSocid(newEvent.getTIER());
+            mAgendaEvents.setNote(newEvent.getDESCRIPTION());
+
+            Call<AgendaEvents> call = ApiUtils.getISalesService(CalendarActivity.this).createEvent(mAgendaEvents);
+            call.enqueue(new Callback<AgendaEvents>() {
+                @Override
+                public void onResponse(Call<AgendaEvents> call, Response<AgendaEvents> response) {
+                    if(response.isSuccessful()){
+                        progressDialog.setMessage("Getting Event...");
+                        final AgendaEvents responseAgenda = response.body();
+                        Log.e(TAG, "onResponse: saveAgendaEvent eventId=" + responseAgenda.getId());
+
+                        String log = "Id: "+responseAgenda.getId()+"\n"+
+                                "Event: "+responseAgenda.getLabel()+"\n" +
+                                "Start Date: "+responseAgenda.getDatep()+"\n" +
+                                "End Date: "+responseAgenda.getDatem()+"\n\n";
+
+                        Log.e(TAG, " "+log);
+                        mAgendaAdapter.notifyDataSetChanged();
+                        progressDialog.dismiss();
+                        Toast.makeText(CalendarActivity.this, "Event Saved!!!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<AgendaEvents> call, Throwable t) {
+                    progressDialog.dismiss();
+                    Toast.makeText(CalendarActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    return;
+                }
+            });
+            */
 
         } catch (SQLException e){
             e.getStackTrace();
+            progressDialog.dismiss();
             Toast.makeText(this, "Event Not Saved!!!", Toast.LENGTH_SHORT).show();
+
         } catch (Exception e){
             e.getStackTrace();
+            progressDialog.dismiss();
             Toast.makeText(this, "Event Not Saved!!!", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     private List<EventsEntry> collectEventsByDate(String Date){
