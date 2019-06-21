@@ -8,6 +8,7 @@ public class Events implements Serializable {
     private String LIEU;
     private String PERCENTAGE;
     private String FULLDAYEVENT;
+    private String TRANSPARENCY;
     private String TIME;
     private String DATE;
     private String MONTH;
@@ -16,12 +17,13 @@ public class Events implements Serializable {
     private Long END_EVENT;
     private String DESCRIPTION;
 
-    public Events(Long ID, String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String DESCRIPTION) {
+    public Events(Long ID, String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TRANSPARENCY, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String DESCRIPTION) {
         this.ID = ID;
         this.LABEL = LABEL;
         this.LIEU = LIEU;
         this.PERCENTAGE = PERCENTAGE;
         this.FULLDAYEVENT = FULLDAYEVENT;
+        this.TRANSPARENCY = TRANSPARENCY;
         this.TIME = TIME;
         this.DATE = DATE;
         this.MONTH = MONTH;
@@ -69,6 +71,14 @@ public class Events implements Serializable {
 
     public void setFULLDAYEVENT(String FULLDAYEVENT) {
         this.FULLDAYEVENT = FULLDAYEVENT;
+    }
+
+    public String getTRANSPARENCY() {
+        return TRANSPARENCY;
+    }
+
+    public void setTRANSPARENCY(String TRANSPARENCY) {
+        this.TRANSPARENCY = TRANSPARENCY;
     }
 
     public String getTIME() {

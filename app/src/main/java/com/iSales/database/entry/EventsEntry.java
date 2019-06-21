@@ -3,36 +3,43 @@ package com.iSales.database.entry;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity(tableName = "events")
-public class EventsEntry {
+public class EventsEntry implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private Long id;
+    private String REF;
     private String LABEL;
     private String LIEU;
     private String PERCENTAGE;
     private String FULLDAYEVENT;
+    private String TRANSPARENCY;
     private String TIME;
     private String DATE;
     private String MONTH;
     private String YEAR;
     private Long START_EVENT;
     private Long END_EVENT;
+    private String TIER;
     private String DESCRIPTION;
 
     public EventsEntry() {
     }
 
-    public EventsEntry(String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String DESCRIPTION) {
+    public EventsEntry(String LABEL, String LIEU, String PERCENTAGE, String FULLDAYEVENT, String TRANSPARENCY, String TIME, String DATE, String MONTH, String YEAR, Long START_EVENT, Long END_EVENT, String TIER, String DESCRIPTION) {
         this.LABEL = LABEL;
         this.LIEU = LIEU;
         this.PERCENTAGE = PERCENTAGE;
         this.FULLDAYEVENT = FULLDAYEVENT;
+        this.TRANSPARENCY = TRANSPARENCY;
         this.TIME = TIME;
         this.DATE = DATE;
         this.MONTH = MONTH;
         this.YEAR = YEAR;
         this.START_EVENT = START_EVENT;
         this.END_EVENT = END_EVENT;
+        this.TIER = TIER;
         this.DESCRIPTION = DESCRIPTION;
     }
 
@@ -42,6 +49,14 @@ public class EventsEntry {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getREF() {
+        return REF;
+    }
+
+    public void setREF(String REF) {
+        this.REF = REF;
     }
 
     public String getLABEL() {
@@ -74,6 +89,14 @@ public class EventsEntry {
 
     public void setFULLDAYEVENT(String FULLDAYEVENT) {
         this.FULLDAYEVENT = FULLDAYEVENT;
+    }
+
+    public String getTRANSPARENCY() {
+        return TRANSPARENCY;
+    }
+
+    public void setTRANSPARENCY(String TRANSPARENCY) {
+        this.TRANSPARENCY = TRANSPARENCY;
     }
 
     public String getTIME() {
@@ -122,6 +145,14 @@ public class EventsEntry {
 
     public void setEND_EVENT(Long END_EVENT) {
         this.END_EVENT = END_EVENT;
+    }
+
+    public String getTIER() {
+        return TIER;
+    }
+
+    public void setTIER(String TIER) {
+        this.TIER = TIER;
     }
 
     public String getDESCRIPTION() {

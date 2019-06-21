@@ -32,12 +32,12 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
     private Context mContext;
     private List<Date> dates;
     private Calendar currentDate;
-    private List<Events> events;
+    private List<EventsEntry> events;
     private ArrayList<Events> dataEvents;
 
     private ItemClickListenerAgenda itemClickListenerAgenda = null;
 
-    public AgendaAdapter(Context context, List<Date> dates, Calendar currentDate, List<Events> events){
+    public AgendaAdapter(Context context, List<Date> dates, Calendar currentDate, List<EventsEntry> events){
         Log.e(TAG, " AgendaAdapter (context, dates size: "+dates.size()+", currentDate: "+currentDate.getTime()+", events size: "+events.size()+")");
         this.mContext = context;
         this.dates = dates;

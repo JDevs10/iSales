@@ -2,14 +2,19 @@ package com.iSales.pages.calendar;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.Tag;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
@@ -24,13 +29,19 @@ import android.widget.Toast;
 
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
+import com.iSales.database.entry.UserEntry;
+import com.iSales.pages.home.viewmodel.UserViewModel;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -39,12 +50,12 @@ public class AgendaEventDetails extends AppCompatActivity {
 
     private ImageView eventImage_iv;
     private TextView eventRef_tv, eventLabel_tv;
-    private EditText eventDateStart, eventDateEnd, eventLocation, eventAssignTo, eventDescription;
-    private CheckBox eventFullDay_cb;
+    private EditText eventDateStart, eventDateEnd, eventLocation, eventAssignTo, eventDescription, eventDisponibility;
+    private CheckBox eventFullDay_cb, eventDisponibility_cb;
     private Spinner eventConcernTier;
 
     private Button annuler_btn, modifierValider_btn, supprimer_btn;
-    private Events event;
+    private EventsEntry eventEntry;
 
     private boolean isModifiable = false;
 
@@ -52,6 +63,9 @@ public class AgendaEventDetails extends AppCompatActivity {
     final Calendar combinedCalEnd = Calendar.getInstance(Locale.FRENCH);
 
     private AppDatabase mDB;
+
+    private UserEntry mUserEntry;
+    private String concernTier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +76,7 @@ public class AgendaEventDetails extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         mDB = AppDatabase.getInstance(getApplicationContext());
+        loadUser();
 
         //init views
         eventImage_iv = (ImageView) findViewById(R.id.activity_agenda_event_details_event_img_iv);
@@ -73,6 +88,8 @@ public class AgendaEventDetails extends AppCompatActivity {
         eventAssignTo = (EditText) findViewById(R.id.activity_agenda_event_details_eventassigneto_et);
         eventDescription = (EditText) findViewById(R.id.activity_agenda_event_details_eventdescription_et);
         eventFullDay_cb = (CheckBox) findViewById(R.id.activity_agenda_event_details_fulldayevent_cb);
+        eventDisponibility_cb = (CheckBox) findViewById(R.id.activity_agenda_event_details_disponibilityevent_cb);
+        eventDisponibility = (EditText) findViewById(R.id.activity_agenda_event_details_disponibilityevent_et);
         eventConcernTier = (Spinner) findViewById(R.id.activity_agenda_event_details_concerntier_sp);
         viewModifyChange(false);
 
@@ -81,9 +98,30 @@ public class AgendaEventDetails extends AppCompatActivity {
         supprimer_btn = (Button) findViewById(R.id.activity_agenda_event_details_supprimer_btn);
 
 
+        ArrayAdapter<String> clientSpinnerAdapter = new ArrayAdapter<String>(AgendaEventDetails.this, android.R.layout.simple_spinner_item, getAllClients());
+        clientSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        eventConcernTier.setAdapter(clientSpinnerAdapter);
+        eventConcernTier.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (!adapterView.getSelectedItem().toString().equals("Veuillez selection Tiers concerné - Optionnelle")){
+                    concernTier = getSelectedClient(adapterView.getSelectedItem().toString()).getId().toString();
+                    Toast.makeText(AgendaEventDetails.this, "Tiers sélectionné: "+getSelectedClient(adapterView.getSelectedItem().toString()).getName(), Toast.LENGTH_SHORT).show();
+                }else{
+                    concernTier = null;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+
         //get event passed from AgendarEventAdapter
-        event = (Events) getIntent().getSerializableExtra("eventObj");
-        displayCurrentEvent(event);
+        eventEntry = (EventsEntry) getIntent().getSerializableExtra("eventObj");
+        displayCurrentEvent(eventEntry);
 
         eventDateStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,14 +155,14 @@ public class AgendaEventDetails extends AppCompatActivity {
                     viewModifyChange(isModifiable);
                     modifierValider_btn.setText("Modifier");
                     //save the modification
-                    saveModifications(event);
+                    saveModifications(eventEntry);
                 }
             }
         });
         supprimer_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteButton(event);
+                deleteButton(eventEntry);
             }
         });
         annuler_btn.setOnClickListener(new View.OnClickListener() {
@@ -134,22 +172,22 @@ public class AgendaEventDetails extends AppCompatActivity {
                 onBackPressed();
             }
         });
+
     }
 
-    private void saveModifications(Events currentEvent){
-        /*
-        currentEvent.setFULLDAYEVENT(Boolean.toString(eventFullDay_cb.isChecked()));
-        currentEvent.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim()));
-        currentEvent.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim()));
-        currentEvent.setLIEU(eventLocation.getText().toString().trim());
-        currentEvent.setDESCRIPTION(eventDescription.getText().toString().trim());
-        */
+    //recuperation du user connecté dans la BD
+    private void loadUser() {
+        mUserEntry = mDB.userDao().getUser().get(0);
+    }
 
-        EventsEntry currentEventEntry = mDB.eventsDao().getEventsById(currentEvent.getID()).get(0);
+    private void saveModifications(EventsEntry currentEvent){
+        EventsEntry currentEventEntry = currentEvent;
         currentEventEntry.setFULLDAYEVENT(Boolean.toString(eventFullDay_cb.isChecked()));
+        currentEventEntry.setTRANSPARENCY(Boolean.toString(eventDisponibility_cb.isChecked()));
         currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim()));
         currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim()));
         currentEventEntry.setLIEU(eventLocation.getText().toString().trim());
+        currentEventEntry.setTIER(concernTier);
         currentEventEntry.setDESCRIPTION(eventDescription.getText().toString().trim());
 
         mDB.eventsDao().updateEvent(currentEventEntry);
@@ -159,11 +197,11 @@ public class AgendaEventDetails extends AppCompatActivity {
         Toast.makeText(this, "Evènement "+currentEventEntry.getId()+" Enregisté!", Toast.LENGTH_SHORT).show();
     }
 
-    private void deleteButton(Events event) {
+    private void deleteButton(EventsEntry event) {
         //delete local
-        mDB.eventsDao().deleteEvent(event.getID());
+        mDB.eventsDao().deleteEvent(event.getId());
         //but need to delete on the server
-        mDB.agendaEventsDao().deleteEvent(event.getID());
+        mDB.agendaEventsDao().deleteEvent(event.getId());
         Toast.makeText(this, "Evènement supprimé!", Toast.LENGTH_SHORT).show();
         //back to aganda activity
         startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
@@ -172,6 +210,8 @@ public class AgendaEventDetails extends AppCompatActivity {
     private void viewModifyChange(Boolean isChecked){
         Log.e(TAG, " viewModifyChange( "+isChecked+" )");
         eventFullDay_cb.setClickable(isChecked);
+        //////////////////////////////////////////////
+        eventDisponibility_cb.setClickable(isChecked);
         //////////////////////////////////////////////
         eventDateStart.setClickable(true);
         eventDateStart.setCursorVisible(false);
@@ -193,9 +233,7 @@ public class AgendaEventDetails extends AppCompatActivity {
         eventAssignTo.setFocusable(isChecked);
         eventAssignTo.setFocusableInTouchMode(isChecked);
         ////////////////////////////////////////////
-        eventConcernTier.setClickable(isChecked);
-        eventConcernTier.setFocusable(isChecked);
-        eventConcernTier.setFocusableInTouchMode(isChecked);
+        eventConcernTier.setEnabled(isChecked);
         /////////////////////////////////////////////
         eventDescription.setClickable(isChecked);
         eventDescription.setCursorVisible(isChecked);
@@ -203,7 +241,7 @@ public class AgendaEventDetails extends AppCompatActivity {
         eventDescription.setFocusableInTouchMode(isChecked);
     }
 
-    private void displayCurrentEvent(Events event){
+    private void displayCurrentEvent(EventsEntry event){
         //eventImage_iv;
         eventRef_tv.setText("Ref: nothing...");
         eventLabel_tv.setText(event.getLABEL());
@@ -212,7 +250,10 @@ public class AgendaEventDetails extends AppCompatActivity {
         eventLocation.setText(event.getLIEU());
         eventDescription.setText(event.getDESCRIPTION());
         eventFullDay_cb.setChecked(Boolean.valueOf(event.getFULLDAYEVENT()));
-        //eventConcernTier;
+        eventAssignTo.setText(mUserEntry.getLastname());
+        eventDisponibility.setText(mUserEntry.getLastname()+" - Disponibilité: ");
+        eventDisponibility_cb.setChecked(Boolean.valueOf(event.getTRANSPARENCY()));
+        eventConcernTier.setSelection(setSelectedClient(event.getTIER()));
     }
 
     private String convertTimeStamp(Long dateInLong){
@@ -241,6 +282,51 @@ public class AgendaEventDetails extends AppCompatActivity {
 
         Log.e(TAG, " convertTimeStringToLong( "+dateInString+" ) ==> result: "+res);
         return res;
+    }
+
+    private List<String> getAllClients(){
+        List<String> theList = new ArrayList<>();
+        List<ClientEntry> list = mDB.clientDao().getAllClient();
+
+        theList.add("Veuillez selection Tiers concerné - Optionnelle");
+        for (int i=0; i<list.size(); i++){
+            theList.add(list.get(i).getName());
+        }
+        return theList;
+    }
+
+    private ClientEntry getSelectedClient(String clientName){
+        ClientEntry clientEntry = null;
+        List<ClientEntry> clientList = mDB.clientDao().getAllClient();
+        for (int i=0; i<clientList.size(); i++){
+            if (clientList.get(i).getName().equals(clientName)){
+                clientEntry = clientList.get(i);
+                break;
+            }
+        }
+        return clientEntry;
+    }
+
+    private int setSelectedClient(String clientEntryTierId){
+        int clientSpinnerPosition = -1;
+        String clientName = null;
+
+        List<ClientEntry> clientList = mDB.clientDao().getAllClient();
+        for (int i=0; i<clientList.size(); i++){
+            if (clientList.get(i).getId().equals(Long.valueOf(clientEntryTierId))){
+                clientName = clientList.get(i).getName();
+                break;
+            }
+        }
+
+        List<String> allClients = getAllClients();
+        for (int index=0; index<allClients.size(); index++){
+            if (allClients.get(index).equals(clientName)){
+                clientSpinnerPosition = index;
+                break;
+            }
+        }
+        return clientSpinnerPosition;
     }
 
     private void dateOnClick(String XXXX){
@@ -273,6 +359,14 @@ public class AgendaEventDetails extends AppCompatActivity {
                             }
                         }, hoursStart, minutesStart, false);
                 timePickerDialog1.show();
+                timePickerDialog1.setButton(DialogInterface.BUTTON_NEGATIVE, "Annuler", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(AgendaEventDetails.this, "Veuillez valider une heure !", Toast.LENGTH_SHORT).show();
+                        eventDateStart.setText("");
+                        timePickerDialog1.dismiss();
+                    }
+                });
 
                 DatePickerDialog mDatePickerDialog1 = new DatePickerDialog(eventDateStart.getContext(), R.style.Theme_AppCompat_DayNight_Dialog,
                         new DatePickerDialog.OnDateSetListener() {
@@ -330,6 +424,14 @@ public class AgendaEventDetails extends AppCompatActivity {
                             }
                         }, hoursEnd, minutesEnd, false);
                 timePickerDialog2.show();
+                timePickerDialog2.setButton(DialogInterface.BUTTON_NEGATIVE, "Annuler", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(AgendaEventDetails.this, "Veuillez valider une heure !", Toast.LENGTH_SHORT).show();
+                        eventDateEnd.setText("");
+                        timePickerDialog2.dismiss();
+                    }
+                });
 
                 DatePickerDialog mDatePickerDialog2 = new DatePickerDialog(eventDateEnd.getContext(), R.style.Theme_AppCompat_DayNight_Dialog,
                         new DatePickerDialog.OnDateSetListener() {
