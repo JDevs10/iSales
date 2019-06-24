@@ -310,6 +310,10 @@ public class AgendaEventDetails extends AppCompatActivity {
         int clientSpinnerPosition = -1;
         String clientName = null;
 
+        if (clientEntryTierId.equals("") || clientEntryTierId.equals(null)){
+            return 0;
+        }
+
         List<ClientEntry> clientList = mDB.clientDao().getAllClient();
         for (int i=0; i<clientList.size(); i++){
             if (clientList.get(i).getId().equals(Long.valueOf(clientEntryTierId))){
