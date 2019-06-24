@@ -96,6 +96,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
         for (int y=0; y < events.size(); y++){
             eventCalendar.setTime(convertStringToDate(events.get(y).getDATE()));
 
+            /*
             Log.e(TAG, "Day Number: "+DayNo+"\n" +
                     "eventCalendar Day of Month: "+eventCalendar.get(Calendar.DAY_OF_MONTH)+"\n" +
                     "displayMonth: "+displayMonth+"\n" +
@@ -103,6 +104,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
                     "displayYear: "+displayYear+"\n" +
                     "eventCalendar Year: "+eventCalendar.get(Calendar.YEAR)+"\n" +
                     "Index: "+y+"/"+events.size());
+            */
 
             if (DayNo == eventCalendar.get(Calendar.DAY_OF_MONTH) && displayMonth == eventCalendar.get(Calendar.MONTH)+1 && displayYear == eventCalendar.get(Calendar.YEAR)){
                 arrayList.add(events.get(y).getLABEL());
