@@ -257,7 +257,7 @@ public class CalendarActivity extends AppCompatActivity {
         mAgendaEvents.setDatef( (newEvent.getEND_EVENT()/1000) );
 
         mAgendaEvents.setDurationp("-1");
-        mAgendaEvents.setFulldayevent(newEvent.getFULLDAYEVENT());
+        mAgendaEvents.setFulldayevent("1");
         mAgendaEvents.setPercentage(newEvent.getPERCENTAGE());
         mAgendaEvents.setLocation(newEvent.getLIEU());
         mAgendaEvents.setTransparency(newEvent.getTRANSPARENCY());
