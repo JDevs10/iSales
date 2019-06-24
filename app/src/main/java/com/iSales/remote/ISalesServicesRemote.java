@@ -139,7 +139,7 @@ public interface ISalesServicesRemote {
 
     // =======================  Agenda Events  ==============================
     @POST("agendaevents")
-    Call<ArrayList<AgendaEvents>> createEvent(@Body AgendaEvents agendaEvents);
+    Call<Long> createEvent(@Body AgendaEvents agendaEvents);
 
     @GET("agendaevents")
     Call<ArrayList<AgendaEvents>> getAllEvents(@Query(ApiUtils.sqlfilters) String sqlfilters,

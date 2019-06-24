@@ -30,23 +30,16 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... voids) {
         //Save the event to the server
-        Call<ArrayList<AgendaEvents>> call = ApiUtils.getISalesService(mContext).createEvent(agendaEvents);
-        call.enqueue(new Callback<ArrayList<AgendaEvents>>() {
+        Call<Long> call = ApiUtils.getISalesService(mContext).createEvent(agendaEvents);
+        call.enqueue(new Callback<Long>() {
             @Override
-            public void onResponse(Call<ArrayList<AgendaEvents>> call, Response<ArrayList<AgendaEvents>> response) {
+            public void onResponse(Call<Long> call, Response<Long> response) {
                 if(response.isSuccessful()){
-                    final ArrayList<AgendaEvents> responseAgenda = response.body();
-                    Log.e(TAG, "onResponse: saveAgendaEvent eventId=" + responseAgenda.get(0).getId());
-
-                    String log = "Id: "+responseAgenda.get(0).getId()+"\n"+
-                            "Event: "+responseAgenda.get(0).getLabel()+"\n" +
-                            "Start Date: "+responseAgenda.get(0).getDatep()+"\n" +
-                            "End Date: "+responseAgenda.get(0).getDatem()+"\n\n";
-
-                    Log.e(TAG, " "+log);
+                    final Long responseAgendaId = response.body();
+                    Log.e(TAG, "onResponse: saveAgendaEvent id= " + responseAgendaId);
                     Toast.makeText(mContext, "Event Saved!!!", Toast.LENGTH_SHORT).show();
-                }else {
 
+                }else {
                     try {
                         Log.e(TAG, "doInBackground: onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
                     } catch (IOException e) {
@@ -56,7 +49,8 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
             }
 
             @Override
-            public void onFailure(Call<ArrayList<AgendaEvents>> call, Throwable t) {
+            public void onFailure(Call<Long> call, Throwable t) {
+                Log.e(TAG, "onFailure: "+call.request().url().encodedQuery());
                 Log.e(TAG, "onFailure: "+t.getMessage());
                 return;
             }

@@ -1,5 +1,7 @@
 package com.iSales.remote.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +10,7 @@ import java.util.List;
  *      Created by Jean-Laurent
  */
 
-public class AgendaEvents implements Serializable {
+public class AgendaEvents {
     private Long id;
     private String table_rowid;
     private String ref;
