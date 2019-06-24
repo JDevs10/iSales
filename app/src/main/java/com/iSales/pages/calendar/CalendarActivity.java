@@ -6,6 +6,8 @@ import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Color;
@@ -47,11 +49,15 @@ import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.ClientEntry;
 import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.interfaces.FindAgendaEventsListener;
 import com.iSales.interfaces.ItemClickListenerAgenda;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.model.AgendaUserassigned;
+import com.iSales.remote.rest.AgendaEventsREST;
+import com.iSales.task.FindAgendaEventTask;
+import com.iSales.task.FindThirdpartieTask;
 import com.iSales.task.SendAgendaEventTask;
 import com.iSales.utility.ISalesUtility;
 
@@ -62,17 +68,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-public class CalendarActivity extends AppCompatActivity {
+public class CalendarActivity extends AppCompatActivity implements FindAgendaEventsListener {
     private String TAG = CalendarActivity.class.getSimpleName();
+
 
     private ImageButton previousBtn,nextBtn;
     private TextView currentDate;
+    private ImageButton synchro_ib;
     private RecyclerView recyclerView;
     private static final int MAX_CALENDAR_DAYS = 42;
     private Calendar calendar = Calendar.getInstance(Locale.FRENCH);
@@ -92,8 +97,14 @@ public class CalendarActivity extends AppCompatActivity {
     private AlertDialog dialog;
     private Dialog mDialog;
 
+    //    task de recuperation des clients
+    private FindAgendaEventTask mFindAgendaEventTask = null;
+
     private ProgressDialog mProgressDialog;
     private AppDatabase mDB;
+
+    private int mLimit = 0;
+    private int mPageEvent = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +129,13 @@ public class CalendarActivity extends AppCompatActivity {
             public void onClick(View view) {
                 calendar.add(Calendar.MONTH, 1);
                 initCalendar();
+            }
+        });
+
+        synchro_ib.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getEventsFromServer();
             }
         });
 
@@ -147,6 +165,7 @@ public class CalendarActivity extends AppCompatActivity {
         previousBtn = findViewById(R.id.calendar_previousMontBtn);
         nextBtn = findViewById(R.id.calendar_activity_nextMontBtn);
         currentDate = findViewById(R.id.calendar_activity_currentDate);
+        synchro_ib = (ImageButton) findViewById(R.id.calendar_activity_synchro);
 
         recyclerView = findViewById(R.id.calendar_activity_recycler_view);
         mLayoutManager_rv = new GridLayoutManager(getApplicationContext(), 7);
@@ -263,8 +282,7 @@ public class CalendarActivity extends AppCompatActivity {
         mAgendaEvents.setTransparency(newEvent.getTRANSPARENCY());
         mAgendaEvents.setPriority("0");
 
-        mAgendaEvents.setUserassigned(new ArrayList<AgendaUserassigned>());
-        mAgendaEvents.getUserassigned().add(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0"));
+        mAgendaEvents.setUserassigned(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0"));
 
         mAgendaEvents.setUserownerid(mDB.userDao().getUser().get(0).getId()+"");
         mAgendaEvents.setSocid(newEvent.getTIER());
@@ -343,6 +361,7 @@ public class CalendarActivity extends AppCompatActivity {
             eventsList.add(events);
         }
         */
+
         eventsList.addAll(listEvents);
         Log.e(TAG," eventList size: "+eventsList.size());
     }
@@ -623,12 +642,96 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
+    private void getEventsFromServer(){
+        if (!ConnectionManager.isPhoneConnected(getApplication())){
+            Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            //progressDialog.dismiss();
+            return;
+        }
+
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Objects.requireNonNull(CalendarActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else {
+            Objects.requireNonNull(CalendarActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
+        //affichage du loader dialog
+        showProgressDialog(true, null, "Synchronisation des évènements en cours...");
+
+        if (mFindAgendaEventTask == null) {
+            mFindAgendaEventTask = new FindAgendaEventTask(this, CalendarActivity.this, "datec", "asc", mLimit, mPageEvent);
+            mFindAgendaEventTask.execute();
+        }
+    }
+
+    @Override
+    public void onFindAgendaEventsTaskComplete(AgendaEventsREST mAgendaEventsREST) {
+        mFindAgendaEventTask = null;
+
+        //Si la recupération echoue, on renvoi un message d'erreur
+        if (mAgendaEventsREST == null) {
+            //Fermeture du loader
+            showProgressDialog(false, null, null);
+            Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (mAgendaEventsREST.getAgendaEvents() == null) {
+            Objects.requireNonNull(this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+            //Fermeture du loader
+            showProgressDialog(false, null, null);
+            //reinitialisation du nombre de page
+            mPageEvent = 0;
+
+            Toast.makeText(this, "Evènements synchronizé !", Toast.LENGTH_LONG).show();
+
+            collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
+            return;
+        }
+
+
+        for (AgendaEvents eventItem : mAgendaEventsREST.getAgendaEvents()) {
+
+            EventsEntry eventsEntry = new EventsEntry();
+            eventsEntry.setId(eventItem.getId());
+            eventsEntry.setREF(eventItem.getRef());
+            eventsEntry.setLABEL(eventItem.getLabel());
+            eventsEntry.setLIEU(eventItem.getLocation());
+            eventsEntry.setPERCENTAGE(eventItem.getPercentage());
+            eventsEntry.setFULLDAYEVENT(eventItem.getFulldayevent());
+            eventsEntry.setTRANSPARENCY(eventItem.getTransparency());
+
+            eventsEntry.setTIME(new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date(eventItem.getDatec())));
+            eventsEntry.setDATE(eventDateFormat.format(new Date(eventItem.getDatec())));
+            eventsEntry.setMONTH(monthFormat.format(new Date(eventItem.getDatec())));
+            eventsEntry.setYEAR(yearFormat.format(new Date(eventItem.getDatec())));
+
+            eventsEntry.setSTART_EVENT(eventItem.getDatep());
+            eventsEntry.setEND_EVENT(eventItem.getDatef());
+            eventsEntry.setTIER(eventItem.getSocid());
+            eventsEntry.setDESCRIPTION(eventItem.getNote());
+
+            mDB.eventsDao().insertNewEvent(eventsEntry);
+        }
+
+        showProgressDialog(false, null, "Synchronisation des évènements en cours...");
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
         }
+
+        if(item.getItemId() == R.id.action_fragclient_sync){
+            if (!ConnectionManager.isPhoneConnected(this)) {
+                Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                return true;
+            }
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
+
 }

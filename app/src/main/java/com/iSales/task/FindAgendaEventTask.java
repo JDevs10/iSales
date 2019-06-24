@@ -52,9 +52,10 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
         Call<ArrayList<AgendaEvents>> call = ApiUtils.getISalesService(context).getAllEvents(sqlfilters, sortfield, sortorder, limit, page);
         try {
             Response<ArrayList<AgendaEvents>> response = call.execute();
+            Log.e(TAG, " Response: "+response);
             if (response.isSuccessful()) {
                 ArrayList<AgendaEvents> agendaEventsArrayList = response.body();
-                Log.e(TAG, "doInBackground: orderArrayList=" + agendaEventsArrayList.size());
+                Log.e(TAG, "doInBackground: eventArrayList=" + agendaEventsArrayList.size());
 
                 return new AgendaEventsREST(agendaEventsArrayList);
             } else {

@@ -33,7 +33,7 @@ public class AgendaEvents {
     private String location;
     private String transparency;
     private String priority;
-    private List<AgendaUserassigned> userassigned;
+    private AgendaUserassigned userassigned;
     private String userownerid;
     private String socid;
     private String contactid;
@@ -41,7 +41,7 @@ public class AgendaEvents {
     private String elementtype;
     private String icalname;
     private String icalcolor;
-    private String actions;
+    private ArrayList<String> actions;
     private String email_msgid;
     private String email_from;
     private String email_sender;
@@ -51,7 +51,7 @@ public class AgendaEvents {
     private String email_subject;
     private String errors_to;
     private String import_key;
-    private String array_options;
+    private ArrayList<String> array_options;
     private String linkedObjectsIds;
     private String fk_project;
     private String state;
@@ -247,11 +247,11 @@ public class AgendaEvents {
         this.priority = priority;
     }
 
-    public List<AgendaUserassigned> getUserassigned() {
+    public AgendaUserassigned getUserassigned() {
         return userassigned;
     }
 
-    public void setUserassigned(List<AgendaUserassigned> userassigned) {
+    public void setUserassigned(AgendaUserassigned userassigned) {
         this.userassigned = userassigned;
     }
 
@@ -311,11 +311,11 @@ public class AgendaEvents {
         this.icalcolor = icalcolor;
     }
 
-    public String getActions() {
+    public ArrayList<String> getActions() {
         return actions;
     }
 
-    public void setActions(String actions) {
+    public void setActions(ArrayList<String> actions) {
         this.actions = actions;
     }
 
@@ -391,11 +391,11 @@ public class AgendaEvents {
         this.import_key = import_key;
     }
 
-    public String getArray_options() {
+    public ArrayList<String> getArray_options() {
         return array_options;
     }
 
-    public void setArray_options(String array_options) {
+    public void setArray_options(ArrayList<String> array_options) {
         this.array_options = array_options;
     }
 
