@@ -103,7 +103,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     private ProgressDialog mProgressDialog;
     private AppDatabase mDB;
 
-    private int mLimit = 0;
+    private int mLimit = 50;
     private int mPageEvent = 0;
 
     @Override
@@ -135,31 +135,13 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         synchro_ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //delete local db data
+                Log.e(TAG, " synchro_ib::onClick() before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size());
+                mDB.eventsDao().deleteAllEvent();
                 getEventsFromServer();
             }
         });
-
     }
-    /**
-     * Shows the progress UI and hides.
-     */
-    private void showProgressDialog(boolean show, String title, String message) {
-
-        if (show) {
-            mProgressDialog = new ProgressDialog(this);
-            if (title != null) mProgressDialog.setTitle(title);
-            if (message != null) mProgressDialog.setMessage(message);
-
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mProgressDialog.setCancelable(false);
-            mProgressDialog.setCanceledOnTouchOutside(false);
-            mProgressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
-            mProgressDialog.show();
-        } else {
-            if (mProgressDialog != null) mProgressDialog.dismiss();
-        }
-    }
-
 
     private void initLayout(){
         previousBtn = findViewById(R.id.calendar_previousMontBtn);
@@ -327,41 +309,11 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
 
     private void collectEventsPerMonth(String Month, String Year){
-        Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+")");
-        Log.e(TAG, " clearing event list status: "+eventsList.size());
+        Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+" )");
+        Log.e(TAG, " clearing event list size: "+eventsList.size());
         eventsList.clear();
 
         List<EventsEntry> listEvents = mDB.eventsDao().getEventsByMonth(Month, Year);
-        Log.e(TAG, " Results size: "+listEvents.size());
-
-        /*
-        for (int i=0; i<listEvents.size(); i++){
-            Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
-                    "Event: "+listEvents.get(i).getLABEL()+"\n" +
-                    "Time: "+listEvents.get(i).getTIME()+"\n" +
-                    "Date: "+listEvents.get(i).getDATE()+"\n" +
-                    "Month: "+listEvents.get(i).getMONTH()+"\n" +
-                    "Year: "+listEvents.get(i).getYEAR()+"\n\n");
-
-            Long id = listEvents.get(i).getId();
-            String label = listEvents.get(i).getLABEL();
-            String location = listEvents.get(i).getLIEU();
-            String percentage = listEvents.get(i).getPERCENTAGE();
-            String fullDayEvent = listEvents.get(i).getFULLDAYEVENT();
-            String disponibility = listEvents.get(i).getTRANSPARENCY();
-            String time = listEvents.get(i).getTIME();
-            String date = listEvents.get(i).getDATE();
-            String month = listEvents.get(i).getMONTH();
-            String year = listEvents.get(i).getYEAR();
-            Long startEvent = listEvents.get(i).getSTART_EVENT();
-            Long endEvent = listEvents.get(i).getEND_EVENT();
-            String description = listEvents.get(i).getDESCRIPTION();
-
-            Events events = new Events(id, label, location, percentage, fullDayEvent, disponibility, time, date, month, year, startEvent, endEvent, description);
-            eventsList.add(events);
-        }
-        */
-
         eventsList.addAll(listEvents);
         Log.e(TAG," eventList size: "+eventsList.size());
     }
@@ -656,7 +608,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         }
 
         //affichage du loader dialog
-        showProgressDialog(true, null, "Synchronisation des évènements en cours...");
+        //showProgressDialog(true, null, "Synchronisation des évènements en cours...");
 
         if (mFindAgendaEventTask == null) {
             mFindAgendaEventTask = new FindAgendaEventTask(this, CalendarActivity.this, "datec", "asc", mLimit, mPageEvent);
@@ -671,20 +623,24 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         //Si la recupération echoue, on renvoi un message d'erreur
         if (mAgendaEventsREST == null) {
             //Fermeture du loader
-            showProgressDialog(false, null, null);
+            //showProgressDialog(false, null, null);
+            mDB.eventsDao().deleteAllEvent();
             Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
             return;
         }
         if (mAgendaEventsREST.getAgendaEvents() == null) {
             Objects.requireNonNull(this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
             //Fermeture du loader
-            showProgressDialog(false, null, null);
+            //showProgressDialog(false, null, null);
             //reinitialisation du nombre de page
             mPageEvent = 0;
 
+            Log.e(TAG, " onFindAgendaEventsTaskComplete:: DB table size: "+mDB.eventsDao().getAllEvents().size());
             Toast.makeText(this, "Evènements synchronizé !", Toast.LENGTH_LONG).show();
 
+            //update the calendar
             collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
+            mAgendaAdapter.notifyDataSetChanged();
             return;
         }
 
@@ -700,20 +656,29 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             eventsEntry.setFULLDAYEVENT(eventItem.getFulldayevent());
             eventsEntry.setTRANSPARENCY(eventItem.getTransparency());
 
-            eventsEntry.setTIME(new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date(eventItem.getDatec())));
-            eventsEntry.setDATE(eventDateFormat.format(new Date(eventItem.getDatec())));
-            eventsEntry.setMONTH(monthFormat.format(new Date(eventItem.getDatec())));
-            eventsEntry.setYEAR(yearFormat.format(new Date(eventItem.getDatec())));
+            Log.e(TAG, " AgendaEvents id: "+eventItem.getId()+"\n" +
+                    "AgendaEvents datec: "+(eventItem.getDatec()*1000)+"\n" +
+                    "AgendaEvents datep: "+(eventItem.getDatep()*1000)+"\n" +
+                    "EventsEntry Event Time: "+new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                    "EventsEntry Event Date: "+eventDateFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                    "EventsEntry Event month: "+monthFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                    "EventsEntry Event Year: "+yearFormat.format(new Date( (eventItem.getDatep()*1000) )));
 
-            eventsEntry.setSTART_EVENT(eventItem.getDatep());
-            eventsEntry.setEND_EVENT(eventItem.getDatef());
+            eventsEntry.setTIME(new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) )));
+            eventsEntry.setDATE(eventDateFormat.format(new Date( (eventItem.getDatep()*1000) )));
+            eventsEntry.setMONTH(monthFormat.format(new Date( (eventItem.getDatep()*1000) )));
+            eventsEntry.setYEAR(yearFormat.format(new Date( (eventItem.getDatep()*1000) )));
+
+            eventsEntry.setSTART_EVENT(eventItem.getDatep()*1000);
+            eventsEntry.setEND_EVENT(eventItem.getDatef()*1000);
             eventsEntry.setTIER(eventItem.getSocid());
             eventsEntry.setDESCRIPTION(eventItem.getNote());
 
             mDB.eventsDao().insertNewEvent(eventsEntry);
         }
 
-        showProgressDialog(false, null, "Synchronisation des évènements en cours...");
+        mPageEvent++;
+        getEventsFromServer();
     }
 
     @Override

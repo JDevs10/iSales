@@ -8,6 +8,7 @@ import java.io.Serializable;
 @Entity(tableName = "events")
 public class EventsEntry implements Serializable {
     @PrimaryKey(autoGenerate = true)
+    private Long localId;
     private Long id;
     private String REF;
     private String LABEL;
@@ -41,6 +42,14 @@ public class EventsEntry implements Serializable {
         this.END_EVENT = END_EVENT;
         this.TIER = TIER;
         this.DESCRIPTION = DESCRIPTION;
+    }
+
+    public Long getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(Long localId) {
+        this.localId = localId;
     }
 
     public Long getId() {

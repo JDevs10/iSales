@@ -3,6 +3,7 @@ package com.iSales.remote;
 import android.arch.persistence.room.Insert;
 
 import com.iSales.remote.ApiUtils;
+import com.iSales.remote.model.AgendaEventSuccess;
 import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.model.Categorie;
 import com.iSales.remote.model.Document;
@@ -152,7 +153,7 @@ public interface ISalesServicesRemote {
     Call<ArrayList<AgendaEvents>> getEventById(@Path("eventId") Long eventId);
 
     @DELETE("agendaevents/{eventId}")
-    Call<Long> deleteEvent(@Path("eventId") Long eventId);
+    Call<AgendaEventSuccess> deleteEventById(@Path("eventId") Long eventId);
 
 
 

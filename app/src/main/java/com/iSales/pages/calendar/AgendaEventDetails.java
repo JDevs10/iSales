@@ -1,6 +1,7 @@
 package com.iSales.pages.calendar;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -34,7 +35,10 @@ import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;
+import com.iSales.remote.ApiUtils;
+import com.iSales.remote.model.AgendaEventSuccess;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,6 +48,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AgendaEventDetails extends AppCompatActivity {
     private String TAG = AgendaEventDetails.class.getSimpleName();
@@ -66,6 +74,8 @@ public class AgendaEventDetails extends AppCompatActivity {
     private UserEntry mUserEntry;
     private String concernTier;
 
+    private ProgressDialog mProgressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +86,8 @@ public class AgendaEventDetails extends AppCompatActivity {
 
         mDB = AppDatabase.getInstance(getApplicationContext());
         loadUser();
+
+        mProgressDialog = new ProgressDialog(AgendaEventDetails.this);
 
         //init views
         eventImage_iv = (ImageView) findViewById(R.id.activity_agenda_event_details_event_img_iv);
@@ -196,14 +208,44 @@ public class AgendaEventDetails extends AppCompatActivity {
         Toast.makeText(this, "Evènement "+currentEventEntry.getId()+" Enregisté!", Toast.LENGTH_SHORT).show();
     }
 
-    private void deleteButton(EventsEntry event) {
-        //delete local
-        mDB.eventsDao().deleteEvent(event.getId());
-        //but need to delete on the server
-        mDB.agendaEventsDao().deleteEvent(event.getId());
-        Toast.makeText(this, "Evènement supprimé!", Toast.LENGTH_SHORT).show();
-        //back to aganda activity
-        startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+    private void deleteButton(final EventsEntry event) {
+        showProgressDialog(true, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+
+        Call<AgendaEventSuccess> call = ApiUtils.getISalesService(this).deleteEventById(event.getId());
+        call.enqueue(new Callback<AgendaEventSuccess>() {
+            @Override
+            public void onResponse(Call<AgendaEventSuccess> call, Response<AgendaEventSuccess> response) {
+                if (response.isSuccessful()){
+                    //delete local
+                    mDB.eventsDao().deleteEvent(event.getId());
+                    //but need to delete on the server
+                    mDB.agendaEventsDao().deleteEvent(event.getId());
+
+                    Toast.makeText(getApplicationContext(), "Evènement "+event.getLABEL()+" supprimé!", Toast.LENGTH_SHORT).show();
+                    showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+
+                    Log.e(TAG, " Event id: "+event.getLocalId()+"\nCode: "+response.body().getCode()+" message: "+response.body().getMessage());
+
+                    //back to aganda activity
+                    startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+                }else{
+                    try {
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                        showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+                        Log.e(TAG, "deleteButton(): err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.e(TAG, "deleteButton(): message=" + e.getMessage());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AgendaEventSuccess> call, Throwable t) {
+                showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "deleteButton(): message=" + t.getMessage());
+            }
+        });
     }
 
     private void viewModifyChange(Boolean isChecked){
@@ -242,16 +284,30 @@ public class AgendaEventDetails extends AppCompatActivity {
 
     private void displayCurrentEvent(EventsEntry event){
         //eventImage_iv;
-        eventRef_tv.setText("Ref: nothing...");
+        eventRef_tv.setText(event.getREF());
         eventLabel_tv.setText(event.getLABEL());
         eventDateStart.setText(convertTimeStamp(event.getSTART_EVENT()));
         eventDateEnd.setText(convertTimeStamp(event.getEND_EVENT()));
         eventLocation.setText(event.getLIEU());
         eventDescription.setText(event.getDESCRIPTION());
-        eventFullDay_cb.setChecked(Boolean.valueOf(event.getFULLDAYEVENT()));
+
+        if (event.getFULLDAYEVENT().equals("0")) {
+            eventFullDay_cb.setChecked(false);
+        }
+        if (event.getFULLDAYEVENT().equals("1")){
+            eventFullDay_cb.setChecked(true);
+        }
+
         eventAssignTo.setText(mUserEntry.getLastname());
         eventDisponibility.setText(mUserEntry.getLastname()+" - Disponibilité: ");
-        eventDisponibility_cb.setChecked(Boolean.valueOf(event.getTRANSPARENCY()));
+
+        if (event.getTRANSPARENCY().equals("0")) {
+            eventDisponibility_cb.setChecked(false);
+        }
+        if (event.getTRANSPARENCY().equals("1")){
+            eventDisponibility_cb.setChecked(true);
+        }
+
         eventConcernTier.setSelection(setSelectedClient(event.getTIER()));
     }
 
@@ -310,7 +366,7 @@ public class AgendaEventDetails extends AppCompatActivity {
         int clientSpinnerPosition = -1;
         String clientName = null;
 
-        if (clientEntryTierId.equals("") || clientEntryTierId.equals(null)){
+        if (clientEntryTierId == null || clientEntryTierId.isEmpty() || clientEntryTierId.equals("")){
             return 0;
         }
 
@@ -463,6 +519,27 @@ public class AgendaEventDetails extends AppCompatActivity {
                     }
                 });
                 break;
+        }
+    }
+
+    /**
+     * Shows the progress UI and hides.
+     */
+    private void showProgressDialog(boolean show, String title, String message) {
+
+        if (show) {
+            if (title != null) mProgressDialog.setTitle(title);
+            if (message != null) mProgressDialog.setMessage(message);
+
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+            mProgressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
+            mProgressDialog.show();
+        } else {
+            if (mProgressDialog != null){
+                mProgressDialog.dismiss();
+            }
         }
     }
 }

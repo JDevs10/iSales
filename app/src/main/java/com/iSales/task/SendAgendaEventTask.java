@@ -31,6 +31,8 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         //Save the event to the server
         Call<Long> call = ApiUtils.getISalesService(mContext).createEvent(agendaEvents);
+        Log.e(TAG, " Url: "+call.request().url());
+        Log.e(TAG, " Body content:\n\n"+call.request().body());
         call.enqueue(new Callback<Long>() {
             @Override
             public void onResponse(Call<Long> call, Response<Long> response) {
