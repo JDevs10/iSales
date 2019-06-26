@@ -1,10 +1,9 @@
 package com.iSales.remote.model;
 
-import com.google.gson.annotations.SerializedName;
+import com.iSales.database.entry.AgendaEventEntry;
+import com.iSales.database.entry.EventsEntry;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  *      Created by Jean-Laurent

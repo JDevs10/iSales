@@ -37,6 +37,8 @@ import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.AgendaEventSuccess;
+import com.iSales.remote.model.AgendaEvents;
+import com.iSales.remote.model.ProductVirtual;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -192,20 +194,82 @@ public class AgendaEventDetails extends AppCompatActivity {
     }
 
     private void saveModifications(EventsEntry currentEvent){
-        EventsEntry currentEventEntry = currentEvent;
-        currentEventEntry.setFULLDAYEVENT(Boolean.toString(eventFullDay_cb.isChecked()));
-        currentEventEntry.setTRANSPARENCY(Boolean.toString(eventDisponibility_cb.isChecked()));
+        //set modifications
+        final EventsEntry currentEventEntry = currentEvent;
+
+        Log.e(TAG, " saveModifications() => datem: "+Calendar.getInstance(Locale.FRENCH).getTimeInMillis());
+        currentEventEntry.setDATEM(Calendar.getInstance(Locale.FRENCH).getTimeInMillis());
+        if (eventFullDay_cb.isChecked()) {
+            currentEventEntry.setFULLDAYEVENT("1");
+        }else{
+            currentEventEntry.setFULLDAYEVENT("0");
+        }
+        if (eventDisponibility_cb.isChecked()) {
+            currentEventEntry.setTRANSPARENCY("1");
+        }else{
+            currentEventEntry.setTRANSPARENCY("0");
+        }
         currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim()));
         currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim()));
         currentEventEntry.setLIEU(eventLocation.getText().toString().trim());
-        currentEventEntry.setTIER(concernTier);
+        currentEventEntry.setTIER(concernTier.trim());
         currentEventEntry.setDESCRIPTION(eventDescription.getText().toString().trim());
 
-        mDB.eventsDao().updateEvent(currentEventEntry);
-        //back to aganda activity
-        startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+        //send to the server...
+        /** get the event from server by id */
+        Call<AgendaEvents> call = ApiUtils.getISalesService(this).getEventById(currentEvent.getId());
+        call.enqueue(new Callback<AgendaEvents>() {
+            @Override
+            public void onResponse(Call<AgendaEvents> call, Response<AgendaEvents> response) {
+                if (response.isSuccessful()){
+                    AgendaEvents agendaEvents = response.body();
 
-        Toast.makeText(this, "Evènement "+currentEventEntry.getId()+" Enregisté!", Toast.LENGTH_SHORT).show();
+                    //replace current fields
+                    //agendaEvents.convertion(currentEventEntry);
+                    agendaEvents.setDatem(currentEventEntry.getDATEM());
+                    agendaEvents.setFulldayevent(currentEventEntry.getFULLDAYEVENT());
+                    agendaEvents.setTransparency(currentEventEntry.getTRANSPARENCY());
+                    agendaEvents.setDatep(currentEventEntry.getSTART_EVENT());
+                    agendaEvents.setDatef(currentEventEntry.getEND_EVENT());
+                    agendaEvents.setLocation(currentEventEntry.getLIEU());
+                    agendaEvents.setSocid(currentEventEntry.getTIER());
+                    agendaEvents.setNote(currentEventEntry.getDESCRIPTION());
+
+                    Log.e(TAG, " onResponse::GetEventFromTheServer AgendaEvents id: "+agendaEvents.getId()+"\n" +
+                            " data: "+agendaEvents);
+
+                    //update the event to get server
+                    Call<AgendaEvents> callUpdate = ApiUtils.getISalesService(getApplicationContext()).updateEvent(agendaEvents.getId(), agendaEvents);
+                    callUpdate.enqueue(new Callback<AgendaEvents>() {
+                        @Override
+                        public void onResponse(Call<AgendaEvents> call, Response<AgendaEvents> response) {
+                            if (response.isSuccessful()){
+                                //update local db
+                                mDB.eventsDao().updateEvent(currentEventEntry);
+                                Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" est Modifier!", Toast.LENGTH_SHORT).show();
+                                //back to aganda activity
+                                startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" n'est pas Modifier!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<AgendaEvents> call, Throwable t) {
+                            Log.e(TAG, " onFailure::UpdateEventToTheServer \n"+t.getMessage());
+                        }
+                    });
+                }else {
+                    //error getting the event obj from the server
+                    Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AgendaEvents> call, Throwable t) {
+                Log.e(TAG, " onFailure::GetEventFromTheServer \n"+t.getMessage());
+            }
+        });
     }
 
     private void deleteButton(final EventsEntry event) {
@@ -334,6 +398,9 @@ public class AgendaEventDetails extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+        //set the date in seconds
+        res = (res/1000);
 
         Log.e(TAG, " convertTimeStringToLong( "+dateInString+" ) ==> result: "+res);
         return res;

@@ -246,6 +246,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         mAgendaEvents.setRef(String.format("EVE-%s", startEvent));
         mAgendaEvents.setType_code("AC_OTH_AUTO");
         mAgendaEvents.setType("Other (automatically inserted events)");
+        mAgendaEvents.setCode("AC_OTH_AUTO");
         mAgendaEvents.setLabel(newEvent.getLABEL());
         mAgendaEvents.setDatec(calendar.getTimeInMillis());
         mAgendaEvents.setDatem(calendar.getTimeInMillis());
@@ -264,7 +265,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         mAgendaEvents.setTransparency(newEvent.getTRANSPARENCY());
         mAgendaEvents.setPriority("0");
 
-        mAgendaEvents.setUserassigned(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0"));
+        Log.e(TAG, "User id: "+mDB.userDao().getUser().get(0).getId());
+        mAgendaEvents.setUserassigned(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0", newEvent.getTRANSPARENCY()));
 
         mAgendaEvents.setUserownerid(mDB.userDao().getUser().get(0).getId()+"");
         mAgendaEvents.setSocid(newEvent.getTIER());
