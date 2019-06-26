@@ -22,6 +22,7 @@ public class EventsEntry implements Serializable {
     private String YEAR;
     private Long START_EVENT;
     private Long END_EVENT;
+    private Long DATEM;
     private String TIER;
     private String DESCRIPTION;
 
@@ -154,6 +155,14 @@ public class EventsEntry implements Serializable {
 
     public void setEND_EVENT(Long END_EVENT) {
         this.END_EVENT = END_EVENT;
+    }
+
+    public Long getDATEM() {
+        return DATEM;
+    }
+
+    public void setDATEM(Long DATEM) {
+        this.DATEM = DATEM;
     }
 
     public String getTIER() {

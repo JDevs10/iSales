@@ -150,7 +150,11 @@ public interface ISalesServicesRemote {
                                                @Query(ApiUtils.page) long page);
 
     @GET("agendaevents/{eventId}")
-    Call<ArrayList<AgendaEvents>> getEventById(@Path("eventId") Long eventId);
+    Call<AgendaEvents> getEventById(@Path("eventId") Long eventId);
+
+    @PUT("agendaevents/{eventId}")
+    Call<AgendaEvents> updateEvent(@Path("eventId") Long eventId,
+                                   @Body AgendaEvents agendaEvents);
 
     @DELETE("agendaevents/{eventId}")
     Call<AgendaEventSuccess> deleteEventById(@Path("eventId") Long eventId);
