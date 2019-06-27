@@ -6,8 +6,10 @@ package com.iSales.remote.model;
  */
 public class AgendaUserassigned {
     private String id;
+    /*
     private String mandatory;
     private String answer_status;
+    */
     private String transparency;
 
     public AgendaUserassigned() {
@@ -15,8 +17,10 @@ public class AgendaUserassigned {
 
     public AgendaUserassigned(String id, String mandatory, String answer_status, String transparency) {
         this.id = id;
+        /*
         this.mandatory = mandatory;
         this.answer_status = answer_status;
+        */
         this.transparency = transparency;
     }
 
@@ -28,6 +32,7 @@ public class AgendaUserassigned {
         this.id = id;
     }
 
+    /*
     public String getMandatory() {
         return mandatory;
     }
@@ -43,6 +48,7 @@ public class AgendaUserassigned {
     public void setAnswer_status(String answer_status) {
         this.answer_status = answer_status;
     }
+*/
 
     public String getTransparency() {
         return transparency;
