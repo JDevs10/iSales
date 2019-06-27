@@ -26,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -220,7 +221,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     private void saveEvent(String label, String location, String percentage, String fullDayEvent, String disponibility,
                            String time, String date, String month, String year, Long startEvent, Long endEvent, String concernTier, String description) {
 
-        /*
         final ProgressDialog progressDialog = new ProgressDialog(CalendarActivity.this);
         progressDialog.setMessage("Enregistrement de l'évenement en cours...");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -228,7 +228,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
         progressDialog.show();
-        */
 
         if (!ConnectionManager.isPhoneConnected(getApplication())){
             Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
@@ -241,7 +240,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
         EventsEntry newEvent = new EventsEntry(label, location, percentage, fullDayEvent, disponibility, time, date, month, year, startEvent, endEvent, concernTier, description);
         newEvent.setREF(String.format("PROV-%s", startEvent));
-        //mDB.eventsDao().insertNewEvent(newEvent);
+        mDB.eventsDao().insertNewEvent(newEvent);
 
         /**
          * Now to save to the server side now
@@ -251,10 +250,9 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         AgendaEvents mAgendaEvents = new AgendaEvents();
 
         mAgendaEvents.setTable_rowid("id");
-        //mAgendaEvents.setRef(String.format("EVE-%s", startEvent));
-        mAgendaEvents.setType_code("AC_OTH_AUTO");
+        mAgendaEvents.setType_code("AC_OTH");
         mAgendaEvents.setType("Other (automatically inserted events)");
-        mAgendaEvents.setCode("AC_OTH_AUTO");
+        mAgendaEvents.setCode("AC_OTH");
         mAgendaEvents.setLabel(newEvent.getLABEL());
         mAgendaEvents.setDatec(calendar.getTimeInMillis());
         mAgendaEvents.setDatem(calendar.getTimeInMillis());
@@ -274,19 +272,13 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         mAgendaEvents.setPriority("0");
 
         Log.e(TAG, "User id: "+mDB.userDao().getUser().get(0).getId());
-//        mAgendaEvents.setUserassigned(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0", newEvent.getTRANSPARENCY()));
-
         AgendaUserassigned[] userassigned = new AgendaUserassigned[1];
         userassigned[0] = new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0");
         mAgendaEvents.setUserassigned(userassigned[0]);
 
-//        mAgendaEvents.setUserassigned(new ArrayList<AgendaUserassigned>());
-//        mAgendaEvents.getUserassigned().add(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0"));
-
         mAgendaEvents.setUserownerid(mDB.userDao().getUser().get(0).getId()+"");
         mAgendaEvents.setSocid(newEvent.getTIER());
         mAgendaEvents.setNote(newEvent.getDESCRIPTION());
-
 
         // Creating Object of ObjectMapper define in Jakson Api
         ObjectMapper Obj = new ObjectMapper();
@@ -301,8 +293,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             e.printStackTrace();
         }
 
-
-        SendAgendaEventTask sendAgendaEventTask = new SendAgendaEventTask(mAgendaEvents, CalendarActivity.this);
+        SendAgendaEventTask sendAgendaEventTask = new SendAgendaEventTask(progressDialog, mAgendaEvents, CalendarActivity.this, CalendarActivity.this);
         sendAgendaEventTask.execute();
 
     }
@@ -339,7 +330,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         return listEvents;
     }
 
-
     private void collectEventsPerMonth(String Month, String Year){
         Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+" )");
         Log.e(TAG, " clearing event list size: "+eventsList.size());
@@ -349,7 +339,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         eventsList.addAll(listEvents);
         Log.e(TAG," eventList size: "+eventsList.size());
     }
-
 
     private void InitAddAgendaDialog(final Dialog dialog, final int position){
         final EditText libelle_et = dialog.findViewById(R.id.dialog_add_new_event_libelle);
@@ -390,6 +379,9 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         final int[] startDate = new int[5];
         final int[] startEnd = new int[5];
         final String[] concernTier = new String[1];
+
+        //Prevent the keyboard from displaying on activity start
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         clientSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -719,6 +711,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             eventsEntry.setFULLDAYEVENT(eventItem.getFulldayevent());
             eventsEntry.setTRANSPARENCY(eventItem.getTransparency());
 
+            /*
             Log.e(TAG, " AgendaEvents id: "+eventItem.getId()+"\n" +
                     "AgendaEvents datec: "+(eventItem.getDatec()*1000)+"\n" +
                     "AgendaEvents datep: "+(eventItem.getDatep()*1000)+"\n" +
@@ -726,6 +719,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
                     "EventsEntry Event Date: "+eventDateFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
                     "EventsEntry Event month: "+monthFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
                     "EventsEntry Event Year: "+yearFormat.format(new Date( (eventItem.getDatep()*1000) )));
+            */
 
             eventsEntry.setTIME(new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) )));
             eventsEntry.setDATE(eventDateFormat.format(new Date( (eventItem.getDatep()*1000) )));
@@ -741,6 +735,13 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         }
 
         mPageEvent++;
+        getEventsFromServer();
+    }
+
+    @Override
+    public void onSendAgendaEventsTaskComplete() {
+        Log.e(TAG, " onSendAgendaEventsTaskComplete before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size());
+        mDB.eventsDao().deleteAllEvent();
         getEventsFromServer();
     }
 

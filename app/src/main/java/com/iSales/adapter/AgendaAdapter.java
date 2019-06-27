@@ -156,7 +156,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
     }
 
     private Date convertStringToDate(String eventDate){
-        Log.e(TAG, " convertStringToDate( "+eventDate+" )");
+        //Log.e(TAG, " convertStringToDate( "+eventDate+" )");
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.FRENCH);
         Date date = null;
 
