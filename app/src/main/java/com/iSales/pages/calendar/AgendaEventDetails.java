@@ -194,6 +194,7 @@ public class AgendaEventDetails extends AppCompatActivity {
     }
 
     private void saveModifications(EventsEntry currentEvent){
+        showProgressDialog(true, "Création", "Enregistrement de l'évenement en cours...");
         //set modifications
         final EventsEntry currentEventEntry = currentEvent;
 
@@ -209,10 +210,10 @@ public class AgendaEventDetails extends AppCompatActivity {
         }else{
             currentEventEntry.setTRANSPARENCY("0");
         }
-        currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim()));
-        currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim()));
+        currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim(), true));
+        currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim(), true));
         currentEventEntry.setLIEU(eventLocation.getText().toString().trim());
-        currentEventEntry.setTIER(concernTier.trim());
+        currentEventEntry.setTIER(concernTier);
         currentEventEntry.setDESCRIPTION(eventDescription.getText().toString().trim());
 
         //send to the server...
@@ -234,7 +235,6 @@ public class AgendaEventDetails extends AppCompatActivity {
                     agendaEvents.setLocation(currentEventEntry.getLIEU());
                     agendaEvents.setSocid(currentEventEntry.getTIER());
                     agendaEvents.setNote(currentEventEntry.getDESCRIPTION());
-
                     Log.e(TAG, " onResponse::GetEventFromTheServer AgendaEvents id: "+agendaEvents.getId()+"\n" +
                             " data: "+agendaEvents);
 
@@ -245,29 +245,40 @@ public class AgendaEventDetails extends AppCompatActivity {
                         public void onResponse(Call<AgendaEvents> call, Response<AgendaEvents> response) {
                             if (response.isSuccessful()){
                                 //update local db
+                                //set the to millisecends for local db
+                                currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim(), false));
+                                currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim(), false));
                                 mDB.eventsDao().updateEvent(currentEventEntry);
                                 Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" est Modifier!", Toast.LENGTH_SHORT).show();
+                                showProgressDialog(false, null, null);
+
                                 //back to aganda activity
                                 startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
                             }else{
                                 Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" n'est pas Modifier!", Toast.LENGTH_SHORT).show();
+                                showProgressDialog(false, null, null);
                             }
                         }
 
                         @Override
                         public void onFailure(Call<AgendaEvents> call, Throwable t) {
                             Log.e(TAG, " onFailure::UpdateEventToTheServer \n"+t.getMessage());
+                            Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                            showProgressDialog(false, null, null);
                         }
                     });
                 }else {
                     //error getting the event obj from the server
                     Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                    showProgressDialog(false, null, null);
                 }
             }
 
             @Override
             public void onFailure(Call<AgendaEvents> call, Throwable t) {
                 Log.e(TAG, " onFailure::GetEventFromTheServer \n"+t.getMessage());
+                Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                showProgressDialog(false, null, null);
             }
         });
     }
@@ -386,7 +397,8 @@ public class AgendaEventDetails extends AppCompatActivity {
         return sdf.format(cal.getTime());
     }
 
-    private Long convertTimeStringToLong(String dateInString){
+    private Long convertTimeStringToLong(String dateInString, boolean server){
+        Log.e(TAG, " convertTimeStringToLong( "+dateInString+" )");
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyy 'à' K:mm a", Locale.FRENCH);
         Long res = null;
 
@@ -398,9 +410,12 @@ public class AgendaEventDetails extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        Log.e(TAG, " convertTimeStringToLong:res ==> "+res);
 
-        //set the date in seconds
-        res = (res/1000);
+        if (server) {
+            //set the date in seconds
+            res = (res / 1000);
+        }
 
         Log.e(TAG, " convertTimeStringToLong( "+dateInString+" ) ==> result: "+res);
         return res;
