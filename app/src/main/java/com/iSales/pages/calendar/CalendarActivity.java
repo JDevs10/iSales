@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -61,8 +62,12 @@ import com.iSales.task.FindThirdpartieTask;
 import com.iSales.task.SendAgendaEventTask;
 import com.iSales.utility.ISalesUtility;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -70,6 +75,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CalendarActivity extends AppCompatActivity implements FindAgendaEventsListener {
     private String TAG = CalendarActivity.class.getSimpleName();
@@ -233,7 +241,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
         EventsEntry newEvent = new EventsEntry(label, location, percentage, fullDayEvent, disponibility, time, date, month, year, startEvent, endEvent, concernTier, description);
         newEvent.setREF(String.format("PROV-%s", startEvent));
-        mDB.eventsDao().insertNewEvent(newEvent);
+        //mDB.eventsDao().insertNewEvent(newEvent);
 
         /**
          * Now to save to the server side now
@@ -243,7 +251,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         AgendaEvents mAgendaEvents = new AgendaEvents();
 
         mAgendaEvents.setTable_rowid("id");
-        mAgendaEvents.setRef(String.format("EVE-%s", startEvent));
+        //mAgendaEvents.setRef(String.format("EVE-%s", startEvent));
         mAgendaEvents.setType_code("AC_OTH_AUTO");
         mAgendaEvents.setType("Other (automatically inserted events)");
         mAgendaEvents.setCode("AC_OTH_AUTO");
@@ -266,11 +274,33 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         mAgendaEvents.setPriority("0");
 
         Log.e(TAG, "User id: "+mDB.userDao().getUser().get(0).getId());
-        mAgendaEvents.setUserassigned(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0", newEvent.getTRANSPARENCY()));
+//        mAgendaEvents.setUserassigned(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0", newEvent.getTRANSPARENCY()));
+
+        AgendaUserassigned[] userassigned = new AgendaUserassigned[1];
+        userassigned[0] = new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0");
+        mAgendaEvents.setUserassigned(userassigned[0]);
+
+//        mAgendaEvents.setUserassigned(new ArrayList<AgendaUserassigned>());
+//        mAgendaEvents.getUserassigned().add(new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0", "0","0"));
 
         mAgendaEvents.setUserownerid(mDB.userDao().getUser().get(0).getId()+"");
         mAgendaEvents.setSocid(newEvent.getTIER());
         mAgendaEvents.setNote(newEvent.getDESCRIPTION());
+
+
+        // Creating Object of ObjectMapper define in Jakson Api
+        ObjectMapper Obj = new ObjectMapper();
+        try {
+            // get object as a json string
+            String jsonStr = Obj.writeValueAsString(mAgendaEvents);
+
+            Log.e(TAG, "Save JSON:\n\n"+jsonStr);
+        }
+
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         SendAgendaEventTask sendAgendaEventTask = new SendAgendaEventTask(mAgendaEvents, CalendarActivity.this);
         sendAgendaEventTask.execute();
@@ -491,6 +521,40 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         final String month = monthFormat.format(dates.get(position));
         final String year = yearFormat.format(dates.get(position));
 
+        //set event end calendar
+        journe_st.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Log.e(TAG, "CompoundButton: "+b);
+                SimpleDateFormat sdf_day = new SimpleDateFormat("EEEE, dd MMMM", Locale.FRENCH);
+                SimpleDateFormat sdf_time = new SimpleDateFormat("K:mm a", Locale.FRENCH);
+                if (!b) {
+                    combinedCalStart.setTime(dates.get(position));
+
+                    dateStart.setText(sdf_day.format(combinedCalStart.getTime()));
+                    timeStart.setText(sdf_time.format(combinedCalStart.getTime()));
+                    dateEnd.setText("XXX xx XXX");
+                    timeEnd.setText("X:X XX");
+                }else{
+                    combinedCalStart.setTime(dates.get(position));
+
+                    //to check once user add the event
+                    startEnd[0] = combinedCalStart.get(Calendar.MONTH);
+                    startEnd[1] = combinedCalStart.get(Calendar.MONTH);
+                    startEnd[2] = combinedCalStart.get(Calendar.DAY_OF_MONTH);
+                    startEnd[3] = 23;
+                    startEnd[4] = 59;
+
+                    combinedCalStart.set(combinedCalStart.get(Calendar.YEAR), combinedCalStart.get(Calendar.MONTH), combinedCalStart.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+                    combinedCalEnd.set(combinedCalStart.get(Calendar.YEAR), combinedCalStart.get(Calendar.MONTH), combinedCalStart.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+
+                    dateStart.setText(sdf_day.format(combinedCalStart.getTime()));
+                    timeStart.setText(sdf_time.format(combinedCalStart.getTime()));
+                    dateEnd.setText(sdf_day.format(combinedCalEnd.getTime()));
+                    timeEnd.setText(sdf_time.format(combinedCalEnd.getTime()));
+                }
+            }
+        });
 
         //save the Event in database
         add_btn.setOnClickListener(new View.OnClickListener() {
@@ -514,15 +578,12 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
                     cancel = true;
                 }
 
-                //set event start and end calendars
+                //set event start calendar
                 if ((startDate[0] + startDate[1] + startDate[2] + startDate[3] + startDate[4]) == 0){
                     combinedCalStart.setTime(dates.get(position));
                 }else{
                     combinedCalStart.set(startDate[0], startDate[1], startDate[2], startDate[3], startDate[4]);
                 }
-
-                combinedCalEnd.set(startEnd[0], startEnd[1], startEnd[2], startEnd[3], startEnd[4]);
-
 
                 //check if  startEventCalendar > endEventCalendar
                 if (combinedCalStart.getTime().getTime() > combinedCalEnd.getTime().getTime()){
