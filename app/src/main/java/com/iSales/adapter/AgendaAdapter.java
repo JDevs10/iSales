@@ -1,5 +1,6 @@
 package com.iSales.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -14,9 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.R;
+import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.EventsEntry;
+import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.ItemClickListenerAgenda;
+import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.calendar.Events;
 
 import java.text.ParseException;
@@ -34,7 +38,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
     private Calendar currentDate;
     private List<EventsEntry> events;
     private ArrayList<Events> dataEvents;
-
+    private AppDatabase mDB;
     private ItemClickListenerAgenda itemClickListenerAgenda = null;
 
     public AgendaAdapter(Context context, List<Date> dates, Calendar currentDate, List<EventsEntry> events){
@@ -43,7 +47,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
         this.dates = dates;
         this.currentDate = currentDate;
         this.events = events;
-//        this.dataEvents = data;
+        this.mDB = AppDatabase.getInstance(this.mContext);
     }
 
     public class AngendaEventViewHolder extends RecyclerView.ViewHolder {

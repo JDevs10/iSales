@@ -194,7 +194,7 @@ public class AgendaEventDetails extends AppCompatActivity {
     }
 
     private void saveModifications(EventsEntry currentEvent){
-        showProgressDialog(true, "Création", "Enregistrement de l'évenement en cours...");
+        showProgressDialog(true, "Modification", "Enregistrement de l'évenement en cours...");
         //set modifications
         final EventsEntry currentEventEntry = currentEvent;
 
