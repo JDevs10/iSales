@@ -322,7 +322,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
             Log.e(TAG, "Save JSON:\n\n"+jsonStr);
         }
-
         catch (IOException e) {
             e.printStackTrace();
         }
