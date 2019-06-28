@@ -24,7 +24,7 @@ public class AgendaEventEntry {
     private String authorid;
     private String usermodid;
     private Long datep;
-    private Long datef;
+    private Long datep2;
     private String durationp;
     private String fulldayevent;
     private String punctual;
@@ -56,7 +56,7 @@ public class AgendaEventEntry {
         this.authorid = mAgendaEvents.getAuthorid();
         this.usermodid = mAgendaEvents.getUsermodid();
         this.datep = mAgendaEvents.getDatep();
-        this.datef = mAgendaEvents.getDatef();
+        this.datep2 = mAgendaEvents.getDatef();
         this.durationp = mAgendaEvents.getDurationp();
         this.fulldayevent = mAgendaEvents.getFulldayevent();
         this.punctual = mAgendaEvents.getPunctual();
@@ -181,12 +181,12 @@ public class AgendaEventEntry {
         this.datep = datep;
     }
 
-    public Long getDatef() {
-        return datef;
+    public Long getDatep2() {
+        return datep2;
     }
 
-    public void setDatef(Long datef) {
-        this.datef = datef;
+    public void setDatep2(Long datep2) {
+        this.datep2 = datep2;
     }
 
     public String getDurationp() {

@@ -39,4 +39,7 @@ public interface EventsDao {
 
     @Query("DELETE FROM events WHERE id = :id")
     void deleteEvent(long id);
+
+    @Query("DELETE FROM events")
+    void deleteAllEvent();
 }

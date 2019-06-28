@@ -1,6 +1,7 @@
 package com.iSales.pages.calendar;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -34,7 +35,12 @@ import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;
+import com.iSales.remote.ApiUtils;
+import com.iSales.remote.model.AgendaEventSuccess;
+import com.iSales.remote.model.AgendaEvents;
+import com.iSales.remote.model.ProductVirtual;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,6 +50,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AgendaEventDetails extends AppCompatActivity {
     private String TAG = AgendaEventDetails.class.getSimpleName();
@@ -63,9 +73,10 @@ public class AgendaEventDetails extends AppCompatActivity {
     final Calendar combinedCalEnd = Calendar.getInstance(Locale.FRENCH);
 
     private AppDatabase mDB;
-
     private UserEntry mUserEntry;
     private String concernTier;
+
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +88,8 @@ public class AgendaEventDetails extends AppCompatActivity {
 
         mDB = AppDatabase.getInstance(getApplicationContext());
         loadUser();
+
+        mProgressDialog = new ProgressDialog(AgendaEventDetails.this);
 
         //init views
         eventImage_iv = (ImageView) findViewById(R.id.activity_agenda_event_details_event_img_iv);
@@ -181,30 +194,133 @@ public class AgendaEventDetails extends AppCompatActivity {
     }
 
     private void saveModifications(EventsEntry currentEvent){
-        EventsEntry currentEventEntry = currentEvent;
-        currentEventEntry.setFULLDAYEVENT(Boolean.toString(eventFullDay_cb.isChecked()));
-        currentEventEntry.setTRANSPARENCY(Boolean.toString(eventDisponibility_cb.isChecked()));
-        currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim()));
-        currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim()));
+        showProgressDialog(true, "Modification", "Enregistrement de l'évenement en cours...");
+        //set modifications
+        final EventsEntry currentEventEntry = currentEvent;
+
+        Log.e(TAG, " saveModifications() => datem: "+Calendar.getInstance(Locale.FRENCH).getTimeInMillis());
+        currentEventEntry.setDATEM(Calendar.getInstance(Locale.FRENCH).getTimeInMillis());
+        if (eventFullDay_cb.isChecked()) {
+            currentEventEntry.setFULLDAYEVENT("1");
+        }else{
+            currentEventEntry.setFULLDAYEVENT("0");
+        }
+        if (eventDisponibility_cb.isChecked()) {
+            currentEventEntry.setTRANSPARENCY("1");
+        }else{
+            currentEventEntry.setTRANSPARENCY("0");
+        }
+        currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim(), true));
+        currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim(), true));
         currentEventEntry.setLIEU(eventLocation.getText().toString().trim());
         currentEventEntry.setTIER(concernTier);
         currentEventEntry.setDESCRIPTION(eventDescription.getText().toString().trim());
 
-        mDB.eventsDao().updateEvent(currentEventEntry);
-        //back to aganda activity
-        startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+        //send to the server...
+        /** get the event from server by id */
+        Call<AgendaEvents> call = ApiUtils.getISalesService(this).getEventById(currentEvent.getId());
+        call.enqueue(new Callback<AgendaEvents>() {
+            @Override
+            public void onResponse(Call<AgendaEvents> call, Response<AgendaEvents> response) {
+                if (response.isSuccessful()){
+                    AgendaEvents agendaEvents = response.body();
 
-        Toast.makeText(this, "Evènement "+currentEventEntry.getId()+" Enregisté!", Toast.LENGTH_SHORT).show();
+                    //replace current fields
+                    //agendaEvents.convertion(currentEventEntry);
+                    agendaEvents.setDatem(currentEventEntry.getDATEM());
+                    agendaEvents.setFulldayevent(currentEventEntry.getFULLDAYEVENT());
+                    agendaEvents.setTransparency(currentEventEntry.getTRANSPARENCY());
+                    agendaEvents.setDatep(currentEventEntry.getSTART_EVENT());
+                    agendaEvents.setDatef(currentEventEntry.getEND_EVENT());
+                    agendaEvents.setLocation(currentEventEntry.getLIEU());
+                    agendaEvents.setSocid(currentEventEntry.getTIER());
+                    agendaEvents.setNote(currentEventEntry.getDESCRIPTION());
+                    Log.e(TAG, " onResponse::GetEventFromTheServer AgendaEvents id: "+agendaEvents.getId()+"\n" +
+                            " data: "+agendaEvents);
+
+                    //update the event to get server
+                    Call<AgendaEvents> callUpdate = ApiUtils.getISalesService(getApplicationContext()).updateEvent(agendaEvents.getId(), agendaEvents);
+                    callUpdate.enqueue(new Callback<AgendaEvents>() {
+                        @Override
+                        public void onResponse(Call<AgendaEvents> call, Response<AgendaEvents> response) {
+                            if (response.isSuccessful()){
+                                //update local db
+                                //set the to millisecends for local db
+                                currentEventEntry.setSTART_EVENT(convertTimeStringToLong(eventDateStart.getText().toString().trim(), false));
+                                currentEventEntry.setEND_EVENT(convertTimeStringToLong(eventDateEnd.getText().toString().trim(), false));
+                                mDB.eventsDao().updateEvent(currentEventEntry);
+                                Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" est Modifier!", Toast.LENGTH_SHORT).show();
+                                showProgressDialog(false, null, null);
+
+                                //back to aganda activity
+                                startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" n'est pas Modifier!", Toast.LENGTH_SHORT).show();
+                                showProgressDialog(false, null, null);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<AgendaEvents> call, Throwable t) {
+                            Log.e(TAG, " onFailure::UpdateEventToTheServer \n"+t.getMessage());
+                            Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                            showProgressDialog(false, null, null);
+                        }
+                    });
+                }else {
+                    //error getting the event obj from the server
+                    Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                    showProgressDialog(false, null, null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AgendaEvents> call, Throwable t) {
+                Log.e(TAG, " onFailure::GetEventFromTheServer \n"+t.getMessage());
+                Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                showProgressDialog(false, null, null);
+            }
+        });
     }
 
-    private void deleteButton(EventsEntry event) {
-        //delete local
-        mDB.eventsDao().deleteEvent(event.getId());
-        //but need to delete on the server
-        mDB.agendaEventsDao().deleteEvent(event.getId());
-        Toast.makeText(this, "Evènement supprimé!", Toast.LENGTH_SHORT).show();
-        //back to aganda activity
-        startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+    private void deleteButton(final EventsEntry event) {
+        showProgressDialog(true, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+
+        Call<AgendaEventSuccess> call = ApiUtils.getISalesService(this).deleteEventById(event.getId());
+        call.enqueue(new Callback<AgendaEventSuccess>() {
+            @Override
+            public void onResponse(Call<AgendaEventSuccess> call, Response<AgendaEventSuccess> response) {
+                if (response.isSuccessful()){
+                    //delete local
+                    mDB.eventsDao().deleteEvent(event.getId());
+                    //but need to delete on the server
+                    mDB.agendaEventsDao().deleteEvent(event.getId());
+
+                    Toast.makeText(getApplicationContext(), "Evènement "+event.getLABEL()+" supprimé!", Toast.LENGTH_SHORT).show();
+                    showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+
+                    Log.e(TAG, " Event id: "+event.getLocalId()+"\nCode: "+response.body().getCode()+" message: "+response.body().getMessage());
+
+                    //back to aganda activity
+                    startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
+                }else{
+                    try {
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                        showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+                        Log.e(TAG, "deleteButton(): err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.e(TAG, "deleteButton(): message=" + e.getMessage());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AgendaEventSuccess> call, Throwable t) {
+                showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                Log.e(TAG, "deleteButton(): message=" + t.getMessage());
+            }
+        });
     }
 
     private void viewModifyChange(Boolean isChecked){
@@ -243,16 +359,30 @@ public class AgendaEventDetails extends AppCompatActivity {
 
     private void displayCurrentEvent(EventsEntry event){
         //eventImage_iv;
-        eventRef_tv.setText("Ref: nothing...");
+        eventRef_tv.setText(event.getREF());
         eventLabel_tv.setText(event.getLABEL());
         eventDateStart.setText(convertTimeStamp(event.getSTART_EVENT()));
         eventDateEnd.setText(convertTimeStamp(event.getEND_EVENT()));
         eventLocation.setText(event.getLIEU());
         eventDescription.setText(event.getDESCRIPTION());
-        eventFullDay_cb.setChecked(Boolean.valueOf(event.getFULLDAYEVENT()));
+
+        if (event.getFULLDAYEVENT().equals("0")) {
+            eventFullDay_cb.setChecked(false);
+        }
+        if (event.getFULLDAYEVENT().equals("1")){
+            eventFullDay_cb.setChecked(true);
+        }
+
         eventAssignTo.setText(mUserEntry.getLastname());
         eventDisponibility.setText(mUserEntry.getLastname()+" - Disponibilité: ");
-        eventDisponibility_cb.setChecked(Boolean.valueOf(event.getTRANSPARENCY()));
+
+        if (event.getTRANSPARENCY().equals("0")) {
+            eventDisponibility_cb.setChecked(false);
+        }
+        if (event.getTRANSPARENCY().equals("1")){
+            eventDisponibility_cb.setChecked(true);
+        }
+
         eventConcernTier.setSelection(setSelectedClient(event.getTIER()));
     }
 
@@ -267,7 +397,8 @@ public class AgendaEventDetails extends AppCompatActivity {
         return sdf.format(cal.getTime());
     }
 
-    private Long convertTimeStringToLong(String dateInString){
+    private Long convertTimeStringToLong(String dateInString, boolean server){
+        Log.e(TAG, " convertTimeStringToLong( "+dateInString+" )");
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyy 'à' K:mm a", Locale.FRENCH);
         Long res = null;
 
@@ -278,6 +409,12 @@ public class AgendaEventDetails extends AppCompatActivity {
             res = cal.getTime().getTime();
         } catch (ParseException e) {
             e.printStackTrace();
+        }
+        Log.e(TAG, " convertTimeStringToLong:res ==> "+res);
+
+        if (server) {
+            //set the date in seconds
+            res = (res / 1000);
         }
 
         Log.e(TAG, " convertTimeStringToLong( "+dateInString+" ) ==> result: "+res);
@@ -310,6 +447,10 @@ public class AgendaEventDetails extends AppCompatActivity {
     private int setSelectedClient(String clientEntryTierId){
         int clientSpinnerPosition = -1;
         String clientName = null;
+
+        if (clientEntryTierId == null || clientEntryTierId.isEmpty() || clientEntryTierId.equals("")){
+            return 0;
+        }
 
         List<ClientEntry> clientList = mDB.clientDao().getAllClient();
         for (int i=0; i<clientList.size(); i++){
@@ -460,6 +601,27 @@ public class AgendaEventDetails extends AppCompatActivity {
                     }
                 });
                 break;
+        }
+    }
+
+    /**
+     * Shows the progress UI and hides.
+     */
+    private void showProgressDialog(boolean show, String title, String message) {
+
+        if (show) {
+            if (title != null) mProgressDialog.setTitle(title);
+            if (message != null) mProgressDialog.setMessage(message);
+
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+            mProgressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
+            mProgressDialog.show();
+        } else {
+            if (mProgressDialog != null){
+                mProgressDialog.dismiss();
+            }
         }
     }
 }

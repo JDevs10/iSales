@@ -6,6 +6,8 @@ import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Color;
@@ -24,9 +26,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -45,31 +49,47 @@ import com.iSales.database.AppDatabase;
 import com.iSales.database.DBHelper.DatabaseHelper;
 import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.helper.DebugMe;
+import com.iSales.interfaces.FindAgendaEventsListener;
 import com.iSales.interfaces.ItemClickListenerAgenda;
+import com.iSales.pages.profile.ProfileActivity;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.AgendaEvents;
+import com.iSales.remote.model.AgendaUserassigned;
+import com.iSales.remote.rest.AgendaEventsREST;
+import com.iSales.task.FindAgendaEventTask;
+import com.iSales.task.FindThirdpartieTask;
+import com.iSales.task.SendAgendaEventTask;
+import com.iSales.utility.ISalesUtility;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class CalendarActivity extends AppCompatActivity {
+public class CalendarActivity extends AppCompatActivity implements FindAgendaEventsListener {
     private String TAG = CalendarActivity.class.getSimpleName();
+
 
     private ImageButton previousBtn,nextBtn;
     private TextView currentDate;
+    private ImageButton synchro_ib;
     private RecyclerView recyclerView;
     private static final int MAX_CALENDAR_DAYS = 42;
     private Calendar calendar = Calendar.getInstance(Locale.FRENCH);
@@ -89,8 +109,14 @@ public class CalendarActivity extends AppCompatActivity {
     private AlertDialog dialog;
     private Dialog mDialog;
 
+    //    task de recuperation des clients
+    private FindAgendaEventTask mFindAgendaEventTask = null;
+
     private ProgressDialog mProgressDialog;
     private AppDatabase mDB;
+
+    private int mLimit = 50;
+    private int mPageEvent = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,32 +144,33 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
+        synchro_ib.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //delete local db data
+                new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                        "synchro_ib::onClick() before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size()).execute();
+
+                mDB.eventsDao().deleteAllEvent();
+                getEventsFromServer();
+            }
+        });
+
+
+        //debug message
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" onCreate() => called.\nDone onCreate()").execute();
     }
-    /**
-     * Shows the progress UI and hides.
-     */
-    private void showProgressDialog(boolean show, String title, String message) {
-
-        if (show) {
-            mProgressDialog = new ProgressDialog(this);
-            if (title != null) mProgressDialog.setTitle(title);
-            if (message != null) mProgressDialog.setMessage(message);
-
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mProgressDialog.setCancelable(false);
-            mProgressDialog.setCanceledOnTouchOutside(false);
-            mProgressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
-            mProgressDialog.show();
-        } else {
-            if (mProgressDialog != null) mProgressDialog.dismiss();
-        }
-    }
-
 
     private void initLayout(){
+        //debug message
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" initLayout() => called.\nInit all views").execute();
+
         previousBtn = findViewById(R.id.calendar_previousMontBtn);
         nextBtn = findViewById(R.id.calendar_activity_nextMontBtn);
         currentDate = findViewById(R.id.calendar_activity_currentDate);
+        synchro_ib = (ImageButton) findViewById(R.id.calendar_activity_synchro);
 
         recyclerView = findViewById(R.id.calendar_activity_recycler_view);
         mLayoutManager_rv = new GridLayoutManager(getApplicationContext(), 7);
@@ -151,6 +178,10 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private void initCalendar(){
+        //debug message
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" initCalendar() => called.\nInit calendar, ").execute();
+
         String currentDate = dateFormat.format(calendar.getTime());
         this.currentDate.setText(currentDate);
 
@@ -174,6 +205,10 @@ public class CalendarActivity extends AppCompatActivity {
         mAgendaAdapter.setOnItemClickListener(new ItemClickListenerAgenda() {
             @Override
             public void OnItemClickAgendaEventAdd(int position) {
+                //debug message
+                new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                        TAG+" OnItemClickAgendaEventAdd() => called.").execute();
+
                 mDialog = new Dialog(CalendarActivity.this);
                 mDialog.setContentView(R.layout.dialog_add_new_event_layout);
                 mDialog.setTitle("Créer un événement");
@@ -183,6 +218,9 @@ public class CalendarActivity extends AppCompatActivity {
 
             @Override
             public void OnItemLongClickAgendaEvent(int position) {
+                new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                        TAG+" OnItemLongClickAgendaEvent() => called.").execute();
+
                 String date = eventDateFormat.format(dates.get(position));
                 Log.e(TAG, " OnItemLongClickAgendaEvent()::OnLongClickEvent || Date: "+date);
 
@@ -207,49 +245,111 @@ public class CalendarActivity extends AppCompatActivity {
 
     private void saveEvent(String label, String location, String percentage, String fullDayEvent, String disponibility,
                            String time, String date, String month, String year, Long startEvent, Long endEvent, String concernTier, String description) {
+        String myLog = " SaveEvent() label: "+label+" location: "+location+" percentage: "+percentage+" fullDayEvent: "+fullDayEvent +
+                " time: "+time+" date: "+date+" month: "+month+" year: "+year+" startEvent: "+startEvent+" endEvent: "+endEvent+" concernTier socId: "+concernTier+" description: "+description;
 
-        Log.e(TAG, " SaveEvent() label: "+label+" location: "+location+" percentage: "+percentage+" fullDayEvent: "+fullDayEvent +
-                " time: "+time+" date: "+date+" month: "+month+" year: "+year+" startEvent: "+startEvent+" endEvent: "+endEvent+" concernTier socId: "+concernTier+" description: "+description);
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
+                TAG+" saveEvent() => called.\n"+myLog).execute();
 
-        try{
-            EventsEntry newEvent = new EventsEntry(label, location, percentage, fullDayEvent, disponibility, time, date, month, year, startEvent, endEvent, concernTier, description);
-            newEvent.setREF(String.format("PROV-%s", startEvent));
-            long i = mDB.eventsDao().insertNewEvent(newEvent);
-            List<EventsEntry> test = mDB.eventsDao().getEventsById((long) 1);
 
-            String log = "List size: "+test.size()+"\n" +
-                    "Id: "+i+"\n"+
-                    "Event: "+test.get(0).getLABEL()+"\n" +
-                    "Time: "+test.get(0).getTIME()+"\n" +
-                    "Date: "+test.get(0).getDATE()+"\n" +
-                    "Month: "+test.get(0).getMONTH()+"\n" +
-                    "Year: "+test.get(0).getYEAR()+"\n\n";
+        final ProgressDialog progressDialog = new ProgressDialog(CalendarActivity.this);
+        progressDialog.setMessage("Enregistrement de l'évenement en cours...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
+        progressDialog.show();
 
-            Log.e(TAG, " "+log);
-            Toast.makeText(this, "Event Saved!!!", Toast.LENGTH_SHORT).show();
-
-        } catch (SQLException e){
-            e.getStackTrace();
-            Toast.makeText(this, "Event Not Saved!!!", Toast.LENGTH_SHORT).show();
-        } catch (Exception e){
-            e.getStackTrace();
-            Toast.makeText(this, "Event Not Saved!!!", Toast.LENGTH_SHORT).show();
+        if (!ConnectionManager.isPhoneConnected(getApplication())){
+            Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            //progressDialog.dismiss();
+            return;
         }
+
+        Log.e(TAG, myLog);
+
+        EventsEntry newEvent = new EventsEntry(label, location, percentage, fullDayEvent, disponibility, time, date, month, year, startEvent, endEvent, concernTier, description);
+        newEvent.setREF(String.format("PROV-%s", startEvent));
+        mDB.eventsDao().insertNewEvent(newEvent);
+
+        /**
+         * Now to save to the server side now
+         * save event on the server side....
+         **/
+        Calendar calendar = Calendar.getInstance(Locale.FRENCH);
+        AgendaEvents mAgendaEvents = new AgendaEvents();
+
+        mAgendaEvents.setTable_rowid("id");
+        mAgendaEvents.setType_code("AC_OTH");
+        mAgendaEvents.setType("Other (automatically inserted events)");
+        mAgendaEvents.setCode("AC_OTH");
+        mAgendaEvents.setLabel(newEvent.getLABEL());
+        mAgendaEvents.setDatec(calendar.getTimeInMillis());
+        mAgendaEvents.setDatem(calendar.getTimeInMillis());
+        mAgendaEvents.setUsermodid("");
+
+        Log.e(TAG, " getSTART_EVENT:: "+(Long) (newEvent.getSTART_EVENT()/1000));
+        mAgendaEvents.setDatep( (newEvent.getSTART_EVENT()/1000) );
+
+        Log.e(TAG, " getEND_EVENT:: "+(Long) (newEvent.getEND_EVENT()/1000));
+        mAgendaEvents.setDatef( (newEvent.getEND_EVENT()/1000) );
+
+        mAgendaEvents.setDurationp("-1");
+        mAgendaEvents.setFulldayevent("1");
+        mAgendaEvents.setPercentage(newEvent.getPERCENTAGE());
+        mAgendaEvents.setLocation(newEvent.getLIEU());
+        mAgendaEvents.setTransparency(newEvent.getTRANSPARENCY());
+        mAgendaEvents.setPriority("0");
+
+        Log.e(TAG, "User id: "+mDB.userDao().getUser().get(0).getId());
+        AgendaUserassigned[] userassigned = new AgendaUserassigned[1];
+        userassigned[0] = new AgendaUserassigned(mDB.userDao().getUser().get(0).getId()+"", "0");
+        mAgendaEvents.setUserassigned(userassigned[0]);
+
+        mAgendaEvents.setUserownerid(mDB.userDao().getUser().get(0).getId()+"");
+        mAgendaEvents.setSocid(newEvent.getTIER());
+        mAgendaEvents.setNote(newEvent.getDESCRIPTION());
+
+         //Creating Object of ObjectMapper define in Jakson Api
+        ObjectMapper Obj = new ObjectMapper();
+        try {
+             //get object as a json string
+            String jsonStr = Obj.writeValueAsString(mAgendaEvents);
+
+            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
+                    TAG+" saveEvent() => called.\n" +
+                            "Converting AgendaEvents Object to Json Object string.\n\n"+jsonStr).execute();
+
+            Log.e(TAG, "Save JSON:\n\n"+jsonStr);
+        }
+
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        SendAgendaEventTask sendAgendaEventTask = new SendAgendaEventTask(progressDialog, mAgendaEvents, CalendarActivity.this, CalendarActivity.this);
+        sendAgendaEventTask.execute();
 
     }
 
     private List<EventsEntry> collectEventsByDate(String Date){
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" collectEventsByDate() => called.\nStart collectEventsByDate()").execute();
+
         Log.e(TAG, " start collectEventsByDate()");
         List<EventsEntry> listEvents = mDB.eventsDao().getEventsByDate(Date);
         ArrayList<Events> arrayList = new ArrayList<>();
 
         for (int i=0; i<listEvents.size(); i++){
-            Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
-                    "Event: "+listEvents.get(i).getLABEL()+"\n" +
-                    "Time: "+listEvents.get(i).getTIME()+"\n" +
-                    "Date: "+listEvents.get(i).getDATE()+"\n" +
-                    "Month: "+listEvents.get(i).getMONTH()+"\n" +
-                    "Year: "+listEvents.get(i).getYEAR()+"\n\n");
+            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
+                    TAG+" collectEventsByDate() => called.\n" +
+                            "List size: "+i+"/"+listEvents.size()+"\n" +
+                            "Event: "+listEvents.get(i).getLABEL()+"\n" +
+                            "Time: "+listEvents.get(i).getTIME()+"\n" +
+                            "Date: "+listEvents.get(i).getDATE()+"\n" +
+                            "Month: "+listEvents.get(i).getMONTH()+"\n" +
+                            "Year: "+listEvents.get(i).getYEAR()+"\n\n").execute();
 
             Long id = listEvents.get(i).getId();
             String label = listEvents.get(i).getLABEL();
@@ -270,47 +370,24 @@ public class CalendarActivity extends AppCompatActivity {
         return listEvents;
     }
 
-
     private void collectEventsPerMonth(String Month, String Year){
-        Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+")");
-        Log.e(TAG, " clearing event list status: "+eventsList.size());
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" collectEventsPerMonth( "+Month+", "+Year+" ) => called.\n" +
+                        "clearing event list size: "+eventsList.size()).execute();
+
+        Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+" )");
+        Log.e(TAG, " clearing event list size: "+eventsList.size());
         eventsList.clear();
 
         List<EventsEntry> listEvents = mDB.eventsDao().getEventsByMonth(Month, Year);
-        Log.e(TAG, " Results size: "+listEvents.size());
-
-        for (int i=0; i<listEvents.size(); i++){
-            Log.e(TAG," \nList size: "+i+"/"+listEvents.size()+"\n" +
-                    "Event: "+listEvents.get(i).getLABEL()+"\n" +
-                    "Time: "+listEvents.get(i).getTIME()+"\n" +
-                    "Date: "+listEvents.get(i).getDATE()+"\n" +
-                    "Month: "+listEvents.get(i).getMONTH()+"\n" +
-                    "Year: "+listEvents.get(i).getYEAR()+"\n\n");
-
-            Long id = listEvents.get(i).getId();
-            String label = listEvents.get(i).getLABEL();
-            String location = listEvents.get(i).getLIEU();
-            String percentage = listEvents.get(i).getPERCENTAGE();
-            String fullDayEvent = listEvents.get(i).getFULLDAYEVENT();
-            String disponibility = listEvents.get(i).getTRANSPARENCY();
-            String time = listEvents.get(i).getTIME();
-            String date = listEvents.get(i).getDATE();
-            String month = listEvents.get(i).getMONTH();
-            String year = listEvents.get(i).getYEAR();
-            Long startEvent = listEvents.get(i).getSTART_EVENT();
-            Long endEvent = listEvents.get(i).getEND_EVENT();
-            String description = listEvents.get(i).getDESCRIPTION();
-
-            Events events = new Events(id, label, location, percentage, fullDayEvent, disponibility, time, date, month, year, startEvent, endEvent, description);
-            //eventsList.add(events);
-
-            eventsList.addAll(listEvents);
-        }
+        eventsList.addAll(listEvents);
         Log.e(TAG," eventList size: "+eventsList.size());
     }
 
-
     private void InitAddAgendaDialog(final Dialog dialog, final int position){
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" InitAddAgendaDialog() => called.\n").execute();
+
         final EditText libelle_et = dialog.findViewById(R.id.dialog_add_new_event_libelle);
         final EditText lieu_et = dialog.findViewById(R.id.dialog_add_new_event_lieu);
         final Switch journe_st = dialog.findViewById(R.id.dialog_add_new_event_journee_st);
@@ -350,6 +427,9 @@ public class CalendarActivity extends AppCompatActivity {
         final int[] startEnd = new int[5];
         final String[] concernTier = new String[1];
 
+        //Prevent the keyboard from displaying on activity start
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
         clientSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -357,7 +437,7 @@ public class CalendarActivity extends AppCompatActivity {
                     concernTier[0] = getSelectedClient(adapterView.getSelectedItem().toString()).getId().toString();
                     Toast.makeText(CalendarActivity.this, "Tiers concerné sélectionné: "+getSelectedClient(adapterView.getSelectedItem().toString()), Toast.LENGTH_SHORT).show();
                 }else{
-                    concernTier[0] = null;
+                    concernTier[0] = "";
                 }
             }
 
@@ -480,11 +560,51 @@ public class CalendarActivity extends AppCompatActivity {
         final String month = monthFormat.format(dates.get(position));
         final String year = yearFormat.format(dates.get(position));
 
+        //set event end calendar
+        journe_st.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Log.e(TAG, "CompoundButton: "+b);
+                SimpleDateFormat sdf_day = new SimpleDateFormat("EEEE, dd MMMM", Locale.FRENCH);
+                SimpleDateFormat sdf_time = new SimpleDateFormat("K:mm a", Locale.FRENCH);
+                if (!b) {
+                    combinedCalStart.setTime(dates.get(position));
+
+                    dateStart.setText(sdf_day.format(combinedCalStart.getTime()));
+                    timeStart.setText(sdf_time.format(combinedCalStart.getTime()));
+                    dateEnd.setText("XXX xx XXX");
+                    timeEnd.setText("X:X XX");
+                }else{
+                    combinedCalStart.setTime(dates.get(position));
+
+                    //to check once user add the event
+                    startEnd[0] = combinedCalStart.get(Calendar.MONTH);
+                    startEnd[1] = combinedCalStart.get(Calendar.MONTH);
+                    startEnd[2] = combinedCalStart.get(Calendar.DAY_OF_MONTH);
+                    startEnd[3] = 23;
+                    startEnd[4] = 59;
+
+                    combinedCalStart.set(combinedCalStart.get(Calendar.YEAR), combinedCalStart.get(Calendar.MONTH), combinedCalStart.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+                    combinedCalEnd.set(combinedCalStart.get(Calendar.YEAR), combinedCalStart.get(Calendar.MONTH), combinedCalStart.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+
+                    dateStart.setText(sdf_day.format(combinedCalStart.getTime()));
+                    timeStart.setText(sdf_time.format(combinedCalStart.getTime()));
+                    dateEnd.setText(sdf_day.format(combinedCalEnd.getTime()));
+                    timeEnd.setText(sdf_time.format(combinedCalEnd.getTime()));
+                }
+            }
+        });
 
         //save the Event in database
         add_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(CalendarActivity.this,
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                TAG+" Add.onClick() => called.\n"));
+
                 boolean cancel = false;
                 View focusView = null;
                 if (libelle_et.getText().toString().isEmpty()){
@@ -502,19 +622,13 @@ public class CalendarActivity extends AppCompatActivity {
                     focusView = timeEnd;
                     cancel = true;
                 }
-                if (concernTier[0].equals(null)){
-                    concernTier[0] = "";
-                }
 
-                //set event start and end calendars
+                //set event start calendar
                 if ((startDate[0] + startDate[1] + startDate[2] + startDate[3] + startDate[4]) == 0){
                     combinedCalStart.setTime(dates.get(position));
                 }else{
                     combinedCalStart.set(startDate[0], startDate[1], startDate[2], startDate[3], startDate[4]);
                 }
-
-                combinedCalEnd.set(startEnd[0], startEnd[1], startEnd[2], startEnd[3], startEnd[4]);
-
 
                 //check if  startEventCalendar > endEventCalendar
                 if (combinedCalStart.getTime().getTime() > combinedCalEnd.getTime().getTime()){
@@ -553,6 +667,9 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private List<String> getAllClients(){
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" getAllClients() => called.\n").execute();
+
         List<String> theList = new ArrayList<>();
         List<ClientEntry> list = mDB.clientDao().getAllClient();
 
@@ -564,6 +681,9 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private ClientEntry getSelectedClient(String clientName){
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" getSelectedClient("+clientName+") => called.\n").execute();
+
         ClientEntry clientEntry = null;
         List<ClientEntry> clientList = mDB.clientDao().getAllClient();
         for (int i=0; i<clientList.size(); i++){
@@ -588,12 +708,130 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
+    private void getEventsFromServer(){
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" getEventsFromServer() => called.\n").execute();
+
+        if (!ConnectionManager.isPhoneConnected(getApplication())){
+            Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            //progressDialog.dismiss();
+            return;
+        }
+
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Objects.requireNonNull(CalendarActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else {
+            Objects.requireNonNull(CalendarActivity.this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
+        //affichage du loader dialog
+        //showProgressDialog(true, null, "Synchronisation des évènements en cours...");
+
+        if (mFindAgendaEventTask == null) {
+            mFindAgendaEventTask = new FindAgendaEventTask(this, CalendarActivity.this, "datec", "asc", mLimit, mPageEvent);
+            mFindAgendaEventTask.execute();
+        }
+    }
+
+    @Override
+    public void onFindAgendaEventsTaskComplete(AgendaEventsREST mAgendaEventsREST) {
+        mFindAgendaEventTask = null;
+
+        //Si la recupération echoue, on renvoi un message d'erreur
+        if (mAgendaEventsREST == null) {
+            //Fermeture du loader
+            //showProgressDialog(false, null, null);
+            mDB.eventsDao().deleteAllEvent();
+            Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (mAgendaEventsREST.getAgendaEvents() == null) {
+            Objects.requireNonNull(this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+            //Fermeture du loader
+            //showProgressDialog(false, null, null);
+            //reinitialisation du nombre de page
+            mPageEvent = 0;
+
+            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                    TAG+" onFindAgendaEventsTaskComplete() => called.\nDB table size: "+mDB.eventsDao().getAllEvents().size()).execute();
+
+            Log.e(TAG, " onFindAgendaEventsTaskComplete:: DB table size: "+mDB.eventsDao().getAllEvents().size());
+            Toast.makeText(this, "Evènements synchronizé !", Toast.LENGTH_LONG).show();
+
+            //update the calendar
+            collectEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormat.format(calendar.getTime()));
+            mAgendaAdapter.notifyDataSetChanged();
+            return;
+        }
+
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" onFindAgendaEventsTaskComplete("+mAgendaEventsREST.getAgendaEvents().size()+") => called.\n").execute();
+
+        for (AgendaEvents eventItem : mAgendaEventsREST.getAgendaEvents()) {
+
+            EventsEntry eventsEntry = new EventsEntry();
+            eventsEntry.setId(eventItem.getId());
+            eventsEntry.setREF(eventItem.getRef());
+            eventsEntry.setLABEL(eventItem.getLabel());
+            eventsEntry.setLIEU(eventItem.getLocation());
+            eventsEntry.setPERCENTAGE(eventItem.getPercentage());
+            eventsEntry.setFULLDAYEVENT(eventItem.getFulldayevent());
+            eventsEntry.setTRANSPARENCY(eventItem.getTransparency());
+
+            /***********************************For AdminDebugging***********************************/
+
+            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
+                    " AgendaEvents id: "+eventItem.getId()+"\n" +
+                            "AgendaEvents datec: "+(eventItem.getDatec()*1000)+"\n" +
+                            "AgendaEvents datep: "+(eventItem.getDatep()*1000)+"\n" +
+                            "EventsEntry Event Time: "+new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                            "EventsEntry Event Date: "+eventDateFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                            "EventsEntry Event month: "+monthFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                            "EventsEntry Event Year: "+yearFormat.format(new Date( (eventItem.getDatep()*1000) ))).execute();
+
+            eventsEntry.setTIME(new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) )));
+            eventsEntry.setDATE(eventDateFormat.format(new Date( (eventItem.getDatep()*1000) )));
+            eventsEntry.setMONTH(monthFormat.format(new Date( (eventItem.getDatep()*1000) )));
+            eventsEntry.setYEAR(yearFormat.format(new Date( (eventItem.getDatep()*1000) )));
+
+            eventsEntry.setSTART_EVENT(eventItem.getDatep()*1000);
+            eventsEntry.setEND_EVENT(eventItem.getDatef()*1000);
+            eventsEntry.setTIER(eventItem.getSocid());
+            eventsEntry.setDESCRIPTION(eventItem.getNote());
+
+            mDB.eventsDao().insertNewEvent(eventsEntry);
+        }
+
+        mPageEvent++;
+        getEventsFromServer();
+    }
+
+    @Override
+    public void onSendAgendaEventsTaskComplete() {
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" onSendAgendaEventsTaskComplete() => called.\n" +
+                        "Before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size()).execute();
+
+        mDB.eventsDao().deleteAllEvent();
+        getEventsFromServer();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
         }
+
+        if(item.getItemId() == R.id.action_fragclient_sync){
+            if (!ConnectionManager.isPhoneConnected(this)) {
+                Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                return true;
+            }
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -1,5 +1,6 @@
 package com.iSales.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -14,9 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.R;
+import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.EventsEntry;
+import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.ItemClickListenerAgenda;
+import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.calendar.Events;
 
 import java.text.ParseException;
@@ -34,7 +38,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
     private Calendar currentDate;
     private List<EventsEntry> events;
     private ArrayList<Events> dataEvents;
-
+    private AppDatabase mDB;
     private ItemClickListenerAgenda itemClickListenerAgenda = null;
 
     public AgendaAdapter(Context context, List<Date> dates, Calendar currentDate, List<EventsEntry> events){
@@ -43,7 +47,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
         this.dates = dates;
         this.currentDate = currentDate;
         this.events = events;
-//        this.dataEvents = data;
+        this.mDB = AppDatabase.getInstance(this.mContext);
     }
 
     public class AngendaEventViewHolder extends RecyclerView.ViewHolder {
@@ -96,6 +100,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
         for (int y=0; y < events.size(); y++){
             eventCalendar.setTime(convertStringToDate(events.get(y).getDATE()));
 
+            /*
             Log.e(TAG, "Day Number: "+DayNo+"\n" +
                     "eventCalendar Day of Month: "+eventCalendar.get(Calendar.DAY_OF_MONTH)+"\n" +
                     "displayMonth: "+displayMonth+"\n" +
@@ -103,6 +108,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
                     "displayYear: "+displayYear+"\n" +
                     "eventCalendar Year: "+eventCalendar.get(Calendar.YEAR)+"\n" +
                     "Index: "+y+"/"+events.size());
+            */
 
             if (DayNo == eventCalendar.get(Calendar.DAY_OF_MONTH) && displayMonth == eventCalendar.get(Calendar.MONTH)+1 && displayYear == eventCalendar.get(Calendar.YEAR)){
                 arrayList.add(events.get(y).getLABEL());
@@ -154,7 +160,7 @@ public class AgendaAdapter extends RecyclerView.Adapter<AgendaAdapter.AngendaEve
     }
 
     private Date convertStringToDate(String eventDate){
-        Log.e(TAG, " convertStringToDate( "+eventDate+" )");
+        //Log.e(TAG, " convertStringToDate( "+eventDate+" )");
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.FRENCH);
         Date date = null;
 

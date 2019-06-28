@@ -265,7 +265,7 @@
             <LinearLayout
                 android:id="@+id/activity_profile_layout_admin_3"
                 android:layout_width="match_parent"
-                android:layout_height="500dp"
+                android:layout_height="700dp"
                 android:layout_marginTop="1dp"
                 android:background="@color/white"
                 android:orientation="horizontal"

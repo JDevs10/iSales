@@ -30,15 +30,15 @@ public class DebugMe extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         Log.e(TAG, " doInBackground() => called.");
         if (part.equals("WL")){
-            Log.e(TAG, " doInBackground() => ' WL ' called.");
+            //Log.e(TAG, " doInBackground() => ' WL ' called.");
             WindowLogs();
         }
         if (part.equals("LL")){
-            Log.e(TAG, " doInBackground() => ' LL ' called.");
+            //Log.e(TAG, " doInBackground() => ' LL ' called.");
             LiveLogs();
         }
         if (part.equals("WL-LL")){
-            Log.e(TAG, " doInBackground() => ' WL-LL ' called.");
+            //Log.e(TAG, " doInBackground() => ' WL-LL ' called.");
             WindowLogs();
             LiveLogs();
         }
