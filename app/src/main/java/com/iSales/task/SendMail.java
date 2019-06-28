@@ -9,6 +9,7 @@ import android.support.design.widget.TabLayout;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.iSales.database.AppDatabase;
 import com.iSales.model.ClientParcelable;
 import com.iSales.remote.model.Order;
 import com.iSales.remote.model.OrderLine;
@@ -42,6 +43,8 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     private ClientParcelable userSelected;
     private Order data;
 
+    private AppDatabase mDB;
+
     //Progressdialog to show while sending email
     private ProgressDialog progressDialog;
 
@@ -53,6 +56,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
         this.subject = subject;
         this.userSelected = userSelected;
         this.data = data;
+        mDB = AppDatabase.getInstance(this.context);
     }
 
     private String getMessage(Order data){
@@ -69,7 +73,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
         return  "Bonjour Madame, Monsieur "+userSelected.getName()+"\n\n" +
                 "Veuillez trouver, ci-joint la commande référence: "+data.getRef()+" effectué le "+dateFormat(data.getDate_commande())+" avec vos produits selectionné :\n"+
-                orderLineMessage + "\n\n\nCordialement.";
+                orderLineMessage + "\n\n\nCordialement,\n"+mDB.serverDao().getActiveServer(true).getRaison_sociale();
     }
 
     private String priceFormat(String priceST){
@@ -81,10 +85,10 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
     private String dateFormat(String dateInString){
         Log.e("SendMail", "deteFormat: date before => "+dateInString);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        //long dateLong = Long.valueOf(dateInLong);
-        Log.e("SendMail", "deteFormat: date before => "+sdf.format(dateInString));
-        return sdf.format(dateInString);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM");
+        long dateLong = Long.valueOf(dateInString);
+        Log.e("SendMail", "deteFormat: date before => "+sdf.format(new Date(dateLong*1000)));
+        return sdf.format(new Date(dateLong*1000));
     }
 
     @Override
