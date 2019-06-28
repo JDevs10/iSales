@@ -359,8 +359,8 @@ public class AgendaEventDetails extends AppCompatActivity {
 
     private void displayCurrentEvent(EventsEntry event){
         //eventImage_iv;
-        eventRef_tv.setText(event.getREF());
-        eventLabel_tv.setText(event.getLABEL());
+        eventRef_tv.setText("Ref: "+event.getREF());
+        eventLabel_tv.setText("Libellé: "+event.getLABEL());
         eventDateStart.setText(convertTimeStamp(event.getSTART_EVENT()));
         eventDateEnd.setText(convertTimeStamp(event.getEND_EVENT()));
         eventLocation.setText(event.getLIEU());
