@@ -233,7 +233,7 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
                 recyclerViewEvents.setLayoutManager(layoutManager);
                 recyclerViewEvents.setHasFixedSize(true);
 
-                AgendaEventAdapter mAgendaEventAdapter = new AgendaEventAdapter(mDialog.getContext(), collectEventsByDate(date)); //
+                AgendaEventAdapter mAgendaEventAdapter = new AgendaEventAdapter(mDialog.getContext(), collectEventsByDate(date), CalendarActivity.this); //
                 recyclerViewEvents.setAdapter(mAgendaEventAdapter);
 
                 InitViewAgendaDialog(mDialog, position);
@@ -322,7 +322,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
             Log.e(TAG, "Save JSON:\n\n"+jsonStr);
         }
-
         catch (IOException e) {
             e.printStackTrace();
         }
@@ -814,6 +813,13 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
         mDB.eventsDao().deleteAllEvent();
         getEventsFromServer();
+    }
+
+    @Override
+    public void onDeleteAgendasTaskComplete() {
+        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
+                TAG+" onDeleteAgendasTaskComplete() => called.");
+        initCalendar();
     }
 
     @Override

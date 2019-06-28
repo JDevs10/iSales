@@ -34,7 +34,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     private Session session;
 
     //Email configuration
-    private final String configEmail = "jl@anexys.fr";
+    private final String configEmail = "jl@anexys.fr";  //commercial@anexys.fr
     private final String configPassword = "JLAnexys20";
 
     //Information to send email
