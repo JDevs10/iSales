@@ -1,5 +1,6 @@
 package com.iSales.task;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,6 +9,7 @@ import android.util.Log;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.FindAgendaEventsListener;
 import com.iSales.interfaces.FindOrdersListener;
 import com.iSales.pages.calendar.CalendarActivity;
@@ -32,6 +34,7 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
     private long page;
     private long thirdparty_ids;
 
+    private AppDatabase mDb;
     private UserEntry userEntry;
     private ProgressDialog mProgressDialog;
 
@@ -43,9 +46,11 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
         this.page = page;
         this.context = context;
         this.mProgressDialog = new ProgressDialog(context);
-        AppDatabase mDb = AppDatabase.getInstance(context.getApplicationContext());
+        mDb = AppDatabase.getInstance(context.getApplicationContext());
         userEntry = mDb.userDao().getUser().get(0);
-        Log.e(TAG, "FindAgendaEventTask: ");
+
+        new DebugMe((Activity) this.context, this.context, "WL-LL",
+                TAG+" FindAgendaEventTask() => called.").execute();
     }
 
     @Override

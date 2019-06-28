@@ -359,6 +359,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mDb.debugMessageDao().deleteAllDebugMessages();
+        //mDb.debugMessageDao().deleteAllDebugMessages();
     }
 }
