@@ -17,6 +17,7 @@ import com.iSales.pages.home.fragment.ClientsRadioFragment;
 import com.iSales.pages.home.fragment.CommandesFragment;
 import com.iSales.pages.home.fragment.PanierFragment;
 import com.iSales.pages.home.fragment.ProfilFragment;
+import com.iSales.pages.home.fragment.StatistiqueFragment;
 import com.iSales.task.FindPaymentTypesTask;
 import com.iSales.R;
 
@@ -41,6 +42,7 @@ import android.graphics.drawable.StateListDrawable;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.content.Context;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -57,7 +59,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private com.iSales.database.AppDatabase mDb;
 
-    private String tabNames[] = {"clients", "panier", "categories", "commandes", "profil", "a propos"};
+    private String tabNames[] = {"clients", "panier", "categories", "commandes", "profil", "statistique", "a propos"};
 
     private int[] tabIconsUnSelected = {
             R.drawable.ic_clients_desactive,
@@ -242,6 +244,15 @@ public class HomeActivity extends AppCompatActivity {
                     fragmentTransaction.replace(R.id.master_frame, com.iSales.pages.home.fragment.ProfilFragment.newInstance());
                 } else {
                     fragmentTransaction.replace(R.id.master_frame, ProfilFragment.newInstance());
+                }
+
+                activeTab = 4;
+                break;
+            case 5:
+                if(isLayoutInDualPaneMode(false)) {
+                    fragmentTransaction.replace(R.id.master_frame, StatistiqueFragment.newInstance());
+                } else {
+                    fragmentTransaction.replace(R.id.master_frame, StatistiqueFragment.newInstance());
                 }
 
                 activeTab = 4;

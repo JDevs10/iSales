@@ -6,8 +6,8 @@ android {
         applicationId "com.iSales"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 9
-        versionName "1.8"
+        versionCode 10
+        versionName "2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -18,6 +18,11 @@ android {
         }
     }
 }
+
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -77,4 +82,7 @@ dependencies {
     implementation files('libs/activation.jar')
     implementation files('libs/additionnal.jar')
     implementation files('libs/mail.jar')
+
+    //Stats Graph
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 }
