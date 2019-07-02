@@ -7,13 +7,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_margin="5dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_margin="5dp">
+            android:layout_marginBottom="20dp">
             
             <TextView
                 android:layout_width="match_parent"
@@ -29,10 +30,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:layout_gravity="center"
                 app:layoutManager="android.support.v7.widget.GridLayoutManager"/>
 
             
         </LinearLayout>
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical"-->
+            <!--android:layout_marginBottom="40dp">-->
+
+            <!--<com.github.mikephil.charting.charts.BarChart-->
+                <!--android:id="@+id/fragment_statistique_nbCategory"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="400dp"/>-->
+
+        <!--</LinearLayout>-->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -40,6 +55,7 @@
             android:orientation="vertical"
             android:layout_margin="5dp">
 
+            <!-- Commande client -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,31 +69,125 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nombre de commande"
+                            android:textColor="@color/black"
+                            android:textSize="18dp"
+                            android:padding="5dp"/>
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/fragment_statistique_nBrCmdClient"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_margin="10dp"
+                            android:layout_marginBottom="50dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Montant Total"
+                            android:textColor="@color/black"
+                            android:textSize="18dp"
+                            android:padding="5dp"/>
+
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/fragment_statistique_montantCmdClient"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_margin="10dp"
+                            android:layout_marginBottom="50dp"/>
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Facture client -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Nombre de commande"
+                    android:text="Factures Clients par mois"
                     android:textColor="@color/black"
-                    android:textSize="18dp"/>
+                    android:textSize="22dp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="20dp"/>
 
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/fragment_statistique_nBrCmdClient"
-                    android:layout_width="300dp"
-                    android:layout_height="200dp"
-                    android:layout_marginBottom="50dp"/>
-
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Montant Total"
-                    android:textColor="@color/black"
-                    android:textSize="18dp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center">
 
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/fragment_statistique_montantCmdClient"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_marginBottom="50dp"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nombre de facture"
+                            android:textColor="@color/black"
+                            android:textSize="18dp"
+                            android:padding="5dp"/>
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/fragment_statistique_nBrfactureClient"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_margin="10dp"
+                            android:layout_marginBottom="50dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Montant Total"
+                            android:textColor="@color/black"
+                            android:textSize="18dp"
+                            android:padding="5dp"/>
+
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/fragment_statistique_montantFactureClient"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_margin="10dp"
+                            android:layout_marginBottom="50dp"/>
+                    </LinearLayout>
+
+
+                </LinearLayout>
 
             </LinearLayout>
 
