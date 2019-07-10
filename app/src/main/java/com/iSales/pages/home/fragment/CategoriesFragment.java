@@ -114,7 +114,8 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     private AppDatabase mDb;
 
-    private int mLimit = 20;
+    private long categorieIdGlobal = 0;
+    private int mLimit = 500;
     private int mCountRequestImg = 0;
     private int mCountRequestImgTotal = 0;
 
@@ -311,6 +312,8 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         List<ProduitParcelable> emptyList = new ArrayList<>();
         this.mProduitsAdapter.setContentList(emptyList, true);
 
+        categorieIdGlobal = categorieId;
+
         if (categorieId > 0) {
             if (produitazero) {
 //                Log.e(TAG, "loadProduits: produitazero");
@@ -354,22 +357,39 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
         Log.e(TAG, "loadProduits: produitParcelables=" + produitParcelables.size());
 
-        populateRecyclerviewContent(0, true);
+        populateRecyclerviewContent(categorieIdGlobal, 0, true);
 
         //affichage de l'image d'attente
         showProgress(false);
     }
 
-    private void populateRecyclerviewContent(int firstPosition, boolean clearing) {
-        int lastposition = firstPosition + mLimit;
-        Log.e(TAG, "loadProduits: produitsParcelableListFiltered=" + produitsParcelableListFiltered.size()+
-                " firstPosition="+firstPosition+
-                " lastposition="+lastposition);
+    private void populateRecyclerviewContent(long categorieId, int firstPosition, boolean clearing) {
 
-        if (lastposition < produitsParcelableListFiltered.size()) {
-            this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, lastposition), clearing);
-        } else {
-            this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, produitsParcelableListFiltered.size()), clearing);
+        if (categorieId == 0 || categorieId == -1){
+            //Toutes les categories.... alors la limite dans l'adapter == (nbr totale/4)
+            int newLimit = (produitsParcelableListFiltered.size()/4);
+            int lastposition = firstPosition + newLimit;
+            Log.e(TAG, "loadProduits: produitsParcelableListFiltered=" + produitsParcelableListFiltered.size()+
+                    " firstPosition="+firstPosition+
+                    " lastposition="+lastposition);
+
+            if (lastposition < produitsParcelableListFiltered.size()) {
+                this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, lastposition), clearing);
+            } else {
+                this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, produitsParcelableListFiltered.size()), clearing);
+            }
+        }else{
+            //Si un categorie specifique.... alors la limite dans l'adapter == 200
+            int lastposition = firstPosition + mLimit;
+            Log.e(TAG, "loadProduits: produitsParcelableListFiltered=" + produitsParcelableListFiltered.size()+
+                    " firstPosition="+firstPosition+
+                    " lastposition="+lastposition);
+
+            if (lastposition < produitsParcelableListFiltered.size()) {
+                this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, lastposition), clearing);
+            } else {
+                this.mProduitsAdapter.setContentList(produitsParcelableListFiltered.subList(firstPosition, produitsParcelableListFiltered.size()), clearing);
+            }
         }
 
     }
@@ -799,7 +819,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
         this.mProduitsAdapter = new ProduitsAdapter(getContext(), list, com.iSales.pages.home.fragment.CategoriesFragment.this);
 
-
 //        empeche le conflict des positions
         this.mProduitsAdapter.setHasStableIds(true);
         GridLayoutManager mLayoutManager = new GridLayoutManager(getContext(), ISalesUtility.calculateNoOfColumns(getContext()));
@@ -821,7 +840,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                         Log.e(TAG, "onScroll: lastPosition=" + lastPosition + " itemsCount=" + itemsCount);
                         if (produitsParcelableListFiltered.get(lastPosition).getId() == produitsParcelableListFiltered.get(itemsCount - 1).getId()
                         && lastPosition < (produitsParcelableListFiltered.size() - 1)) {
-                            populateRecyclerviewContent(lastPosition, false);
+                            populateRecyclerviewContent(categorieIdGlobal, lastPosition, false);
 
                         }
 
