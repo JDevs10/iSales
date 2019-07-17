@@ -160,30 +160,26 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
 
         if (produitsListFiltered.get(position).getLocal_poster_path() != null) {
 //            si le fichier existe dans la memoire locale
+//            Log.e(TAG, " Produit : "+produitsListFiltered.get(position).getLabel()+" || Id: "+produitsListFiltered.get(position).getId()+"\n" +
+//                    " Image local path: "+produitsListFiltered.get(position).getLocal_poster_path());
+
             File imgFile = new File(produitsListFiltered.get(position).getLocal_poster_path());
             if (imgFile.exists()) {
 //                Log.e(TAG, "onBindViewHolder: file exist");
                 Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
                 holder.poster.setImageBitmap(myBitmap);
-                /*Picasso.with(mContext)
-                        .load(imgFile)
-                        .placeholder(R.drawable.isales_no_image)
-                        .into(holder.poster);*/
+//                Log.e(TAG, " Produit : "+produitsListFiltered.get(position).getLabel()+" || Id: "+produitsListFiltered.get(position).getId()+"\n" +
+//                        " ImgFile.exists() path: "+imgFile.getPath());
 
             } else {
+//                Log.e(TAG, " Produit : "+produitsListFiltered.get(position).getLabel()+" || Id: "+produitsListFiltered.get(position).getId()+"\n" +
+//                        " ImgFile does not exists path: "+imgFile.getPath());
 //                Log.e(TAG, "onBindViewHolder: file not exist");
 //                    chargement de la photo dans la vue
-
                 holder.poster.setImageResource(R.drawable.isales_no_image);
-                /*Picasso.with(mContext)
-                        .load(R.drawable.isales_no_image)
-                        .into(holder.poster);*/
             }
-
         } else {
-//            Log.e(TAG, "onBindViewHolder: getFilename="+produitsListFiltered.get(position).getPoster().getFilename());
-
+//            Log.e(TAG, " Local_poster_path does not exists for : "+produitsListFiltered.get(position).getLabel()+" || Id: "+produitsListFiltered.get(position).getId());
             holder.poster.setImageResource(R.drawable.isales_no_image);
 //        Log.e(TAG, "onBindViewHolder: downloadLinkImg="+ApiUtils.getDownloadImg(mContext, module_part, original_file));
            /* Picasso.with(mContext)
@@ -214,7 +210,42 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
                         }
                     });
             return;*/
+
+/*
+            if (produitsListFiltered.get(position).getLocal_poster_path() == null) {
+                Picasso.with(mContext)
+                        .load(ApiUtils.getDownloadProductImg(mContext, produitsListFiltered.get(position).getRef()))
+                        .placeholder(R.drawable.isales_no_image)
+                        .error(R.drawable.isales_no_image)
+                        .into(holder.poster, new com.squareup.picasso.Callback() {
+                            @Override
+                            public void onSuccess() {
+//                        Log.e(TAG, "onSuccess: Picasso loadin img");
+                                Bitmap imageBitmap = ((BitmapDrawable) holder.poster.getDrawable()).getBitmap();
+
+                                String pathFile = ISalesUtility.saveProduitImage(mContext, imageBitmap, produitsListFiltered.get(position).getRef());
+//                        Log.e(TAG, "onPostExecute: pathFile=" + pathFile);
+
+//                            if (pathFile != null) mProduitParcelable.setLocal_poster_path(pathFile);
+
+//                    Modification du path de la photo du produit
+                                mDb.produitDao().updateLocalImgPath(produitsListFiltered.get(position).getId(), pathFile);
+                            }
+
+                            @Override
+                            public void onError() {
+
+                            }
+                        });
+            } else {
+                holder.poster.setImageResource(R.drawable.isales_no_image);
+                Log.e(TAG,"onBindViewHolder: getFilename = "+produitsListFiltered.get(position).getPoster().getFilename()+"\n" +
+                        "get Image Local Path = "+produitsListFiltered.get(position).getLocal_poster_path()+"\n" +
+                        "get Image Http Path = "+ApiUtils.getDownloadProductImg(mContext, produitsListFiltered.get(position).getRef()));
+            }
+            */
         }
+
 
 //        ProduitEntry produitEntry = mDb.produitDao().getProduitById(produitsListFiltered.get(position).getId());
 

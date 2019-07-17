@@ -320,9 +320,9 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         mPasswordET.setError(null);
 
         // Store values at the time of the login attempt.
-        mServer = mServerET.getText().toString();
-        mUsername = mUsernameET.getText().toString();
-        mPassword = mPasswordET.getText().toString();
+        mServer = mServerET.getText().toString().trim();
+        mUsername = mUsernameET.getText().toString().trim();
+        mPassword = mPasswordET.getText().toString().trim();
 
         boolean cancel = false;
         View focusView = null;

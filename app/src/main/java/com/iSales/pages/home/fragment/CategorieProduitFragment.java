@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -187,6 +188,9 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
             categorieParcelable.setCount_produits(categorieEntry.getCount_produits());
             categorieParcelable.getPoster().setFilename(ISalesUtility.getImgProduit(categorieEntry.getDescription()));
 //            produitParcelable.setPoster(productItem.getPoster());
+
+            String log = "Category id: "+categorieEntry.getId()+" || Label: "+categorieEntry.getLabel()+" || nb produit: "+categorieEntry.getCount_produits();
+            Log.e(TAG, " "+log);
 
             categorieParcelables.add(categorieParcelable);
         }
@@ -377,6 +381,14 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
         loadCategories();
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        
+        //Prevent the keyboard from displaying on activity start
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
     @Override

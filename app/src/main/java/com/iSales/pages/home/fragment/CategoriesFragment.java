@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -30,6 +31,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -367,7 +369,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
         if (categorieId == 0 || categorieId == -1){
             //Toutes les categories.... alors la limite dans l'adapter == (nbr totale/4)
-            int newLimit = (produitsParcelableListFiltered.size()/4);
+            int newLimit = produitsParcelableListFiltered.size();
             int lastposition = firstPosition + newLimit;
             Log.e(TAG, "loadProduits: produitsParcelableListFiltered=" + produitsParcelableListFiltered.size()+
                     " firstPosition="+firstPosition+
@@ -1115,5 +1117,13 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         fragmentTransaction.detach(currentFragment);
         fragmentTransaction.attach(currentFragment);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        //Prevent the keyboard from displaying on activity start
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 }

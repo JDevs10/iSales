@@ -21,10 +21,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_EVENTS_TABLE = "create table "+EVENT_TABLE_NAME+" (" +
             "ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            EVENT+" TEXT, " +
+            EVENT+" TEXT," +
             TIME+" TEXT, "+
             DATE+" TEXT, "+
-            MONTH+" TEXT, "+
+            MONTH+" TEXT,"+
             YEAR+" TEXT) ";
 
     private static final String DROPE_EVENTS = "DROP TABLE IF EXISTs "+EVENT_TABLE_NAME;

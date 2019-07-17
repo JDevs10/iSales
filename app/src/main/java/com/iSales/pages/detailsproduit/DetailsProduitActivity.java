@@ -17,6 +17,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -431,6 +432,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details_produit);
+
+        //Prevent the keyboard from displaying on activity start
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
         if (getIntent().getExtras().getParcelable("produit") != null) {
