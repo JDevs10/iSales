@@ -48,12 +48,12 @@ public final class ApiUtils {
 
     //get an instance of Movies API services
     public static com.iSales.remote.ISalesServicesRemote getISalesService(Context context) {
-        com.iSales.database.AppDatabase mDb = com.iSales.database.AppDatabase.getInstance(context.getApplicationContext());
+        AppDatabase mDb = AppDatabase.getInstance(context.getApplicationContext());
 
-        com.iSales.database.entry.ServerEntry serverEntry = mDb.serverDao().getActiveServer(true);
+        ServerEntry serverEntry = mDb.serverDao().getActiveServer(true);
 
         if (serverEntry == null) {
-            return com.iSales.remote.RetrofitClient.getClient(context, "/").create(com.iSales.remote.ISalesServicesRemote.class);
+            return RetrofitClient.getClient(context, "/").create(com.iSales.remote.ISalesServicesRemote.class);
         }
 //        Log.e(TAG, "getISalesService: serverEntry="+serverEntry.getHostname());
 //        return RetrofitClient.getClient(context, BASE_URL).create(ISalesServicesRemote.class);

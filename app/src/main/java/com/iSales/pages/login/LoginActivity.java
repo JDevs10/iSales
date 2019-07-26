@@ -146,7 +146,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
         mDb = AppDatabase.getInstance(getApplicationContext());
 
-// Here, thisActivity is the current activity
+        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(com.iSales.pages.login.LoginActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -490,8 +490,6 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             }
         }
     }
-
-
 
     private void executeLogin(String username, String password) {
 //        masquage du formulaire de connexion

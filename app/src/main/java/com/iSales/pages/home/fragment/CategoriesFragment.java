@@ -92,7 +92,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     ProgressDialog mProgressDialog;
 
-    //    position courante de la requete de recuperation des produit
+    //position courante de la requete de recuperation des produit
     private int mCurrentPdtQuery = 0;
     private int mTotalPdtQuery = 0;
 
@@ -965,13 +965,13 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                     Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 }
 
-                //                affichage du loader dialog
+                //affichage du loader dialog
                 showProgressDialog(true, null, getString(R.string.synchro_produits_encours));
 
                 mDb.categorieDao().deleteAllCategorie();
                 mDb.produitDao().deleteAllProduit();
 
-                //            recupere la liste des produits sur le serveur
+                //recupere la liste des produits sur le serveur
                 executeFindCategorieProducts();
                 return true;
 
@@ -1011,8 +1011,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                                 public void onClick(DialogInterface dialogInterface, int i) {
 
                                 }
-                        })
-                        .create();
+                        }).create();
                 dialog.show();
                 break;
             default:

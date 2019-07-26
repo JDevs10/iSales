@@ -386,7 +386,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        
+
         //Prevent the keyboard from displaying on activity start
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
