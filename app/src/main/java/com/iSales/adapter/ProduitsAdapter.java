@@ -160,8 +160,8 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
 
         if (produitsListFiltered.get(position).getLocal_poster_path() != null) {
 //            si le fichier existe dans la memoire locale
-//            Log.e(TAG, " Produit : "+produitsListFiltered.get(position).getLabel()+" || Id: "+produitsListFiltered.get(position).getId()+"\n" +
-//                    " Image local path: "+produitsListFiltered.get(position).getLocal_poster_path());
+            Log.e(TAG, " Produit : "+produitsListFiltered.get(position).getLabel()+" || Id: "+produitsListFiltered.get(position).getId()+"\n" +
+                    " Image local path: "+produitsListFiltered.get(position).getLocal_poster_path());
 
             File imgFile = new File(produitsListFiltered.get(position).getLocal_poster_path());
             if (imgFile.exists()) {

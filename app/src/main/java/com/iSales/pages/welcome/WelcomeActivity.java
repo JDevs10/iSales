@@ -1,19 +1,32 @@
 package com.iSales.pages.welcome;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
+
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.File;
 
@@ -23,6 +36,13 @@ import java.io.File;
  */
 public class WelcomeActivity extends AppCompatActivity {
     private static final String TAG = WelcomeActivity.class.getSimpleName();
+
+    /**
+     * By JL --- Check Google PlayStore App Version
+     */
+    private String currentVersion, latestVersion;
+    private Dialog dialog;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -95,6 +115,9 @@ public class WelcomeActivity extends AppCompatActivity {
 
         mContentView = findViewById(R.id.fullscreen_content);
 
+        // Check version on playStore
+        getCurrentVersion();
+
         //init debug settings
         initDebugSettings();
 
@@ -123,11 +146,9 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
-        delayedLogged(3000);
+        // Check version on playStore
+        getCurrentVersion();
+
     }
 
     private void hide() {
@@ -211,6 +232,94 @@ public class WelcomeActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 //        tv.append("\n\nFile written to "+file);
+    }
+
+    private void getCurrentVersion(){
+        Log.e(TAG, " getCurrentVersion() : JL Test Version App");
+        PackageManager pm = this.getPackageManager();
+        PackageInfo pInfo = null;
+
+        try {
+            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+
+        } catch (PackageManager.NameNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        currentVersion = pInfo.versionName;
+
+        new GetLatestVersion().execute();
+
+    }
+
+    private class GetLatestVersion extends AsyncTask<String, String, JSONObject> {
+
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... params) {
+            try {
+                //It retrieves the latest version by scraping the content of current version from play store at runtime
+                Document doc = Jsoup.connect("https://play.google.com/store/apps/details?id=com.iSales").get();
+                latestVersion = doc.getElementsByClass("htlgb").get(6).text();
+
+            }catch (Exception e){
+                e.printStackTrace();
+
+            }
+
+            return new JSONObject();
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject jsonObject) {
+            if(latestVersion!=null) {
+                if (!currentVersion.equalsIgnoreCase(latestVersion)){
+                    if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
+                        showUpdateDialog();
+                    }
+                }else{
+                    // if version is correct then proceed
+                    delayedHide(100);
+                    delayedLogged(3000);
+                }
+            }
+            else
+                //background.start();
+                Toast.makeText(WelcomeActivity.this, "latestVersion == NULL", Toast.LENGTH_SHORT).show();
+            super.onPostExecute(jsonObject);
+        }
+    }
+
+    private void showUpdateDialog(){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("iSales Mise à Jour");
+        builder.setTitle("Une nouvelle mise à jour est disponible");
+        builder.setPositiveButton("Mettre à jour", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse
+                        ("https://play.google.com/store/apps/details?id=com.iSales")));
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //background.start();
+                //kill the app
+                System.exit(0);
+            }
+        });
+
+        builder.setCancelable(false);
+        dialog = builder.show();
     }
 
 }

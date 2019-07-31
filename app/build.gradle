@@ -6,8 +6,8 @@ android {
         applicationId "com.iSales"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 13
-        versionName "2.0.3"
+        versionCode 15
+        versionName "2.2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -32,6 +32,9 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.core:jackson-core:2.8.6'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.6'
+
+    // jsoup HTML parser library @ https://jsoup.org/
+    implementation 'org.jsoup:jsoup:1.12.1'
 
     // CardView
     implementation 'com.android.support:cardview-v7:27.1.1'
