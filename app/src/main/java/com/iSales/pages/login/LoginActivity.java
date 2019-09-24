@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -74,6 +75,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     private List<ServerEntry> serverEntries;
     private ServerEntry mServerChoose;
 
+    private TextView versionApp;
     private AppDatabase mDb;
 
 
@@ -136,6 +138,19 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         setupActionBar();
+
+        versionApp = findViewById(R.id.activity_login_app_version);
+        PackageManager pm = this.getPackageManager();
+        PackageInfo pInfo = null;
+
+        try {
+            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+
+        } catch (PackageManager.NameNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        versionApp.setText("Version: "+pInfo.versionName);
 
 //        Creation fichier de log pour les erreurs
 //        showLog();

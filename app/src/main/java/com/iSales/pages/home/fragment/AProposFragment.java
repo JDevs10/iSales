@@ -2,13 +2,17 @@ package com.iSales.pages.home.fragment;
 
 
 import android.app.ProgressDialog;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.iSales.R;
 import com.iSales.helper.DebugMe;
@@ -22,7 +26,7 @@ public class AProposFragment extends Fragment {
     private static final String TAG = com.iSales.pages.home.fragment.AProposFragment.class.getSimpleName();
 
     private ProgressDialog progressDialog;
-
+    private TextView versionApp;
     int[] sampleImages = {R.drawable.logo_isales, R.drawable.logo_isales, R.drawable.logo_isales};
 
     public AProposFragment() {
@@ -47,9 +51,25 @@ public class AProposFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_a_propos, container, false);
-
+        versionApp = rootView.findViewById(R.id.fragment_a_propos_versionApp_tv);
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        PackageManager pm = getContext().getPackageManager();
+        PackageInfo pInfo = null;
+
+        try {
+            pInfo =  pm.getPackageInfo(getContext().getPackageName(),0);
+
+        } catch (PackageManager.NameNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        versionApp.setText("Version: "+pInfo.versionName);
     }
 
     @Override

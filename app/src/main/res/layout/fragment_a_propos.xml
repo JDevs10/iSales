@@ -179,6 +179,14 @@
                         android:textSize="@dimen/apropos_description_size" />
                 </LinearLayout>
             </LinearLayout>
+            <TextView
+                android:id="@+id/fragment_a_propos_versionApp_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="Version xx.xx.xx"
+                android:textColor="@android:color/black"
+                android:layout_margin="20dp"/>
 
         </LinearLayout>
     </ScrollView>

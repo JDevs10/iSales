@@ -2,6 +2,7 @@ package com.iSales.pages.addcustomer;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,11 +23,16 @@ import android.widget.Toast;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.AddCustomerListener;
+import com.iSales.interfaces.FindThirdpartieListener;
+import com.iSales.pages.home.HomeActivity;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Document;
 import com.iSales.remote.model.Thirdpartie;
+import com.iSales.remote.rest.FindThirdpartieREST;
+import com.iSales.task.FindThirdpartieTask;
 import com.iSales.utility.ISalesUtility;
 import com.soundcloud.android.crop.Crop;
 
@@ -34,12 +40,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AddCustomerActivity extends AppCompatActivity {
+public class AddCustomerActivity extends AppCompatActivity implements FindThirdpartieListener {
     private static final String TAG = com.iSales.pages.addcustomer.AddCustomerActivity.class.getSimpleName();
     private View mEnregistrerView;
     private EditText mNomEntrepriseET, mAdresseET, mEmailET, mTelephoneET, mNoteET, mVilleET, mDepartementET, mRegionET, mPaysET;
@@ -50,6 +57,12 @@ public class AddCustomerActivity extends AppCompatActivity {
     private String mLogoBitmapPath;
 
     private AppDatabase mDb;
+
+    //    task de recuperation des clients
+    private FindThirdpartieTask mFindClientTask = null;
+    private ProgressDialog mProgressDialog;
+    private int mLimit = 50;
+    private int mPageClient = 0;
 
     //    add customer listener
     private static AddCustomerListener addCustomerListener = new AddCustomerListener() {
@@ -150,10 +163,10 @@ public class AddCustomerActivity extends AppCompatActivity {
             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.veuillez_choisir_logo), Toast.LENGTH_LONG).show();
             return;
         } else { */
-        saveOfflineClient(nom, adresse, email, telephone, note, pays, region, departement, ville);
 
         if (!mSwitchSynchro.isChecked()) {
 
+            saveOfflineClient(nom, adresse, email, telephone, note, pays, region, departement, ville);
             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.client_creee_local_succes), Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -292,8 +305,16 @@ public class AddCustomerActivity extends AppCompatActivity {
                                     Long responseBody = response.body();
 //                                    Log.e(TAG, "onResponse:callSaveClient responseBody="+responseBody);
                                     mDb.clientDao().updateSynchroClient(1, responseBody);
+
+                                    //Synch all clients before closing the window
+                                    showProgressDialog(true, null, getString(R.string.synchro_comptes_cient_encours));
+                                    mDb.clientDao().deleteAllClient();
+                                    //Suppression des images des clients en local
+                                    ISalesUtility.deleteClientsImgFolder();
+                                    synchClient();
+
                                     Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.client_creee_succes), Toast.LENGTH_LONG).show();
-                                    finish();
+                                    //finish();
                                 } else {
                                     progressDialog.dismiss();
 
@@ -382,7 +403,7 @@ public class AddCustomerActivity extends AppCompatActivity {
             queryBody.setName(String.format("%s", nom));
             queryBody.setCode_client("auto");
             queryBody.setClient("1");
-//                    queryBody.setName_alias(responseLogoClientBody);659331009
+            //queryBody.setName_alias(responseLogoClientBody);659331009
             queryBody.setName_alias("");
 
             Call<Long> callSaveClient = ApiUtils.getISalesService(com.iSales.pages.addcustomer.AddCustomerActivity.this).saveThirdpartie(queryBody);
@@ -396,7 +417,15 @@ public class AddCustomerActivity extends AppCompatActivity {
                         Log.e(TAG, "onResponse:callSaveClient responseBody="+responseBody);
                         mDb.clientDao().updateSynchroClient(1, responseBody);
                         Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.client_creee_succes), Toast.LENGTH_LONG).show();
-                        finish();
+
+                        //Synch all clients before closing the window
+                        showProgressDialog(true, null, getString(R.string.synchro_comptes_cient_encours));
+                        mDb.clientDao().deleteAllClient();
+                        //Suppression des images des clients en local
+                        ISalesUtility.deleteClientsImgFolder();
+                        synchClient();
+
+                        //finish();
                     } else {
                         progressDialog.dismiss();
 
@@ -428,6 +457,116 @@ public class AddCustomerActivity extends AppCompatActivity {
                 }
             });
         }
+
+    }
+
+    private void showProgressDialog(boolean show, String title, String message) {
+
+        if (show) {
+            mProgressDialog = new ProgressDialog(this);
+            if (title != null) mProgressDialog.setTitle(title);
+            if (message != null) mProgressDialog.setMessage(message);
+
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+            mProgressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
+            mProgressDialog.show();
+        } else {
+            if (mProgressDialog != null) mProgressDialog.dismiss();
+        }
+    }
+
+    private void synchClient(){
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this,
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        TAG+" executeFindClients() => called."));
+
+//        Si le téléphone n'est pas connecté
+        if (!ConnectionManager.isPhoneConnected(this)) {
+            Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            showProgressDialog(false, null, null);
+            return;
+        }
+
+        if (mFindClientTask == null) {
+
+            mFindClientTask = new FindThirdpartieTask(this, AddCustomerActivity.this, mLimit, mPageClient, ApiUtils.THIRDPARTIE_CLIENT);
+            mFindClientTask.execute();
+        }
+    }
+
+    @Override
+    public void onFindThirdpartieCompleted(FindThirdpartieREST findThirdpartieREST) {
+        mFindClientTask = null;
+
+//        Si la recupération echoue, on renvoi un message d'erreur
+        if (findThirdpartieREST == null) {
+            //        Fermeture du loader
+            showProgressDialog(false, null, null);
+            Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (findThirdpartieREST.getThirdparties() == null) {
+            Log.e(TAG, "onFindThirdpartieCompleted: findThirdpartieREST getThirdparties null");
+            Objects.requireNonNull(this).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+
+            //        Fermeture du loader
+            showProgressDialog(false, null, null);
+//            reinitialisation du nombre de page
+            mPageClient = 0;
+            Toast.makeText(this, getString(R.string.comptes_clients_synchronises), Toast.LENGTH_LONG).show();
+            showProgressDialog(false, null, null);
+
+            //startActivity(new Intent(AddCustomerActivity.this, HomeActivity.class));
+            finish();
+            return;
+        }
+
+//        Log.e(TAG, "onFindThirdpartieCompleted: getThirdparties size=" + findThirdpartieREST.getThirdparties().size());
+        for (Thirdpartie thirdpartie : findThirdpartieREST.getThirdparties()) {
+            ClientEntry clientEntry = new ClientEntry();
+            if (thirdpartie.getId() != null) {
+                String logo = thirdpartie.getName_alias() == null ? thirdpartie.getLogo() : thirdpartie.getName_alias();
+//                Log.e(TAG, "onFindThirdpartieCompleted: logo=" + logo + " getName_alias=" + thirdpartie.getName_alias() + " getLogo=" + thirdpartie.getLogo());
+                clientEntry.setName(thirdpartie.getName());
+                clientEntry.setName_alias(thirdpartie.getName_alias());
+                clientEntry.setFirstname(thirdpartie.getFirstname());
+                clientEntry.setLastname(thirdpartie.getLastname());
+                clientEntry.setAddress(thirdpartie.getAddress());
+                clientEntry.setTown(thirdpartie.getTown());
+                clientEntry.setLogo(logo);
+                clientEntry.setDate_creation(thirdpartie.getDate_creation());
+                clientEntry.setDate_modification(thirdpartie.getDate_modification());
+                clientEntry.setId(Long.parseLong(thirdpartie.getId()));
+                clientEntry.setEmail(thirdpartie.getEmail());
+                clientEntry.setPhone(thirdpartie.getPhone());
+                clientEntry.setPays(thirdpartie.getPays());
+                clientEntry.setRegion(thirdpartie.getRegion());
+                clientEntry.setDepartement(thirdpartie.getDepartement());
+                clientEntry.setCode_client(thirdpartie.getCode_client());
+                clientEntry.setIs_synchro(1);
+                clientEntry.setNote(thirdpartie.getNote());
+                clientEntry.setNote_private(thirdpartie.getNote_private());
+                clientEntry.setNote_public(thirdpartie.getNote_public());
+
+//                Log.e(TAG, "onFindThirdpartieCompleted: insert clientEntry");
+//            insertion du client dans la BD
+                mDb.clientDao().insertClient(clientEntry);
+            }
+        }
+
+//        Log.e(TAG, "onFindThirdpartieCompleted: mPageClient=" + mPageClient);
+//        incrementation du nombre de page
+        mPageClient++;
+
+        synchClient();
+    }
+
+    @Override
+    public void onFindThirdpartieByIdCompleted(Thirdpartie thirdpartie) {
 
     }
 

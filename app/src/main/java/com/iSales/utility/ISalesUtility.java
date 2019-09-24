@@ -168,10 +168,14 @@ public final class ISalesUtility {
 
     public static String amountFormat2(String value) {
 
-        double valueDouble = Double.parseDouble(value);
-        String str = String.format(Locale.FRANCE,
-                "%,-10.2f", valueDouble);
-        return String.valueOf(str).replace(" ", "");
+        if(value != null){
+            double valueDouble = Double.parseDouble(value);
+            String str = String.format(Locale.FRANCE,
+                    "%,-10.2f", valueDouble);
+            return String.valueOf(str).replace(" ", "");
+        }else{
+            return "0";
+        }
     }
 
     public static String roundOffTo2DecPlaces(String value) {
