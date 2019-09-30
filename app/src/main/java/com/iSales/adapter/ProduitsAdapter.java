@@ -46,7 +46,7 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
 
     //    ViewHolder de l'adapter
     public class ProduitsViewHolder extends RecyclerView.ViewHolder {
-        public TextView label, priceHT, priceTTC, stock;
+        public TextView label, priceHT, priceTTC, stock, note;
         public ImageView poster;
         public ImageButton shooping;
 //        public ImageButton details;
@@ -59,6 +59,7 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
             stock = view.findViewById(R.id.produit_item_stock_tv);
             poster = view.findViewById(R.id.produit_item_poster_iv);
             shooping = view.findViewById(R.id.produit_item_shopping_ib);
+            note = view.findViewById(R.id.produit_item_note_tv);
 //            details = view.findViewById(R.id.produit_item_details_ib);
 
 //            details.setOnClickListener(new View.OnClickListener() {
@@ -260,6 +261,26 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
                 ISalesUtility.CURRENCY));
         holder.stock.setText(String.format("%s unités en stock  •  TVA: %s %s", produitsListFiltered.get(position).getStock_reel(), ISalesUtility.amountFormat2(produitsListFiltered.get(position).getTva_tx()), "%"));
 
+
+        if (mDb.settingsDao().getAllSettings().get(0).isShowDescripCataloge()){
+            holder.note.setVisibility(View.VISIBLE);
+            String result = "";
+            StringBuilder sb = new StringBuilder();
+            String value = produitsListFiltered.get(position).getDescription();
+
+            for (int x=0; x<value.length(); x++){
+                result += Character.toString(value.charAt(x));
+
+                if (result.length() == 15){
+                    result += "....";
+                    break;
+                }
+            }
+
+            holder.note.setText(result);
+        }else{
+            holder.note.setVisibility(View.GONE);
+        }
 
     }
 

@@ -6,11 +6,15 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.SwitchPreference;
 import android.support.v4.app.Fragment;
+import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.iSales.R;
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugSettingsEntry;
+import com.iSales.database.entry.SettingsEntry;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -19,14 +23,19 @@ public class ParametresMainFragment extends PreferenceFragmentCompat implements
         SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = com.iSales.pages.parametres.ParametresMainFragment.class.getSimpleName();
 
-    private SwitchPreference mShowDescrip;
+    private AppDatabase db;
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.preference_parametres_main);
 
-
+        db = AppDatabase.getInstance(getContext());
     }
     @Override
     public void onStop() {
@@ -55,9 +64,18 @@ public class ParametresMainFragment extends PreferenceFragmentCompat implements
         Log.e(TAG, "onSharedPreferenceChanged: ");
 
         if (sharedPreferences.getBoolean("parametres_activer_description", true)){
-            Toast.makeText(getContext(), "ACTIVE", Toast.LENGTH_SHORT).show();
+
+            SettingsEntry config = db.settingsDao().getAllSettings().get(0);
+            config.setShowDescripCataloge(true);
+            db.settingsDao().updateSettings(config);
+
+            Toast.makeText(getContext(), "Activé !", Toast.LENGTH_SHORT).show();
         }else{
-            Toast.makeText(getContext(), "DEACTIVE", Toast.LENGTH_SHORT).show();
+            SettingsEntry config = db.settingsDao().getAllSettings().get(0);
+            config.setShowDescripCataloge(false);
+            db.settingsDao().updateSettings(config);
+
+            Toast.makeText(getContext(), "Désactivé !", Toast.LENGTH_SHORT).show();
         }
     }
 }

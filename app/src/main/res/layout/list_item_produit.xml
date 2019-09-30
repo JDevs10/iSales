@@ -85,6 +85,17 @@
                     android:textSize="@dimen/produit_item_stock_size"
                     android:textStyle="italic"
                     tools:text="250 unités en stock" />
+                <TextView
+                    android:id="@+id/produit_item_note_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/produit_item_stock_tv"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:textSize="@dimen/produit_item_price_ttc_size"
+                    android:textColor="@android:color/black"/>
 
                 <!--<ImageButton-->
                     <!--android:id="@+id/produit_item_details_ib"-->

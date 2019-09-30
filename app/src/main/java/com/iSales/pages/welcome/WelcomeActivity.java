@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugSettingsEntry;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
 
@@ -121,8 +122,17 @@ public class WelcomeActivity extends AppCompatActivity {
         //init debug settings
         initDebugSettings();
 
+        //set default settings
+        initSettings();
+
 //        checkExternalMedia();
 //        writeToSDFile();
+    }
+
+    private void initSettings(){
+        if(AppDatabase.getInstance(getApplicationContext()).settingsDao().getAllSettings().size() == 0){
+            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true));
+        }
     }
 
     private void initDebugSettings(){

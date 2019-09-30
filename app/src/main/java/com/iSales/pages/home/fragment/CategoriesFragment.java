@@ -515,7 +515,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         }
     }
 //    public static void setAutoOrientationEnabled(Context context, boolean enabled) {
-//        Settings.System.putInt(context.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, enabled ? 1 : 0);
+//        SettingsEntry.System.putInt(context.getContentResolver(), SettingsEntry.System.ACCELEROMETER_ROTATION, enabled ? 1 : 0);
 //    }
 
     /**

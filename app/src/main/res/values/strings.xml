@@ -211,6 +211,6 @@
     <string name="title_activity_calendar">Mon Agenda</string>
     <string name="title_activity_calendar_details">Mon Evénement</string>
 
-    <!-- Strings related to Settings -->
+    <!-- Strings related to SettingsEntry -->
 
 </resources>
