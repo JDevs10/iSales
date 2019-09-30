@@ -18,4 +18,11 @@
         android:summaryOn="@string/active"
         android:textSize="12sp"
         android:title="Masquer les Produits à 0" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/parametres_activer_description"
+        android:summaryOff="@string/desactive"
+        android:summaryOn="@string/active"
+        android:textSize="12sp"
+        android:title="Activer la description du produit dans le catalogue" />
 </PreferenceScreen>

@@ -11,7 +11,7 @@
 
     <string name="title_activity_welcome">WelcomeActivity</string>
     <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>parametres_produits_azero
     <string name="se_connecter">SE CONNECTER</string>
     <string name="s_enregistrer">S\'ENREGISTRER</string>
     <string name="title_activity_login">Connexion</string>
@@ -160,6 +160,7 @@
     <string name="commande_nonpayer">commande_nonpayer</string>
     <string name="parametres_categories_azero">parametres_categories_azero</string>
     <string name="parametres_produits_azero">parametres_produits_azero</string>
+    <string name="parametres_activer_description">parametres_activer_description</string>
 
     <string name="commande_effectuer_title">Éffectuées</string>
     <string name="commande_encours_title">En Cours</string>

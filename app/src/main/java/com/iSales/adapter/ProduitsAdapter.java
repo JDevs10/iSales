@@ -103,7 +103,8 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
                 // name match condition. this might differ depending on your requirement
                 // here we are looking for name or phone number match
                 if (row.getLabel().toLowerCase().contains(searchString.toLowerCase())
-                        || row.getPrice().toLowerCase().contains(searchString.toLowerCase())) {
+                        || row.getPrice().toLowerCase().contains(searchString.toLowerCase())
+                        || row.getRef().toLowerCase().contains(searchString.toLowerCase())) {
                     filteredList.add(row);
                 }
             }

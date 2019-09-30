@@ -4,9 +4,11 @@ package com.iSales.pages.parametres;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.SwitchPreference;
 import android.support.v4.app.Fragment;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.iSales.R;
 
@@ -16,6 +18,8 @@ import com.iSales.R;
 public class ParametresMainFragment extends PreferenceFragmentCompat implements
         SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = com.iSales.pages.parametres.ParametresMainFragment.class.getSimpleName();
+
+    private SwitchPreference mShowDescrip;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -49,5 +53,11 @@ public class ParametresMainFragment extends PreferenceFragmentCompat implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         Log.e(TAG, "onSharedPreferenceChanged: ");
+
+        if (sharedPreferences.getBoolean("parametres_activer_description", true)){
+            Toast.makeText(getContext(), "ACTIVE", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(getContext(), "DEACTIVE", Toast.LENGTH_SHORT).show();
+        }
     }
 }
