@@ -19,6 +19,7 @@ import com.iSales.database.dao.PaymentTypesDao;
 import com.iSales.database.dao.ProductCustPriceDao;
 import com.iSales.database.dao.ProduitDao;
 import com.iSales.database.dao.ServerDao;
+import com.iSales.database.dao.SettingsDao;
 import com.iSales.database.dao.SignatureDao;
 import com.iSales.database.dao.TokenDao;
 import com.iSales.database.dao.UserDao;
@@ -36,6 +37,7 @@ import com.iSales.database.entry.PaymentTypesEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
 import com.iSales.database.entry.ProduitEntry;
 import com.iSales.database.entry.ServerEntry;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.SignatureEntry;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
@@ -44,8 +46,8 @@ import com.iSales.database.entry.UserEntry;
  * Created by netserve on 21/09/2018.
  */
 
-@Database(entities = {EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
-        version = 13,
+@Database(entities = {SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
+        version = 14,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -119,4 +121,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     //EventsEntry
     public abstract EventsDao eventsDao();
+
+    //SettingsEntry
+    public abstract SettingsDao settingsDao();
 }

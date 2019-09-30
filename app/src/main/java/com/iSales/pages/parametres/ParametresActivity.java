@@ -1,5 +1,6 @@
 package com.iSales.pages.parametres;
 
+import android.preference.SwitchPreference;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
