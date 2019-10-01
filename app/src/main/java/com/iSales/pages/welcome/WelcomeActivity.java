@@ -24,6 +24,7 @@ import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
+import com.iSales.task.SaveUserTask;
 
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -291,6 +292,7 @@ public class WelcomeActivity extends AppCompatActivity {
             if(latestVersion!=null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)){
                     if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
+                        new SaveUserTask(getApplicationContext()).execute();
                         showUpdateDialog();
                     }
                 }else{
