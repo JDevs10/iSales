@@ -292,10 +292,14 @@ public class WelcomeActivity extends AppCompatActivity {
             if(latestVersion!=null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)){
                     if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
-                        new SaveUserTask(getApplicationContext()).execute();
+                        new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("RESTORE");
                         showUpdateDialog();
                     }
                 }else{
+                    //Restore data after update
+                    new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("SET");
+                    //new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("RESTORE");
+
                     // if version is correct then proceed
                     delayedHide(100);
                     delayedLogged(3000);

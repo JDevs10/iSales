@@ -41,6 +41,7 @@ import com.iSales.remote.model.Internaute;
 import com.iSales.remote.model.User;
 import com.iSales.remote.rest.LoginREST;
 import com.iSales.task.InternauteLoginTask;
+import com.iSales.task.SaveUserTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -294,8 +295,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.e(TAG, "onRequestPermissionsResult: grant");
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
