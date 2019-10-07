@@ -274,7 +274,6 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             startActivity(intent);
             return;
         }
-
 //        Ajout les serveurs dans la BD
         initServerUrl();
 
