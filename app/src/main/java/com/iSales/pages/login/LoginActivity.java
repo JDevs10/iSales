@@ -264,12 +264,14 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     protected void onResume() {
         super.onResume();
 
+        //If back user database is empty but BackUp file exist then BackUp from the file
+        new SaveUserTask(this).SetRestoreBackUpData("RESTORE");
+
 //        si il y a deja un user alors on va directement a l'accueil 654205564
         if (mDb.userDao().getUser().size() > 0) {
 //        aller a la page d'accueil
             Intent intent = new Intent(com.iSales.pages.login.LoginActivity.this, HomeActivity.class);
             startActivity(intent);
-
             return;
         }
 

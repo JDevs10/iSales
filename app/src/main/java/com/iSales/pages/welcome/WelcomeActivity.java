@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -24,6 +25,7 @@ import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
+import com.iSales.remote.ConnectionManager;
 import com.iSales.task.SaveUserTask;
 
 import org.json.JSONObject;
@@ -247,6 +249,14 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void getCurrentVersion(){
         Log.e(TAG, " getCurrentVersion() : JL Test Version App");
+
+        if (!ConnectionManager.isPhoneConnected(this)) {
+            Log.e(TAG, " getCurrentVersion() : No Internet no Update");
+            delayedHide(100);
+            delayedLogged(3000);
+            return;
+        }
+
         PackageManager pm = this.getPackageManager();
         PackageInfo pInfo = null;
 
@@ -292,18 +302,15 @@ public class WelcomeActivity extends AppCompatActivity {
             if(latestVersion!=null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)){
                     if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
-                        new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("RESTORE");
                         showUpdateDialog();
                     }
                 }else{
-                    //Restore data after update
-                    new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("SET");
-                    //new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("RESTORE");
-
                     // if version is correct then proceed
                     delayedHide(100);
                     delayedLogged(3000);
                 }
+                //delayedHide(100);
+                //delayedLogged(3000);
             }
             else
                 //background.start();
@@ -319,6 +326,9 @@ public class WelcomeActivity extends AppCompatActivity {
         builder.setPositiveButton("Mettre à jour", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                //Save user login && token info in a backup file
+                new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("SET");
+
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse
                         ("https://play.google.com/store/apps/details?id=com.iSales")));
                 dialog.dismiss();

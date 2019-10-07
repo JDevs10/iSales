@@ -20,13 +20,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 public class SaveUserTask {
     private String TAG = SaveUserTask.class.getSimpleName();
     private Context mContext;
     private final File DirectoryLocal = Environment.getExternalStorageDirectory();
     private final String DirectoryName = "iSales_BackUp";
-    private final String FileNameBackUp = "/BackUp.txt";
+    private final String FileNameBackUp = "BackUp.txt";
     private final String BackUpHeader = "BACKUP;ISALES";
     private final String FileSplit = ";";
 
@@ -58,7 +59,7 @@ public class SaveUserTask {
                 }
             }
             if (root.exists() && !FileName.isEmpty() && Body != null) {
-                File file = new File(root, FileName);
+                File file = new File(root+File.separator+FileName);
                 FileWriter writer = new FileWriter(file);
                 writer.append(Body);
                 writer.flush();
@@ -257,104 +258,109 @@ public class SaveUserTask {
     private void restoreFileData(Context context){
         String line = "";
         try {
-            File file = new File(DirectoryLocal, DirectoryName+FileNameBackUp);
+            File file = new File(DirectoryLocal, DirectoryName+File.separator+FileNameBackUp);
             if (file.exists()) {
 
                 FileReader fileReader = new FileReader(file);
                 BufferedReader br = new BufferedReader(fileReader);
 
+                ArrayList<String> lines = new ArrayList<>();
+
                 while ((line = br.readLine()) != null) {
                     line = br.readLine();
+                    lines.add(line);
                     Log.e(TAG, " Save File Line : "+line);
-
-                    if (!line.isEmpty()) {
-                        String[] vales = line.split("\\|");
-                        Log.e(TAG, "vales[0]: "+vales[0]);
-                        Log.e(TAG, "vales[1]: "+vales[1]);
-                        Log.e(TAG, "vales[2]: "+vales[2]);
-
-                        String[] userValues = vales[0].split(FileSplit);
-                        String[] tokenValues = vales[1].split(FileSplit);
-                        String check = vales[2].split(FileSplit)[0];
-
-                        if (check.equals("UPDATED=0")) {
-                            AppDatabase db = AppDatabase.getInstance(mContext);
-                            UserEntry user = new UserEntry();
-                            TokenEntry token = new TokenEntry();
-
-                            String test = "";
-                            Log.e(TAG, "userValues.length: "+userValues.length);
-                            Log.e(TAG, "tokenValues.length: "+tokenValues.length);
-
-                            for(int x=0; x<userValues.length; x++){
-                                test += userValues[x]+";\n";
-                            }
-                            Log.e(TAG, "Test: "+test);
-
-                            //Mapping the user data
-                            user.setId(Long.valueOf(userValues[0].replace("@","")));
-                            user.setStatut(userValues[1].replace("@",""));
-                            user.setEmployee(userValues[2].replace("@",""));
-                            user.setGender(userValues[3].replace("@",""));
-                            user.setBirth(userValues[4].replace("@",""));
-                            user.setEmail(userValues[5].replace("@",""));
-                            user.setFirstname(userValues[6].replace("@",""));
-                            user.setLastname(userValues[7].replace("@",""));
-                            user.setName(userValues[8].replace("@",""));
-                            user.setCountry(userValues[9].replace("@",""));
-                            user.setDateemployment(userValues[10].replace("@",""));
-                            user.setPhoto(userValues[11].replace("@",""));
-                            user.setDatelastlogin(userValues[12].replace("@",""));
-                            user.setDatec(userValues[13].replace("@",""));
-                            user.setDatem(userValues[14].replace("@",""));
-                            user.setAdmin(userValues[15].replace("@",""));
-                            user.setLogin(userValues[16].replace("@",""));
-                            //user.setTown(userValues[17].replace("@",""));
-
-                            //Mapping the token data
-                            token.setId(Long.valueOf(tokenValues[0]));
-                            token.setToken(tokenValues[1]);
-                            token.setMessage(tokenValues[2]);
-
-                            //delete de previous just in case
-                            db.userDao().deleteAllUser();
-                            db.tokenDao().deleteAllToken();
-
-                            //insert into the database
-                            db.userDao().insertUser(user);
-                            db.tokenDao().insertToken(token);
-
-                            //
-                            try {
-                                File root = new File(DirectoryLocal, DirectoryName);
-                                Log.e(TAG, " root path: "+root.getAbsolutePath());
-
-                                if (file.exists ()) file.delete();
-                                if (root.exists()) {
-                                    check = "UPDATED=1";
-
-                                    File mFile = new File(root, FileNameBackUp);
-                                    if (file.exists ()) {   mFile.delete(); }
-
-                                    mFile = new File(root, FileNameBackUp);
-                                    FileWriter writer = new FileWriter(mFile);
-                                    writer.append("BACKUP;ISALES;\n"+vales[0]+vales[1]+check);
-                                    writer.flush();
-                                    writer.close();
-                                }
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-
-                        }else if(check.equals("UPDATED=1")){
-                            break;
-                        }
-                    }
                 }
                 fileReader.close();
                 br.close();
+
+                for (int i=0; i<lines.size(); i++){
+                    Log.e(TAG, "Lines "+i+": "+lines.get(i));
+                }
+
+                String[] vales = lines.get(0).split("\\|");
+                Log.e(TAG, "vales[0]: "+vales[0]);
+                Log.e(TAG, "vales[1]: "+vales[1]);
+                Log.e(TAG, "vales[2]: "+vales[2]);
+
+                String[] userValues = vales[0].split(FileSplit);
+                String[] tokenValues = vales[1].split(FileSplit);
+                String check = vales[2].split(FileSplit)[0];
+
+                if (check.equals("UPDATED=0")) {
+                    AppDatabase db = AppDatabase.getInstance(mContext);
+                    UserEntry user = new UserEntry();
+                    TokenEntry token = new TokenEntry();
+
+                    String test = "";
+                    Log.e(TAG, "userValues.length: "+userValues.length);
+                    Log.e(TAG, "tokenValues.length: "+tokenValues.length);
+
+                    for(int x=0; x<userValues.length; x++){
+                        test += userValues[x]+";\n";
+                    }
+                    Log.e(TAG, "Test: "+test);
+
+                    //Mapping the user data
+                    user.setId(Long.valueOf(userValues[0].replace("@","")));
+                    user.setStatut(userValues[1].replace("@",""));
+                    user.setEmployee(userValues[2].replace("@",""));
+                    user.setGender(userValues[3].replace("@",""));
+                    user.setBirth(userValues[4].replace("@",""));
+                    user.setEmail(userValues[5].replace("@",""));
+                    user.setFirstname(userValues[6].replace("@",""));
+                    user.setLastname(userValues[7].replace("@",""));
+                    user.setName(userValues[8].replace("@",""));
+                    user.setCountry(userValues[9].replace("@",""));
+                    user.setDateemployment(userValues[10].replace("@",""));
+                    user.setPhoto(userValues[11].replace("@",""));
+                    user.setDatelastlogin(userValues[12].replace("@",""));
+                    user.setDatec(userValues[13].replace("@",""));
+                    user.setDatem(userValues[14].replace("@",""));
+                    user.setAdmin(userValues[15].replace("@",""));
+                    user.setLogin(userValues[16].replace("@",""));
+                    //user.setTown(userValues[17].replace("@",""));
+
+                    //Mapping the token data
+                    token.setId(Long.valueOf(tokenValues[0]));
+                    token.setToken(tokenValues[1]);
+                    token.setMessage(tokenValues[2]);
+
+                    //delete de previous just in case
+                    db.userDao().deleteAllUser();
+                    db.tokenDao().deleteAllToken();
+
+                    //insert into the database
+                    db.userDao().insertUser(user);
+                    db.tokenDao().insertToken(token);
+
+                    //
+                    try {
+                        File root = new File(DirectoryLocal, DirectoryName);
+                        Log.e(TAG, " root path: "+root.getAbsolutePath());
+
+                        if (file.exists ()) file.delete();
+                        if (root.exists()) {
+                            check = "UPDATED=1";
+
+                            File mFile = new File(root, FileNameBackUp);
+                            if (file.exists ()) {   mFile.delete(); }
+
+                            mFile = new File(root, FileNameBackUp);
+                            FileWriter writer = new FileWriter(mFile);
+                            writer.write("BACKUP;ISALES;\n"+vales[0]+"|"+vales[1]+"|"+check);
+                            writer.flush();
+                            writer.close();
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }else if(check.equals("UPDATED=1")){
+                    Log.e(TAG, "UPDATED=1");
+                }
+
             }else{
                 Log.e(TAG, "Restoring Data after update, File = ' "+file.getPath()+" ' does not exist. Or its the first time.");
             }
