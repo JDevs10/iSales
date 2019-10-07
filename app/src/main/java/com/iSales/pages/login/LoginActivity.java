@@ -41,6 +41,7 @@ import com.iSales.remote.model.Internaute;
 import com.iSales.remote.model.User;
 import com.iSales.remote.rest.LoginREST;
 import com.iSales.task.InternauteLoginTask;
+import com.iSales.task.SaveUserTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -263,15 +264,16 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     protected void onResume() {
         super.onResume();
 
+        //If back user database is empty but BackUp file exist then BackUp from the file
+        new SaveUserTask(this).SetRestoreBackUpData("RESTORE");
+
 //        si il y a deja un user alors on va directement a l'accueil 654205564
         if (mDb.userDao().getUser().size() > 0) {
 //        aller a la page d'accueil
             Intent intent = new Intent(com.iSales.pages.login.LoginActivity.this, HomeActivity.class);
             startActivity(intent);
-
             return;
         }
-
 //        Ajout les serveurs dans la BD
         initServerUrl();
 
@@ -294,8 +296,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.e(TAG, "onRequestPermissionsResult: grant");
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.

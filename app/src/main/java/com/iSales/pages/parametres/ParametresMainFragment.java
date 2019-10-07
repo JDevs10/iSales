@@ -21,7 +21,7 @@ import com.iSales.database.entry.SettingsEntry;
  */
 public class ParametresMainFragment extends PreferenceFragmentCompat implements
         SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final String TAG = com.iSales.pages.parametres.ParametresMainFragment.class.getSimpleName();
+    private static final String TAG = ParametresMainFragment.class.getSimpleName();
 
     private AppDatabase db;
 
