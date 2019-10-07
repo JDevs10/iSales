@@ -268,12 +268,14 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
             StringBuilder sb = new StringBuilder();
             String value = produitsListFiltered.get(position).getDescription();
 
-            for (int x=0; x<value.length(); x++){
-                result += Character.toString(value.charAt(x));
+            if (value != null) {
+                for (int x = 0; x < value.length(); x++) {
+                    result += Character.toString(value.charAt(x));
 
-                if (result.length() == 15){
-                    result += "....";
-                    break;
+                    if (result.length() == 15) {
+                        result += "....";
+                        break;
+                    }
                 }
             }
 
