@@ -161,6 +161,7 @@
     <string name="parametres_categories_azero">parametres_categories_azero</string>
     <string name="parametres_produits_azero">parametres_produits_azero</string>
     <string name="parametres_activer_description">parametres_activer_description</string>
+    <string name="parametres_activer_movement_stock_cmd">parametres_activer_stock_by_cmd</string>
 
     <string name="commande_effectuer_title">Éffectuées</string>
     <string name="commande_encours_title">En Cours</string>

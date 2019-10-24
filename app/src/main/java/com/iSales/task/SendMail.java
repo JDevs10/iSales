@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.model.ClientParcelable;
 import com.iSales.remote.model.Order;
 import com.iSales.remote.model.OrderLine;
@@ -34,8 +35,8 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     private Session session;
 
     //Email configuration
-    private final String configEmail = "jl@anexys.fr";  //commercial@anexys.fr
-    private final String configPassword = "JLAnexys20";
+    private String configEmail;//commercial@anexys.fr
+    private String configPassword;
 
     //Information to send email
     private String email;
@@ -93,6 +94,18 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        //Get Email config
+        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+        configEmail = settings.getEmail();
+        configPassword = settings.getEmail_Pwd();
+
+        if (settings.getEmail() == null || settings.getEmail().isEmpty() ||
+            settings.getEmail_Pwd() == null || settings.getEmail_Pwd().isEmpty()){
+
+            Toast.makeText(context, "Veuillez configurer votre adresse mail dans votre profile!", Toast.LENGTH_LONG).show();
+            return null;
+        }
+
         //Creating properties
         Properties props = new Properties();
 

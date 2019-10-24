@@ -8,6 +8,8 @@ public class SettingsEntry {
     @PrimaryKey(autoGenerate = false)
     private int id;
     private boolean showDescripCataloge;
+    private String email;
+    private String email_Pwd;
 
     public SettingsEntry() {
 
@@ -32,5 +34,21 @@ public class SettingsEntry {
 
     public void setShowDescripCataloge(boolean showDescripCataloge) {
         this.showDescripCataloge = showDescripCataloge;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail_Pwd() {
+        return email_Pwd;
+    }
+
+    public void setEmail_Pwd(String email_Pwd) {
+        this.email_Pwd = email_Pwd;
     }
 }

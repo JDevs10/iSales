@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -28,6 +30,7 @@ import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.helper.DebugMe;
 import com.iSales.pages.home.viewmodel.UserViewModel;
@@ -42,9 +45,11 @@ import java.util.List;
 public class ProfileActivity extends AppCompatActivity {
     private String TAG = ProfileActivity.class.getSimpleName();
 
-    private LinearLayout ly_admin1, ly_admin2, ly_admin3;
+    private LinearLayout ly_admin1, ly_admin2, ly_admin3,ll_email;
 
-    private TextView tv_mail, tv_societe, tv_server, tv_nom, tv_login, tv_lastConnexion, tv_etatConn;
+    private TextView tv_mail, tv_societe, tv_server, tv_nom, tv_login, tv_lastConnexion, tv_etatConn, tv_email, tv_email_pwd;
+    private EditText et_email, et_email_pwd;
+    private ImageView iv_email_edit;
     private Switch sw_msgDebogage;
     private Button btn_winDebogage;
     private RecyclerView rv_debogage;
@@ -59,6 +64,8 @@ public class ProfileActivity extends AppCompatActivity {
     private int mTotalPdtQuery;
 
     private UserEntry mUserEntry;
+
+    private boolean edit_email_visible = false;
 
 
     @Override
@@ -76,6 +83,12 @@ public class ProfileActivity extends AppCompatActivity {
         tv_lastConnexion = (TextView) findViewById(R.id.activity_profile_text_view_derniere_connexion);
         tv_etatConn = (TextView) findViewById(R.id.activity_profile_connexion_etat);
 
+        ll_email = (LinearLayout) findViewById(R.id.activity_profile_view_edit_email_view);
+        tv_email = (TextView) findViewById(R.id.activity_profile_text_view_email_1);
+        tv_email_pwd = (TextView) findViewById(R.id.activity_profile_text_view_email_password);
+        et_email = (EditText) findViewById(R.id.activity_profile_view_edit_email_view_email_et);
+        et_email_pwd = (EditText) findViewById(R.id.activity_profile_view_edit_email_view_pwd_et);
+        iv_email_edit = (ImageView) findViewById(R.id.activity_profile_image_vien_edit_email);
 
         //check if the device is connected to the internet every 10secs
         handler = new Handler();
@@ -111,6 +124,29 @@ public class ProfileActivity extends AppCompatActivity {
         //Get current user information
         loadUser();
 
+        iv_email_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (edit_email_visible){
+                    if (!et_email.getText().toString().isEmpty() && !et_email_pwd.getText().toString().isEmpty()){
+                        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+                        settings.setEmail(et_email.getText().toString().trim());
+                        settings.setEmail_Pwd(et_email_pwd.getText().toString().trim());
+
+                        mDB.settingsDao().updateSettings(settings);
+                        tv_email.setText(et_email.getText().toString().trim());
+                        tv_email_pwd.setText(et_email_pwd.getText().toString().trim());
+                        Toast.makeText(ProfileActivity.this, "Configuration email enregistre!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    ll_email.setVisibility(View.GONE);
+                    edit_email_visible = false;
+                }else{
+                    ll_email.setVisibility(View.VISIBLE);
+                    edit_email_visible = true;
+                }
+            }
+        });
     }
 
     //    recuperation du user connecté dans la BD
@@ -178,6 +214,25 @@ public class ProfileActivity extends AppCompatActivity {
         tv_nom.setText(mUserEntry.getLastname());
         tv_login.setText(mUserEntry.getLogin());
         tv_lastConnexion.setText(dateString);
+
+        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+        tv_email.setText(settings.getEmail());
+        tv_email_pwd.setText(settings.getEmail_Pwd());
+        if (settings != null){
+            if (settings.getEmail() != null && !settings.getEmail().isEmpty()){
+                tv_email.setText(settings.getEmail());
+            }else{
+                tv_email.setText("");
+            }
+            if (settings.getEmail_Pwd() != null && !settings.getEmail_Pwd().isEmpty()){
+                tv_email_pwd.setText(settings.getEmail_Pwd());
+            }else{
+                tv_email_pwd.setText("");
+            }
+        }else{
+            tv_email.setText("");
+            tv_email_pwd.setText("");
+        }
 
         //Log.e(TAG, "Last Connexion : "+dateString);
     }

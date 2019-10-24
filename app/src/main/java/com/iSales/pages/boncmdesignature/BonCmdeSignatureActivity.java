@@ -353,7 +353,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
                     progressDialog.setMessage(ISalesUtility.strCapitalize(getString(R.string.validation_commande_encours)));
 
-//                    Validation de la commande sur le serveur
+                    //Validation de la commande sur le serveur
                     Call<Order> callValidate = ApiUtils.getISalesService(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this).validateCustomerOrder(responseBody);
                     callValidate.enqueue(new Callback<Order>() {
                         @Override
@@ -569,6 +569,10 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                             return;
                         }
                     });
+
+                    /** ======================================================================================================================================================================== **/
+                    /** ======================================================================================================================================================================== **/
+                    /** ======================================================================================================================================================================== **/
                 } else {
                     progressDialog.dismiss();
 

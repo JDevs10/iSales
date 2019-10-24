@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
@@ -29,6 +30,7 @@ import com.iSales.remote.ConnectionManager;
 import com.iSales.task.SaveUserTask;
 
 import org.json.JSONObject;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -46,6 +48,8 @@ public class WelcomeActivity extends AppCompatActivity {
      */
     private String currentVersion, latestVersion;
     private Dialog dialog;
+
+    private TextView Error_Message;
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -118,6 +122,7 @@ public class WelcomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
 
         mContentView = findViewById(R.id.fullscreen_content);
+        Error_Message = findViewById(R.id.Error_Message);
 
         // Check version on playStore
         getCurrentVersion();
@@ -132,17 +137,17 @@ public class WelcomeActivity extends AppCompatActivity {
 //        writeToSDFile();
     }
 
-    private void initSettings(){
-        if(AppDatabase.getInstance(getApplicationContext()).settingsDao().getAllSettings().size() == 0){
+    private void initSettings() {
+        if (AppDatabase.getInstance(getApplicationContext()).settingsDao().getAllSettings().size() == 0) {
             AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true));
         }
     }
 
-    private void initDebugSettings(){
+    private void initDebugSettings() {
         AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().deleteDebugSettings();
         AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().insertDebugSettings(new DebugSettingsEntry(1, 0));
 
-        Log.e(TAG, " initDebugSettings(): checkDebug = "+AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug());
+        Log.e(TAG, " initDebugSettings(): checkDebug = " + AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug());
     }
 
 //    @Override
@@ -193,7 +198,7 @@ public class WelcomeActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mGotoLoginRunnable, delayMillis);
     }
 
-    private void checkExternalMedia(){
+    private void checkExternalMedia() {
         boolean mExternalStorageAvailable = false;
         boolean mExternalStorageWriteable = false;
         String state = Environment.getExternalStorageState();
@@ -211,11 +216,13 @@ public class WelcomeActivity extends AppCompatActivity {
         }
     }
 
-    /** Method to write ascii text characters to file on SD card. Note that you must add a
-     WRITE_EXTERNAL_STORAGE permission to the manifest file or this method will throw
-     a FileNotFound Exception because you won't have write permission. */
+    /**
+     * Method to write ascii text characters to file on SD card. Note that you must add a
+     * WRITE_EXTERNAL_STORAGE permission to the manifest file or this method will throw
+     * a FileNotFound Exception because you won't have write permission.
+     */
 
-    private File writeToSDFile(){
+    private File writeToSDFile() {
 
         // Find the root of the external storage.
         // See http://developer.android.com/guide/topics/data/data-  storage.html#filesExternal
@@ -224,7 +231,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         // See http://stackoverflow.com/questions/3551821/android-write-to-sd-card-folder
 
-        File dir = new File (root.getAbsolutePath() + "/iSales");
+        File dir = new File(root.getAbsolutePath() + "/iSales");
         dir.mkdirs();
         File file = new File(dir, "logcat.txt");
         return file;
@@ -247,7 +254,7 @@ public class WelcomeActivity extends AppCompatActivity {
 //        tv.append("\n\nFile written to "+file);
     }
 
-    private void getCurrentVersion(){
+    private void getCurrentVersion() {
         Log.e(TAG, " getCurrentVersion() : JL Test Version App");
 
         if (!ConnectionManager.isPhoneConnected(this)) {
@@ -261,7 +268,7 @@ public class WelcomeActivity extends AppCompatActivity {
         PackageInfo pInfo = null;
 
         try {
-            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+            pInfo = pm.getPackageInfo(this.getPackageName(), 0);
 
         } catch (PackageManager.NameNotFoundException e1) {
             // TODO Auto-generated catch block
@@ -287,9 +294,14 @@ public class WelcomeActivity extends AppCompatActivity {
             try {
                 //It retrieves the latest version by scraping the content of current version from play store at runtime
                 Document doc = Jsoup.connect("https://play.google.com/store/apps/details?id=com.iSales").get();
-                latestVersion = doc.getElementsByClass("htlgb").get(6).text();
 
-            }catch (Exception e){
+                for (int i = 0; i < doc.getElementsByClass("htlgb").size(); i++) {
+                    Log.e(TAG, "DOC: index = " + i + " :: " + ((doc.getElementsByClass("htlgb").get(i).text() == null) ? "Null" : doc.getElementsByClass("htlgb").get(i).text()));
+                }
+                latestVersion = doc.getElementsByClass("htlgb").get(6).text();
+                Log.e(TAG, "latestVersion: " + latestVersion);
+
+            } catch (Exception e) {
                 e.printStackTrace();
 
             }
@@ -299,27 +311,32 @@ public class WelcomeActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(JSONObject jsonObject) {
-            if(latestVersion!=null) {
-                if (!currentVersion.equalsIgnoreCase(latestVersion)){
-                    if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
+            Log.e(TAG, "latestVersion: " + latestVersion);
+            Log.e(TAG, "currentVersion: " + currentVersion);
+            if (latestVersion != null) {
+                if (!currentVersion.equalsIgnoreCase(latestVersion)) {
+                    if (!isFinishing()) { //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
                         showUpdateDialog();
                     }
-                }else{
+                } else {
                     // if version is correct then proceed
                     delayedHide(100);
                     delayedLogged(3000);
                 }
                 //delayedHide(100);
                 //delayedLogged(3000);
-            }
-            else
+            } else {
                 //background.start();
+                Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +
+                        "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
+                        "Veuillez vérifier votre connexion internet !");
                 Toast.makeText(WelcomeActivity.this, "latestVersion == NULL", Toast.LENGTH_SHORT).show();
-            super.onPostExecute(jsonObject);
+                super.onPostExecute(jsonObject);
+            }
         }
     }
 
-    private void showUpdateDialog(){
+    private void showUpdateDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("iSales Mise à Jour");
         builder.setTitle("Une nouvelle mise à jour est disponible");

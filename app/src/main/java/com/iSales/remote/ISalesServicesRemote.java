@@ -1,8 +1,5 @@
 package com.iSales.remote;
 
-import android.arch.persistence.room.Insert;
-
-import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.AgendaEventSuccess;
 import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.model.Categorie;
@@ -158,8 +155,6 @@ public interface ISalesServicesRemote {
 
     @DELETE("agendaevents/{eventId}")
     Call<AgendaEventSuccess> deleteEventById(@Path("eventId") Long eventId);
-
-
 
     // ======== RYImg endpoinds  ==========
 

@@ -44,10 +44,11 @@ import com.iSales.database.entry.UserEntry;
 
 /**
  * Created by netserve on 21/09/2018.
+ * Updates by JDevs
  */
 
 @Database(entities = {SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
-        version = 14,
+        version = 15,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {

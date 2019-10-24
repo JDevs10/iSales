@@ -193,9 +193,9 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             // Permission has already been granted
 
             /*
-//        si il y a deja un user alors on va directement a l'accueil 654205564
-            if (mDb.userDao().getUser().size() > 0) {
-//        aller a la page d'accueil
+//          Si il y a deja un user alors on va directement a l'accueil 654205564
+            If (mDb.userDao().getUser().size() > 0) {
+//          Aller a la page d'accueil
                 Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                 startActivity(intent);
 
@@ -264,17 +264,17 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     protected void onResume() {
         super.onResume();
 
-        //If back user database is empty but BackUp file exist then BackUp from the file
+        // If back user database is empty but BackUp file exist then BackUp from the file
         new SaveUserTask(this).SetRestoreBackUpData("RESTORE");
 
-//        si il y a deja un user alors on va directement a l'accueil 654205564
+        // Si il y a deja un user alors on va directement a l'accueil 654205564
         if (mDb.userDao().getUser().size() > 0) {
-//        aller a la page d'accueil
+        // Aller a la page d'accueil
             Intent intent = new Intent(com.iSales.pages.login.LoginActivity.this, HomeActivity.class);
             startActivity(intent);
             return;
         }
-//        Ajout les serveurs dans la BD
+        // Ajout les serveurs dans la BD
         initServerUrl();
 
     }
@@ -306,9 +306,9 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     // functionality that depends on this permission.
                 }
 
-//        si il y a deja un user alors on va directement a l'accueil
+                // Si il y a deja un user alors on va directement a l'accueil
                 if (mDb.userDao().getUser().size() > 0) {
-//        aller a la page d'accueil
+                // Aller a la page d'accueil
                     Intent intent = new Intent(com.iSales.pages.login.LoginActivity.this, HomeActivity.class);
                     startActivity(intent);
 
@@ -318,8 +318,8 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                 return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request.
+            // Other 'case' lines to check for other
+            // Permissions this app might request.
         }
     }
 

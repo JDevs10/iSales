@@ -9,9 +9,27 @@
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
-    <ImageView
+
+
+    <LinearLayout
         android:layout_centerInParent="true"
-        android:layout_width="150dp"
-        android:layout_height="200dp"
-        android:background="@drawable/logo_isales"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="200dp"
+            android:background="@drawable/logo_isales"/>
+
+        <TextView
+            android:id="@+id/Error_Message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/white"
+            android:gravity="center"/>
+    </LinearLayout>
+
 </RelativeLayout>
