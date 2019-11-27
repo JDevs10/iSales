@@ -3,6 +3,7 @@ package com.iSales.pages.welcome;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -323,8 +324,8 @@ public class WelcomeActivity extends AppCompatActivity {
                     delayedHide(100);
                     delayedLogged(3000);
                 }
-                //delayedHide(100);
-                //delayedLogged(3000);
+//                delayedHide(100);
+//                delayedLogged(3000);
             } else {
                 //background.start();
                 Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +
@@ -333,6 +334,30 @@ public class WelcomeActivity extends AppCompatActivity {
                 Toast.makeText(WelcomeActivity.this, "latestVersion == NULL", Toast.LENGTH_SHORT).show();
                 super.onPostExecute(jsonObject);
             }
+        }
+    }
+
+    public static void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            deleteDir(dir);
+        } catch (Exception e){  e.printStackTrace();}
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
         }
     }
 
@@ -346,6 +371,10 @@ public class WelcomeActivity extends AppCompatActivity {
                 //Save user login && token info in a backup file
                 new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("SET");
 
+                //Clean app cache
+                deleteCache(WelcomeActivity.this);
+
+                //Open the browser and open the url
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse
                         ("https://play.google.com/store/apps/details?id=com.iSales")));
                 dialog.dismiss();

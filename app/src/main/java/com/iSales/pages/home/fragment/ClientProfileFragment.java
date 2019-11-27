@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,6 +70,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     private RadioButton mRadioBtnCurrent;
     private View mModifierView, mAnnulerView;
     private FloatingActionButton mLogoFloatingBtn;
+    private LinearLayout mSelecteLayout;
 
     private static com.iSales.interfaces.MyCropImageListener myCropImageListener;
     private static com.iSales.interfaces.ClientsAdapterListener mClientsAdapterListener;
@@ -122,6 +125,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         mLogoFloatingBtn = (FloatingActionButton) rootView.findViewById(R.id.floatingbtn_clientprofile_logo);
         mModifierView = (View) rootView.findViewById(R.id.view_enregistrer_client);
         mAnnulerView = (View) rootView.findViewById(R.id.view_annuler_client);
+
+        mSelecteLayout = (LinearLayout) rootView.findViewById(R.id.fragment_client_profile_selectClient_linearLayout);
 
         if (savedInstanceState != null) {
             mClientParcelable = getActivity().getIntent().getParcelableExtra("client");
@@ -221,9 +226,19 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-//        Log.e(TAG, "onSaveInstanceState: ");
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
+        //Hide the select client option to everyone except "Asia Food"
+        if (mDb.serverDao().getActiveServer(true).getRaison_sociale().equals("Asia Food")){
+            mSelecteLayout.setVisibility(View.VISIBLE);
+        }else{
+            mSelecteLayout.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putParcelable("client", mClientParcelable);
         super.onSaveInstanceState(outState);
     }
@@ -295,7 +310,6 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + email));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "");
         emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-//emailIntent.putExtra(Intent.EXTRA_HTML_TEXT, body); //If you are using HTML in your body text
 
         if (emailIntent.resolveActivity(getContext().getPackageManager()) != null) {
 
@@ -306,11 +320,9 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     }
 
     private void initViewContent() {
-//        Log.e(TAG, "initViewContent: poster="+mClientParcelable.getPoster().getContent());
         new DebugMe(getActivity() ,getContext(), "WL", TAG+" initViewContent() => called.").execute();
 
         if (mClientParcelable.getPoster().getContent() != null) {
-//            si le fichier existe dans la memoire locale
             File imgFile = new File(mClientParcelable.getPoster().getContent());
             if (imgFile.exists()) {
 

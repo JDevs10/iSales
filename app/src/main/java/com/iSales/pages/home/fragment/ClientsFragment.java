@@ -652,7 +652,7 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
                     return true;
                 }
 
-//                                Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
+//              Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
                 if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                     Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 } else {
