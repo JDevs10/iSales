@@ -120,6 +120,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.iSales.pages.home.HomeActivity" />
         </activity>
+        <activity android:name=".pages.ticketing.TicketingActivity"
+            android:label="@string/support_ticket"
+            android:parentActivityName=".pages.home.HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.iSales.pages.home.HomeActivity" />
+        </activity>
         <activity
             android:name=".pages.parametres.ParametresActivity"
             android:label="@string/parametres"

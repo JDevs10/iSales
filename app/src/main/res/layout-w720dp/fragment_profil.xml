@@ -172,6 +172,27 @@
                             android:text="Synchronisation"/>
                     </LinearLayout>
                     <LinearLayout
+                        android:id="@+id/view_user_profile_ticketing"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:clickable="true"
+                        android:background="@drawable/click_selector"
+                        android:gravity="center_vertical"
+                        android:padding="12dp">
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/ic_contact_ticketing"
+                            android:layout_marginEnd="8dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/profile_menu_size"
+                            android:textStyle="bold"
+                            android:text="Support Ticket"/>
+                    </LinearLayout>
+                    <LinearLayout
                         android:id="@+id/view_user_profile_deconnecter"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

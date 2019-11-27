@@ -26,6 +26,7 @@ import com.iSales.pages.profile.ProfileActivity;
 import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.pages.parametres.ParametresActivity;
 import com.iSales.pages.synchronisation.SynchronisationActivity;
+import com.iSales.pages.ticketing.TicketingActivity;
 import com.iSales.utility.ISalesUtility;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class ProfilFragment extends Fragment {
 
     private TextView mNameTV, mAdressTV;
 
-    private LinearLayout mDeconnexionView, mSynchroView, mParametresView, mProfleView, mAgenda;
+    private LinearLayout mDeconnexionView, mSynchroView, mParametresView, mProfleView, mAgenda, mTicketing;
 
     private AppDatabase mDb;
 
@@ -108,6 +109,7 @@ public class ProfilFragment extends Fragment {
         mAgenda = rootView.findViewById(R.id.view_user_profile_agenda);
         mParametresView = rootView.findViewById(R.id.view_user_profile_parametre);
         mSynchroView = rootView.findViewById(R.id.view_user_profile_synchronisation);
+        mTicketing = rootView.findViewById(R.id.view_user_profile_ticketing);
         mDeconnexionView = rootView.findViewById(R.id.view_user_profile_deconnecter);
 
         mProfleView.setOnClickListener(new View.OnClickListener() {
@@ -138,6 +140,14 @@ public class ProfilFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getContext(), ParametresActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mTicketing.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), TicketingActivity.class);
                 startActivity(intent);
             }
         });

@@ -196,6 +196,7 @@
     <string name="presentation_isales">iSales est une application de prise de commande sur tablette iPad développé par Big Data Consulting. L’application permet à vos commerciaux de terrain de prendre des commandes directement sur tablette et tout cela à partir de chez le client. Elle a été spécialement conçue pour les professionnels. C’est un logiciel unique en son genre</string>
     <string name="title_activity_parametres">Settings</string>
     <string name="parametres">Paramètres</string>
+    <string name="support_ticket">Support Ticket</string>
     <string name="echec_envoi_logo_client">Echec d\'envoi du logo client.</string>
     <string name="toutes_les_categories">Toutes les categories</string>
     <string name="note">Note</string>
