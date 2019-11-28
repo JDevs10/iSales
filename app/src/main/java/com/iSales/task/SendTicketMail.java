@@ -3,6 +3,7 @@ package com.iSales.task;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -51,6 +52,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private String ticketEmail;
     private String ticketSubject;
     private String ticketBody;
+    private String refTicket;
+    private String priorityTicket;
     //private Files[] attachments;
 
     private AppDatabase mDB;
@@ -59,7 +62,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private ProgressDialog progressDialog;
 
     //Class Constructor
-    public SendTicketMail(Context context, String typeAction, File logFile, String email, String subject, String body){
+    public SendTicketMail(Context context, String typeAction, File logFile, String email, String subject, String body, String refTicket, String priorityTicket){
         //Initializing variables
         this.context = context;
         this.typeAction = typeAction;
@@ -67,6 +70,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         this.ticketEmail = email;
         this.ticketSubject = subject;
         this.ticketBody = body;
+        this.refTicket = refTicket;
+        this.priorityTicket = priorityTicket;
         mDB = AppDatabase.getInstance(this.context);
     }
 
@@ -84,19 +89,52 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     */
 
     private String setMessage(){
-        if (typeAction.equals("Manuel-Ticket")) {
+        String deviceOS = System.getProperty("os.version");     // OS version
+        String deviceSDK = android.os.Build.VERSION.SDK;        // API Level
+        String device = android.os.Build.DEVICE;                // Device
+        String deviceModel = android.os.Build.MODEL;            // Model
+        String deviceProduct = android.os.Build.PRODUCT;        // Product
+        String deviceBrand = android.os.Build.BRAND;            // Brand
+
+        if (typeAction.equals("Automatic-Ticket")) {
+            String clientName = mDB.userDao().getUser().get(0).name;
+            String companyName = mDB.serverDao().getActiveServer(true).getRaison_sociale();
             return "Bonjour Team BDC,\n\n" +
-                    "Le client .... sur iSales a rencontré un problème, il nous envoie un ticket Ref: ....\n" +
+                    "Le client "+clientName+" ("+companyName+") sur iSales a rencontré un problème, il nous envoie un ticket Ref: "+refTicket+"\n" +
                     "Voici ci-dessous son ticket : \n\n" +
+                    "Ref: "+refTicket+"\n" +
+                    "Priorité: "+priorityTicket+"\n" +
+                    "Client "+clientName+" ("+companyName+")\n\n" +
+                    "Information sur l'appareil utiliser : \n" +
+                    "Appareil (Device) ===> "+device+"\n" +
+                    "Marque (Brand) ===> "+deviceBrand+"\n" +
+                    "Produit (Product) ===> "+deviceProduct+"\n" +
+                    "Model (Model) ===> "+deviceModel+"\n" +
+                    "SDK (SDK) ===> "+deviceSDK+"\n" +
+                    "OS (OS) ===> "+deviceOS+"\n\n" +
+                    "" + ticketBody;
+
+        }else if(typeAction.equals("Manuel-Ticket")){
+            String clientName = mDB.userDao().getUser().get(0).name;
+            String companyName = mDB.serverDao().getActiveServer(true).getRaison_sociale();
+            return "Bonjour Team BDC,\n\n" +
+                    "Ceci est un Ticket Automatique qui vient de iSales du client "+clientName+" ("+companyName+") connecter.\n" +
                     "";
-        }else{
-            return "";
         }
+        return "NULL";
     }
 
-    public boolean sendTicket(){
+    private String dateFormat(String dateInString){
+        Log.e(TAG, "deteFormat: date before => "+dateInString);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM");
+        long dateLong = Long.valueOf(dateInString);
+        Log.e(TAG, "deteFormat: date before => "+sdf.format(new Date(dateLong*1000)));
+        return sdf.format(new Date(dateLong*1000));
+    }
+
+    @Override
+    protected Void doInBackground(Void... params) {
         //Creating properties
-        boolean result = false;
         Properties props = new Properties();
         String newBody = setMessage();
 
@@ -113,7 +151,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                 new javax.mail.Authenticator() {
                     //Authenticating the password
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(configEmail, configPassword);
+                        return new PasswordAuthentication("jl@anexys.fr", "anexys1,");
                     }
                 });
 
@@ -122,7 +160,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             MimeMessage mm = new MimeMessage(session);
 
             //Setting sender address
-            mm.setFrom(new InternetAddress(configEmail, "iSales Support Ticket"));
+            mm.setFrom(new InternetAddress("jl@anexys.fr", "iSales Support Ticket"));
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress("jl@anexys.fr"));
             mm.addRecipient(Message.RecipientType.CC, new InternetAddress(ticketEmail));
@@ -140,12 +178,10 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             Multipart multipart = new MimeMultipart();
             // Set text message part
             multipart.addBodyPart(messageBodyPart);
-            // Set text message part
-            multipart.addBodyPart(messageBodyPart);
 
             // Part two is attachment
             messageBodyPart = new MimeBodyPart();
-            String filename = logFile.getAbsolutePath();
+            String filename = logFile.getPath();
             DataSource source = new FileDataSource(filename);
             messageBodyPart.setDataHandler(new DataHandler(source));
             messageBodyPart.setFileName(filename);
@@ -156,78 +192,13 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
 
             //Sending email
             Transport.send(mm);
-            result = true;
+            //multipart.removeBodyPart(1);
 
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            result = false;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            result = false;
-        }
-        return result;
-    }
-
-    private String dateFormat(String dateInString){
-        Log.e(TAG, "deteFormat: date before => "+dateInString);
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM");
-        long dateLong = Long.valueOf(dateInString);
-        Log.e(TAG, "deteFormat: date before => "+sdf.format(new Date(dateLong*1000)));
-        return sdf.format(new Date(dateLong*1000));
-    }
-
-    @Override
-    protected Void doInBackground(Void... params) {
-        //Get Email config
-        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
-        configEmail = settings.getEmail();
-        configPassword = settings.getEmail_Pwd();
-
-        if (settings.getEmail() == null || settings.getEmail().isEmpty() ||
-            settings.getEmail_Pwd() == null || settings.getEmail_Pwd().isEmpty()){
-
-            Toast.makeText(context, "Veuillez configurer votre adresse mail dans votre profile!", Toast.LENGTH_LONG).show();
-            return null;
-        }
-
-        //Creating properties
-        Properties props = new Properties();
-
-        //Configuring properties for gmail
-        //If you are not using gmail you may need to change the values
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.socketFactory.port", "465");
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.port", "465");
-
-        //Creating a new session
-        session = Session.getDefaultInstance(props,
-                new javax.mail.Authenticator() {
-                    //Authenticating the password
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(configEmail, configPassword);
-                    }
-                });
-
-        try {
-            //Creating MimeMessage object
-            MimeMessage mm = new MimeMessage(session);
-
-            //Setting sender address
-            mm.setFrom(new InternetAddress(configEmail, "iSales Support Ticket"));
-            //Adding receiver
-            mm.addRecipient(Message.RecipientType.TO, new InternetAddress("jl@anexys.fr"));
-            mm.addRecipient(Message.RecipientType.CC, new InternetAddress(ticketEmail));
-            mm.addRecipient(Message.RecipientType.CC, new InternetAddress("commercial@anexys.fr"));
-            mm.addRecipient(Message.RecipientType.CC, new InternetAddress("fahd@anexys.fr"));
-            //Adding subject
-            mm.setSubject(ticketSubject);
-            //Adding message
-            mm.setText("body");
-
-            //Sending email
-            Transport.send(mm);
+            //delete file after send
+            if (logFile.exists()){
+                Log.e(TAG, "Delete: " + logFile.getPath());
+                logFile.delete();
+            }
 
         } catch (MessagingException e) {
             e.printStackTrace();
@@ -235,5 +206,11 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        Log.e(TAG, "onPostExecute()");
     }
 }

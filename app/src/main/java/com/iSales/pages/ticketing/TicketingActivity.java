@@ -66,12 +66,19 @@ public class TicketingActivity extends AppCompatActivity {
         });
     }
 
-    private void prepareTicket(String ticketName, String ticketEmail, String ticketBody){
+    private void prepareTicket(String ticketName, String priorityTicket, String ticketEmail, String ticketBody){
         boolean error = false;
 
         if (ticketName.isEmpty()){
             ticketing_name.setFocusable(true);
             ticketing_name.setError("Veuillez renseigner le nom du Ticket!");
+            error = true;
+        }
+        if(priorityTicket.isEmpty()){
+            //put the priority of the ticket depending of the user selected subject
+            //the selected subject is a ist of Ticket errors which have the priority attributed (see the table chart i did)
+            ticketing_priority.setFocusable(true);
+            ticketing_priority.setError("Veuillez renseigner le nom du Ticket!");
             error = true;
         }
         if (ticketEmail.isEmpty()){
@@ -88,11 +95,14 @@ public class TicketingActivity extends AppCompatActivity {
             return;
         }
 
+        //get ref Ticket from date
+        String refTicket = "ST_" + DateFormat.format("dd-MM-yyyy_hh:mm:ss", new Date((System.currentTimeMillis()/1000)*1000)).toString();
+
         //get all logs
         String logDataText = "";
         List<DebugItemEntry> debugList = db.debugMessageDao().getAllDebugMessages();
         for(int i=0; i<debugList.size(); i++){
-            logDataText = DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | " + debugList.get(i).getMask() + "\n" + debugList.get(i).getErrorMessage();
+            logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | " + debugList.get(i).getMask() + "\n" + debugList.get(i).getErrorMessage();
         }
 
         //create log file
@@ -130,8 +140,8 @@ public class TicketingActivity extends AppCompatActivity {
         }
 
         //get isales log file to send in email attachment
-        SendTicketMail mSendTicketMail = new SendTicketMail(this, file, ticketEmail, ticketName, ticketBody);
-        mSendTicketMail.sendTicket();
+        SendTicketMail mSendTicketMail = new SendTicketMail(this, "Manuel-Ticket", file, ticketEmail, ticketName, ticketBody, refTicket, priorityTicket);
+        mSendTicketMail.execute();
     }
 
     @Override
