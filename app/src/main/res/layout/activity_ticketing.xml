@@ -82,7 +82,7 @@
             android:id="@+id/ticketingActivity_ticket_body_et"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:hint="Soyez le plus détaillé possible..."
+            android:hint="Expliquer le plus détaillé possible, ce que vous faisait avant et quand le bug est survenu..."
             android:inputType="textMultiLine"
             android:layout_marginBottom="20dp"/>
     </LinearLayout>

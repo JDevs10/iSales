@@ -42,6 +42,9 @@ public class DebugMe extends AsyncTask<Void, Void, Void> {
             WindowLogs();
             LiveLogs();
         }
+        if (part.equals("Ticket")){
+            Ticket();
+        }
         return null;
     }
 
@@ -60,5 +63,9 @@ public class DebugMe extends AsyncTask<Void, Void, Void> {
                 }
             });
         }
+    }
+
+    private void Ticket(){
+        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", msg));
     }
 }

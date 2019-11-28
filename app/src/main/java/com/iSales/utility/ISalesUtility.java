@@ -232,8 +232,8 @@ public final class ISalesUtility {
                 new MediaScannerConnection.OnScanCompletedListener() {
                     @Override
                     public void onScanCompleted(String path, Uri uri) {
-//                        Log.e(TAG, "onScanCompleted: Scanned=" + path);
-//                        Log.e(TAG, "onScanCompleted: uri=" + uri);
+                        Log.e(TAG, "onScanCompleted: Scanned=" + path);
+                        Log.e(TAG, "onScanCompleted: uri=" + uri);
                     }
                 });
     }

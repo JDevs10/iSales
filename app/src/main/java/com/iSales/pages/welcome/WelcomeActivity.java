@@ -324,8 +324,8 @@ public class WelcomeActivity extends AppCompatActivity {
                     delayedHide(100);
                     delayedLogged(3000);
                 }
-//                delayedHide(100);
-//                delayedLogged(3000);
+                delayedHide(100);
+                delayedLogged(3000);
             } else {
                 //background.start();
                 Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +

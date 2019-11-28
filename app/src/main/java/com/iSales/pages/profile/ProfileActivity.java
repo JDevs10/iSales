@@ -325,8 +325,6 @@ public class ProfileActivity extends AppCompatActivity {
         for (int i=0; i<debugItemEntries.size(); i++){
             DebugItemEntry debugItemEntry = debugItemEntries.get(i);
             Log.e(TAG, " getDebugData():: mCurrentPdtQuery = "+i+" debugMessageID = "+debugItemEntry.getRowId());
-
-
         }
     return debugItemEntries;
     }
