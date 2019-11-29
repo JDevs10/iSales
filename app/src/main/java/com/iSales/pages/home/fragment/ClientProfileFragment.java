@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.ClientsAdapterListener;
 import com.iSales.interfaces.DialogClientListener;
@@ -229,6 +230,9 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "onActivityCreated()", "Called.", ""));
+
         //Hide the select client option to everyone except "Asia Food"
         if (mDb.serverDao().getActiveServer(true).getRaison_sociale().equals("Asia Food")){
             mSelecteLayout.setVisibility(View.VISIBLE);
@@ -281,7 +285,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     }
 
     public void dialPhoneNumber(String phoneNumber) {
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" dialPhoneNumber() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "dialPhoneNumber()", "Calling "+phoneNumber, ""));
 
         Intent intent = new Intent(Intent.ACTION_DIAL);
         intent.setData(Uri.parse("tel:" + phoneNumber));
@@ -289,23 +294,30 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
             startActivity(intent);
         } else {
             Toast.makeText(getContext(), "Impossible de passer un appel. Veuillez installer une application d'appel.", Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "dialPhoneNumber()", "Impossible de passer un appel. Veuillez installer une application d'appel.", ""));
         }
     }
 
     public void mapAddress(String address) {
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" mapAddress() => called.").execute();
         String map = "http://maps.google.co.in/maps?q=" + address;
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "mapAddress()", "Opening Map with address : "+address+"\nMap url : "+map, ""));
 
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(map));
         if (intent.resolveActivity(getContext().getPackageManager()) != null) {
             startActivity(intent);
         } else {
             Toast.makeText(getContext(), "Impossible de naviguer a cette adresse. Veuillez installer l'application Google Map.", Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "mapAddress()", "Impossible de naviguer a cette adresse. Veuillez installer l'application Google Map.", ""));
         }
     }
 
     public void sendMail(String email) {
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" sendMail() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "sendMail()", "Sending email at "+email, ""));
 
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + email));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "");
@@ -316,11 +328,14 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
             startActivity(Intent.createChooser(emailIntent, ""));
         } else {
             Toast.makeText(getContext(), "Impossible d'envoyer un mail. Veuillez installer lune application de messagerie.", Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "sendMail()", "Impossible d'envoyer un mail. Veuillez installer lune application de messagerie.", ""));
         }
     }
 
     private void initViewContent() {
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" initViewContent() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "initViewContent()", "Called.", ""));
 
         if (mClientParcelable.getPoster().getContent() != null) {
             File imgFile = new File(mClientParcelable.getPoster().getContent());
@@ -636,7 +651,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 
 
     private void validateForm() {
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" validateForm() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "validateForm()", "Called.", ""));
 
         // Reset errors.
         mNomEntreprise.setError(null);
@@ -666,7 +682,6 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         if (TextUtils.isEmpty(nomEntreprise)) {
             mNomEntreprise.setError(getString(R.string.veuillez_remplir_ce_champs));
             focusView = mNomEntreprise;
-            new DebugMe(getActivity() ,getContext(), "WL", TAG+" Le champ du nom d'entreprise est à ,une erreur.").execute();
             cancel = true;
         }
         // Test de validité de l'adresse
@@ -722,7 +737,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
             // form field with an error.
             focusView.requestFocus();
         } else {
-            new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" updateClient() => calling.").execute();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "validateForm()", "Calling updateClient()", ""));
             updateClient(nomEntreprise, adresse, email, telephone, note, pays, region, departement, ville);
         }
     }
@@ -732,7 +748,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-            new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" "+getString(R.string.erreur_connexion)).execute();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient()", getString(R.string.erreur_connexion), ""));
             return;
         }
         final ProgressDialog progressDialog = new ProgressDialog(getContext());
@@ -779,27 +796,35 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
                     initViewContent();
 
                     Toast.makeText(getContext(), getString(R.string.informations_client_modifie), Toast.LENGTH_LONG).show();
-                    new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.informations_client_modifie)).execute();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onResponse()", getString(R.string.informations_client_modifie), ""));
                 } else {
                     progressDialog.dismiss();
 
                     try {
                         Log.e(TAG, "doEvaluationTransfert onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onResponse()", "doEvaluationTransfert onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
                     } catch (IOException e) {
                         Log.e(TAG, "onResponse: message=" + e.getMessage());
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onResponse()", "onResponse: message=" + e.getMessage(), e.getStackTrace().toString()));
                     }
                     if (response.code() == 404) {
                         Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-                        new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onResponse()", getString(R.string.service_indisponible), ""));
                         return;
                     }
                     if (response.code() == 401) {
                         Toast.makeText(getContext(), getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
-                        new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onResponse()", getString(R.string.echec_authentification), ""));
                         return;
                     } else {
                         Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-                        new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onResponse()", getString(R.string.service_indisponible), ""));
                         return;
                     }
                 }
@@ -810,7 +835,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
                 progressDialog.dismiss();
 
                 Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.erreur_connexion)).execute();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateClient() => onFailure()", getString(R.string.erreur_connexion), ""));
                 return;
             }
         });

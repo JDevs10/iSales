@@ -233,8 +233,6 @@ public class ProfileActivity extends AppCompatActivity {
             tv_email.setText("");
             tv_email_pwd.setText("");
         }
-
-        //Log.e(TAG, "Last Connexion : "+dateString);
     }
 
     private void connexionState(){

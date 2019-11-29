@@ -29,6 +29,7 @@ import com.iSales.R;
 import com.iSales.adapter.CategorieProduitAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.CategorieEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.decoration.MyDividerItemDecoration;
 import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.CategorieProduitAdapterListener;
@@ -152,7 +153,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
     }
 
     public void loadCategories() {
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "loadCategories()", "Called.", ""));
 
         //Getting the sharedPreference value
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -168,11 +170,15 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
             categorieEntries = mDb.categorieDao().getAllCategories();
         }
         Log.e(TAG, "loadCategories: categorieEntries=" + categories.size());
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories: categorieEntries=" + categories.size()).execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "loadCategories()", "LoadCategories: categorieEntries=" + categories.size(), ""));
 
         if (categorieEntries.size() <= 0) {
             Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
             new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
+
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "loadCategories()", getString(R.string.aucune_categorie_trouve), ""));
 //        affichage de l'image d'attente
             showProgress(false);
             return;
@@ -216,7 +222,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
     @Override
     public void onFindCategorieCompleted(FindCategoriesREST findCategoriesREST) {
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onFindCategorieCompleted() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", "Called.", ""));
 
         mFindCategorieTask = null;
 //        affichage du formulaire de connexion
@@ -225,28 +232,33 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 //        Si la recupération echoue, on renvoi un message d'erreur
         if (findCategoriesREST == null) {
             Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-            new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.service_indisponible), ""));
             return;
         }
         if (findCategoriesREST.getCategories() == null) {
             if (findCategoriesREST.getErrorCode() == 404) {
                 Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
-                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.aucune_categorie_trouve), ""));
                 return;
             }
             if (findCategoriesREST.getErrorCode() == 401) {
                 Toast.makeText(getContext(), getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
-                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.echec_authentification)).execute();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.echec_authentification), ""));
                 return;
             } else {
                 Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-                new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.service_indisponible)).execute();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.service_indisponible), ""));
                 return;
             }
         }
         if (findCategoriesREST.getCategories().size() == 0) {
             Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
-            new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.aucune_categorie_trouve), ""));
             return;
         }
 
@@ -272,7 +284,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
         this.mCategorieAdapter.notifyDataSetChanged();
         Log.e(TAG, "onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size());
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size()).execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindCategorieCompleted()", "onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size(), ""));
 
     }
 
@@ -304,7 +317,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
         showLog();
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onCreate() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onCreate()", "Called.", ""));
     }
 
     @Override
@@ -405,7 +419,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
     @Override
     public void onFindProductsCompleted(FindProductsREST findProductsREST) {
         Log.e(TAG, "onFindProductsCompleted: in categorieProdutiFragment");
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onFindProductsCompleted: in categorieProdutiFragment").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "onFindProductsCompleted()", "Called.", ""));
 
 //        Recupération de la liste des categorie produits sur le serveur
         loadCategories();

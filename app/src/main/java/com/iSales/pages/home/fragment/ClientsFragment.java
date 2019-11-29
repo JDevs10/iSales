@@ -100,10 +100,7 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
     //    Recupération de la liste des produits
     private void executeFindClients() {
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" executeFindClients() => called."));
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "executeFindClients()", "Called.", ""));
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
@@ -122,10 +119,7 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
     //    Recupere la lsite des clients dans la bd locale
     private void loadClients() {
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" loadClients() => called."));
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "loadClients()", "Called.", ""));
 
         showProgress(true);
 //        Log.e(TAG, "loadClients: clientParcelableList=" + clientParcelableList.size() + " clientParcelableListFiltered=" + clientParcelableListFiltered.size());
@@ -145,10 +139,7 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
     //    Recupere la lsite des clients dans la bd locale
     private void initClients() {
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" initClients() => called."));
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "initClients()", "Called.", ""));
 
         List<ClientEntry> clientEntries = mDb.clientDao().getAllClient();
         clientParcelableList = new ArrayList<>();
@@ -317,6 +308,9 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
             //        Fermeture du loader
             showProgressDialog(false, null, null);
             Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "onFindThirdpartieCompleted()", "Called. " + getString(R.string.service_indisponible), ""));
             return;
         }
         if (findThirdpartieREST.getThirdparties() == null) {
@@ -335,6 +329,9 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
             loadClients();
 
             showProgressDialog(false, null, null);
+
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "onFindThirdpartieCompleted()", "Called. "+getString(R.string.comptes_clients_synchronises), ""));
 
             return;
         }
@@ -401,10 +398,12 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "onCreate()", "Called.", ""));
     }
 
     @Override
@@ -620,6 +619,9 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
         super.onResume();
 //        Log.e(TAG, "onResume: ");
 
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "onResume()", "Called.", ""));
+
         clientParcelableListFiltered.clear();
         mAdapter.notifyDataSetChanged();
         initClients();
@@ -645,10 +647,14 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
         switch (item.getItemId()) {
 //        redirige le user vers la page de synchronisation
             case R.id.action_fragclient_sync:
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "onOptionsItemSelected()", "Called.", ""));
 
 //        Si le téléphone n'est pas connecté
                 if (!ConnectionManager.isPhoneConnected(getContext())) {
                     Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsFragment.class.getSimpleName(), "onOptionsItemSelected()", getString(R.string.erreur_connexion), ""));
                     return true;
                 }
 

@@ -56,6 +56,24 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Sujet du Ticket"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"/>
+        <Spinner
+            android:id="@+id/ticketingActivity_ticket_subjet_sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:background="@drawable/bg_outline_black"
+        android:layout_marginBottom="20dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Adresse Courriel"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
@@ -81,7 +99,7 @@
         <EditText
             android:id="@+id/ticketingActivity_ticket_body_et"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="100dp"
             android:hint="Expliquer le plus détaillé possible, ce que vous faisait avant et quand le bug est survenu..."
             android:inputType="textMultiLine"
             android:layout_marginBottom="20dp"/>

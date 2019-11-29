@@ -60,11 +60,8 @@ public class ProfilFragment extends Fragment {
 
                 mUserEntry = userEntries.get(0);
 
-                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(
-                        getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" onDestroy() called"));
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "loadUser()", "Called.", ""));
 
                 initUserValues();
             }
@@ -72,7 +69,8 @@ public class ProfilFragment extends Fragment {
     }
 
     public void initUserValues() {
-        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" initUserValues() called"));
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "initUserValues()", "Called.", ""));
         String firstName = !mUserEntry.getFirstname().equals("") ? mUserEntry.getFirstname() : "";
         mNameTV.setText(String.format("%s %s", ISalesUtility.strCapitalize(firstName), mUserEntry.getLastname().toUpperCase()));
 //        mAdressTV.setText(String.format("%s, %s", mUserEntry.getTown(), mUserEntry.getCountry()));
@@ -100,7 +98,6 @@ public class ProfilFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_profil, container, false);
 
         mDb = AppDatabase.getInstance(getActivity().getApplicationContext());
-        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" onCreateView() called"));
 
 //        Referencement des vues
         mNameTV = rootView.findViewById(R.id.tv_user_profile_name);
@@ -174,6 +171,9 @@ public class ProfilFragment extends Fragment {
                         mDb.signatureDao().deleteAllSignature();
                         mDb.categorieDao().deleteAllCategorie();
 
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "onCreateView()", "Called. Disconnection button clicked", ""));
+
 //                Retour a la page de Login
                         getActivity().finish();
                     }
@@ -189,9 +189,8 @@ public class ProfilFragment extends Fragment {
         });
 
 //        recuperation du user et chargement de ses infos
-        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" About to load => loadUser()"));
-        loadUser();
-        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" Done loading => loadUser()"));
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "onCreateView()", "Called.", ""));
 
         return rootView;
     }

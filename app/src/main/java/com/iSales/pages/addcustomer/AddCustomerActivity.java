@@ -27,6 +27,7 @@ import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.AddCustomerListener;
 import com.iSales.interfaces.FindThirdpartieListener;
 import com.iSales.pages.home.HomeActivity;
+import com.iSales.pages.login.LoginActivity;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Document;
@@ -73,6 +74,8 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
     };
 
     private void validateForm() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "validateForm()", "Called.", ""));
 
         // Reset errors.
         mNomEntrepriseET.setError(null);
@@ -165,9 +168,13 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
         } else { */
 
         if (!mSwitchSynchro.isChecked()) {
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "validateForm()", "Save client in offline mode called.", ""));
 
             saveOfflineClient(nom, adresse, email, telephone, note, pays, region, departement, ville);
             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.client_creee_local_succes), Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "validateForm()", getString(R.string.client_creee_local_succes)+" En mode hors ligne.", ""));
             finish();
             return;
         }
@@ -226,6 +233,9 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
 
     //    enregistre un client dans le serveur
     private void saveOnlineClient(final String nom, final String adresse, final String email, final String telephone, final String note, final String pays, final String region, final String departement, final String ville) {
+        dmDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "validateForm()", getString(R.string.client_creee_local_succes)+" En mode hors ligne.", ""));
+
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(com.iSales.pages.addcustomer.AddCustomerActivity.this)) {
             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();

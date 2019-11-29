@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.model.ClientParcelable;
+import com.iSales.model.ISalesIncidentTable;
 import com.iSales.remote.model.Order;
 import com.iSales.remote.model.OrderLine;
 
@@ -53,7 +54,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private String ticketSubject;
     private String ticketBody;
     private String refTicket;
-    private String priorityTicket;
+    private ISalesIncidentTable incidentTicket;
     //private Files[] attachments;
 
     private AppDatabase mDB;
@@ -62,7 +63,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private ProgressDialog progressDialog;
 
     //Class Constructor
-    public SendTicketMail(Context context, String typeAction, File logFile, String email, String subject, String body, String refTicket, String priorityTicket){
+    public SendTicketMail(Context context, String typeAction, File logFile, String email, String subject, String body, String refTicket, ISalesIncidentTable incidentTicket){
         //Initializing variables
         this.context = context;
         this.typeAction = typeAction;
@@ -71,22 +72,9 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         this.ticketSubject = subject;
         this.ticketBody = body;
         this.refTicket = refTicket;
-        this.priorityTicket = priorityTicket;
+        this.incidentTicket = incidentTicket;
         mDB = AppDatabase.getInstance(this.context);
     }
-
-    /*
-    public SendTicketMail(Context context, File logFile, String email, String subject, String body, Files[] attachments){
-        //Initializing variables
-        this.context = context;
-        this.logFile = logFile;
-        this.ticketEmail = email;
-        this.ticketSubject = subject;
-        this.ticketBody = body;
-        this.attachments = attachments;
-        mDB = AppDatabase.getInstance(this.context);
-    }
-    */
 
     private String setMessage(){
         String deviceOS = System.getProperty("os.version");     // OS version
@@ -97,14 +85,17 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         String deviceBrand = android.os.Build.BRAND;            // Brand
 
         if (typeAction.equals("Automatic-Ticket")) {
-            String clientName = mDB.userDao().getUser().get(0).name;
+            String clientName = mDB.userDao().getUser().get(0).getLogin();
             String companyName = mDB.serverDao().getActiveServer(true).getRaison_sociale();
             return "Bonjour Team BDC,\n\n" +
-                    "Le client "+clientName+" ("+companyName+") sur iSales a rencontré un problème, il nous envoie un ticket Ref: "+refTicket+"\n" +
-                    "Voici ci-dessous son ticket : \n\n" +
-                    "Ref: "+refTicket+"\n" +
-                    "Priorité: "+priorityTicket+"\n" +
-                    "Client "+clientName+" ("+companyName+")\n\n" +
+                    "Ceci est un Ticket Automatique qui vient de iSales du client "+clientName+" ("+companyName+") connecter.\n" +
+                    "Voici un ticket généré : \n\n" +
+                    "Ref : "+refTicket+"\n" +
+                    "Date: "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
+                    "Sujet : "+incidentTicket.getName()+"\n" +
+                    "Priorité : "+incidentTicket.getPriority()+"\n" +
+                    "Client : "+clientName+" ("+companyName+")\n" +
+                    "Fichier log : '"+logFile.getName()+"' en piece joint.\n\n" +
                     "Information sur l'appareil utiliser : \n" +
                     "Appareil (Device) ===> "+device+"\n" +
                     "Marque (Brand) ===> "+deviceBrand+"\n" +
@@ -112,21 +103,39 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                     "Model (Model) ===> "+deviceModel+"\n" +
                     "SDK (SDK) ===> "+deviceSDK+"\n" +
                     "OS (OS) ===> "+deviceOS+"\n\n" +
-                    "" + ticketBody;
+                    "Message écrit par l'utilisateur :\n" + ticketBody + "\n\n\n" +
+                    "Bien Cordialement,\n" +
+                    "iSales Support.";
 
         }else if(typeAction.equals("Manuel-Ticket")){
-            String clientName = mDB.userDao().getUser().get(0).name;
+            String clientName = mDB.userDao().getUser().get(0).getLogin();
             String companyName = mDB.serverDao().getActiveServer(true).getRaison_sociale();
             return "Bonjour Team BDC,\n\n" +
-                    "Ceci est un Ticket Automatique qui vient de iSales du client "+clientName+" ("+companyName+") connecter.\n" +
-                    "";
+                    "Le client "+clientName+" ("+companyName+") sur iSales a rencontré un problème, il nous envoie un ticket Ref: "+refTicket+"\n" +
+                    "Voici ci-dessous son ticket : \n\n" +
+                    "Ref : "+refTicket+"\n" +
+                    "Date : "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
+                    "Sujet : "+incidentTicket.getName()+"\n" +
+                    "Priorité : "+incidentTicket.getPriority()+"\n" +
+                    "Client "+clientName+" ("+companyName+")\n" +
+                    "Fichier log : '"+logFile.getName()+"' en piece joint.\n\n" +
+                    "Information sur l'appareil utiliser : \n" +
+                    "Appareil (Device) ===> "+device+"\n" +
+                    "Marque (Brand) ===> "+deviceBrand+"\n" +
+                    "Produit (Product) ===> "+deviceProduct+"\n" +
+                    "Model (Model) ===> "+deviceModel+"\n" +
+                    "SDK (SDK) ===> "+deviceSDK+"\n" +
+                    "OS (OS) ===> "+deviceOS+"\n\n" +
+                    "Message écrit par l'utilisateur :\n" + ticketBody + "\n\n\n" +
+                    "Bien Cordialement,\n" +
+                    "iSales Support.";
         }
         return "NULL";
     }
 
     private String dateFormat(String dateInString){
         Log.e(TAG, "deteFormat: date before => "+dateInString);
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
         long dateLong = Long.valueOf(dateInString);
         Log.e(TAG, "deteFormat: date before => "+sdf.format(new Date(dateLong*1000)));
         return sdf.format(new Date(dateLong*1000));
@@ -164,8 +173,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress("jl@anexys.fr"));
             mm.addRecipient(Message.RecipientType.CC, new InternetAddress(ticketEmail));
-            mm.addRecipient(Message.RecipientType.CC, new InternetAddress("commercial@anexys.fr"));
-            mm.addRecipient(Message.RecipientType.CC, new InternetAddress("fahd@anexys.fr"));
+            //mm.addRecipient(Message.RecipientType.CC, new InternetAddress("commercial@anexys.fr"));
+            //mm.addRecipient(Message.RecipientType.CC, new InternetAddress("fahd@anexys.fr"));
             //Adding subject
             mm.setSubject(ticketSubject);
 
@@ -181,10 +190,9 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
 
             // Part two is attachment
             messageBodyPart = new MimeBodyPart();
-            String filename = logFile.getPath();
-            DataSource source = new FileDataSource(filename);
+            DataSource source = new FileDataSource(logFile.getPath());
             messageBodyPart.setDataHandler(new DataHandler(source));
-            messageBodyPart.setFileName(filename);
+            messageBodyPart.setFileName(logFile.getName());
             multipart.addBodyPart(messageBodyPart);
 
             // Send the complete message parts

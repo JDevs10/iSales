@@ -34,6 +34,7 @@ import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
 import com.iSales.database.entry.CommandeEntry;
 import com.iSales.database.entry.CommandeLineEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.SignatureEntry;
 import com.iSales.interfaces.CommandeAdapterListener;
 import com.iSales.interfaces.DialogClientListener;
@@ -114,11 +115,15 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
     //    Recupération de la liste des produits
     private void executeFindOrder() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "executeFindOrder()", "Called. Disconnection button clicked", ""));
 
 //        Si le téléphone n'est pas connecté
         if (!com.iSales.remote.ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
             showProgressDialog(false, null, null);
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "executeFindOrder()", getString(R.string.erreur_connexion), ""));
             return;
         }
 
@@ -151,6 +156,9 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
     //    Recupere la lsite des clients dans la bd locale
     private void loadCommandes(long dateDebutInMilli, long dateFinInMilli, long clientId) {
         this.commandeParcelableList.clear();
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "loadCommandes()", "Called.", ""));
 
         List<com.iSales.database.entry.CommandeEntry> cmdeEntryList;
 
@@ -348,6 +356,9 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
     }
 
     private void perfomFilterCommande() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "perfomFilterCommande()", "Called.", ""));
+
 //        Getting the sharedPreference value
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 //        String mode = sharedPreferences.getString(getContext().getString(R.string.commande_mode), "online");
@@ -360,6 +371,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
         int synchro = online ? 1 : 0;
 
         Log.e(TAG, "perfomFilterCommande: online=" + online + " synchro=" + synchro + " effectuer=" + effectuer + " encours=" + encours + " livrer=" + livrer + " nonpayer=" + nonpayer);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "perfomFilterCommande()", "Online=" + online + " synchro=" + synchro + " effectuer=" + effectuer + " encours=" + encours + " livrer=" + livrer + " nonpayer=" + nonpayer, ""));
 
         mAdapter.performFilteringPreference(synchro, effectuer, encours, livrer, nonpayer);
     }
@@ -404,6 +417,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
     //    Envoi de la liste des commandes sur le serveur
     private void executeSendOrderSynchro() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "executeSendOrderSynchro()", "Called.", ""));
 
 //        Recuperation des commandes non synchronisées
         List<com.iSales.database.entry.CommandeEntry> commandeEntries = mDb.commandeDao().getAllCmdeNotSynchro();
@@ -550,6 +565,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
         super.onCreate(savedInstanceState);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "onCreate()", "Called.", ""));
     }
 
     @Override
@@ -623,6 +640,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
                                 calDebut.set(mCalendrierFiltreYearDebut, mCalendrierFiltreMonthDebut, mCalendrierFiltreDayDebut, 0, 0, 0);
 
                                 Log.e(TAG, " dateDebutTime=" + calDebut.getTimeInMillis());
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "onCreate()", "Beganning date filter ===> dateDebutTime=" + calDebut.getTimeInMillis(), ""));
 
                                 SimpleDateFormat dateformat = new SimpleDateFormat("dd MMMM yyyy ");
                                 String stringDateSet = dateformat.format(calDebut.getTime());
@@ -666,6 +685,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
                                 }
 
                                 Log.e(TAG, " dateDebutTime=" + calDebut.getTimeInMillis() + " dateFinTime=" + calFin.getTimeInMillis());
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "onCreate()", " Filter dates ===> dateDebutTime=" + calDebut.getTimeInMillis() + " dateFinTime=" + calFin.getTimeInMillis(), ""));
 
                                 SimpleDateFormat dateformat = new SimpleDateFormat("dd MMMM yyyy ");
                                 String stringDateSet = dateformat.format(calFin.getTime());
@@ -788,6 +809,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
     @Override
     public void onFindOrderLinesTaskComplete(long commande_ref, long commande_id, FindOrderLinesREST findOrderLinesREST) {
 //        mFindOrderLinesTask = null;
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "onFindOrderLinesTaskComplete()", "Called.", ""));
 
 //            chargement des produits de la commande
         if (findOrderLinesREST.getLines() != null) {
@@ -820,6 +843,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
     @Override
     public void onFindOrdersTaskComplete(FindOrdersREST findOrdersREST) {
         mFindOrderTask = null;
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "onFindOrdersTaskComplete()", "Called.", ""));
 
 //        Si la recupération echoue, on renvoi un message d'erreur
         if (findOrdersREST == null) {
@@ -837,6 +862,8 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
             mPageOrder = 0;
 
             Toast.makeText(getContext(), getString(R.string.commandes_synchronises), Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CommandesFragment.class.getSimpleName(), "onFindOrdersTaskComplete()", getString(R.string.commandes_synchronises), ""));
 
             calDebut = null;
             calFin = null;

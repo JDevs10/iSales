@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.iSales.R;
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.helper.DebugMe;
 
 /**
@@ -27,6 +29,7 @@ public class AProposFragment extends Fragment {
 
     private ProgressDialog progressDialog;
     private TextView versionApp;
+    private AppDatabase db;
     int[] sampleImages = {R.drawable.logo_isales, R.drawable.logo_isales, R.drawable.logo_isales};
 
     public AProposFragment() {
@@ -43,7 +46,9 @@ public class AProposFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onCreate() => called.").execute();
+        db = AppDatabase.getInstance(getContext());
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", AProposFragment.class.getSimpleName(), "onCreate()", "Called.", ""));
     }
 
     @Override

@@ -29,12 +29,14 @@ import android.widget.Toast;
 
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.interfaces.OnInternauteLoginComplete;
 import com.iSales.pages.home.HomeActivity;
+import com.iSales.pages.welcome.WelcomeActivity;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Internaute;
@@ -161,6 +163,9 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 //        Log.e(TAG, "onCreate:PhoneMetrics density=" + metrics.density + " densityDpi=" + metrics.densityDpi);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "getCurrentVersion()", "Called.", ""));
 
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(com.iSales.pages.login.LoginActivity.this,
@@ -329,6 +334,8 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "attemptLogin()", "Called.", ""));
 
         // Reset errors.
         mServerET.setError(null);
@@ -509,10 +516,15 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
     private void executeLogin(String username, String password) {
 //        masquage du formulaire de connexion
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "executeLogin()", "Called.", ""));
+
         showProgress(true);
 
         if (!ConnectionManager.isPhoneConnected(com.iSales.pages.login.LoginActivity.this)) {
             Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "executeLogin()", getString(R.string.erreur_connexion), ""));
 
 //           masquage du formulaire de connexion
             showProgress(false);
@@ -528,10 +540,15 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     @Override
     public void onInternauteLoginTaskComplete(LoginREST loginREST) {
         mAuthTask = null;
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete()", "Called.", ""));
+
 
 //        Si la connexion echoue, on renvoi un message d'authentification
         if (loginREST == null) {
             Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete()", getString(R.string.service_indisponible), ""));
 
 //        masquage du formulaire de connexion
             showProgress(false);
@@ -540,12 +557,16 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         if (loginREST.getInternauteSuccess() == null) {
             if (loginREST.getErrorCode() == 404) {
                 Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete()", getString(R.string.service_indisponible), ""));
 
 //        masquage du formulaire de connexion
                 showProgress(false);
                 return;
             } else {
                 Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.parametres_connexion_incorrect), Toast.LENGTH_LONG).show();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete()", getString(R.string.parametres_connexion_incorrect), ""));
 
 //        masquage du formulaire de connexion
                 showProgress(false);
@@ -574,6 +595,9 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     ArrayList<User> responseBody = response.body();
                     User user = responseBody.get(0);
                     Log.e(TAG , " response: "+responseBody.get(0));
+
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onResponse()", "Response: "+responseBody.get(0), ""));
 
 //                    Enregistrement du user dans la BD
                     UserEntry userEntry = new UserEntry();
@@ -615,18 +639,30 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     try {
                         Log.e(TAG, "uploadDocument onResponse SignComm err: message=" + response.message() +
                                 " | code=" + response.code() + " | code=" + response.errorBody().string());
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onResponse()", "onResponse SignComm err: message=" + response.message() +
+                        " | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
+
                     } catch (IOException e) {
                         Log.e(TAG, "onResponse: message=" + e.getMessage());
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onResponse()", "onResponse \"IOException\": message=" + e.getMessage(), e.getStackTrace().toString()));
                     }
                     if (response.code() == 404) {
                         Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onResponse()", getString(R.string.service_indisponible), ""));
                         return;
                     }
                     if (response.code() == 401) {
                         Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onResponse()", getString(R.string.echec_authentification), ""));
                         return;
                     } else {
                         Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onResponse()", getString(R.string.service_indisponible), ""));
                         return;
                     }
                 }
@@ -638,6 +674,8 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 //                affichage du formulaire de connexion
                 showProgress(false);
                 Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", LoginActivity.class.getSimpleName(), "onInternauteLoginTaskComplete() => onFailure()", getString(R.string.erreur_connexion), ""));
                 return;
             }
         });

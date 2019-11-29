@@ -83,7 +83,8 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
 
     //    recuperation des produits du panier
     private void loadPanier() {
-        mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" loadPanier() called"));
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "loadPanier()", "Called.", ""));
 
         mProgressIV.setVisibility(View.VISIBLE);
         List<PanierEntry> panierEntries = mDb.panierDao().getAllPanier();
@@ -136,11 +137,13 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
                             @Override
                             public void run() {
 //                suppression du produit dans la liste
-                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" product "+panierEntriesList.get(position).getRef()+" was remove from the basket."));
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onRemoveItemPanier()", "Product "+panierEntriesList.get(position).getRef()+" was remove from the basket.", ""));
                                 panierEntriesList.remove(position);
 
 //                mise a jour de la vue
-                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "DEB", TAG+" recycle view updated."));
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onRemoveItemPanier()", "Recycle view updated.", ""));
                                 mAdapter.notifyDataSetChanged();
                                 mCountProduits.setText(String.format("%s produit(s) dans le panier", panierEntriesList.size()));
                             }
@@ -161,11 +164,9 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
     @Override
     public void onChangeQuantityItemPanier(final int position, final int quantity) {
         Log.e(TAG, "onChangeQuantityItemPanier: getQuantity=" + panierEntriesList.get(position).getQuantity() + " quantity=" + quantity);
+
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" onChangeQuantityItemPanier: getQuantity=" + panierEntriesList.get(position).getQuantity() + " quantity=" + quantity));
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onChangeQuantityItemPanier()", "getQuantity=" + panierEntriesList.get(position).getQuantity() + " quantity=" + quantity, ""));
 
 //        Mise a jour du montant total du panier
         setMontantTotalPanier();
@@ -196,6 +197,9 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
 
         if (mClientParcelableSelected != null) {
             Log.e(TAG, "onClientDialogSelected: name=" + clientParcelable.getName());
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onClientDialogSelected()", "ClientParcelable name=" + clientParcelable.getName(), ""));
+
 //        modification du label de la categorie
             mNameClient.setText(mClientParcelableSelected.getName());
 
@@ -245,6 +249,8 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
         super.onCreate(savedInstanceState);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onCreate()", "Called.", ""));
     }
 
     @Override
@@ -352,10 +358,7 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
         super.onResume();
 
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" onResume() => called."));
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onResume()", "Called.", ""));
 
 //        recuperation des clients sur le serveur
         loadPanier();
@@ -397,10 +400,7 @@ public class PanierFragment extends Fragment implements PanierProduitAdapterList
         super.onPause();
 
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" onPause() => called."));
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", PanierFragment.class.getSimpleName(), "onPause()", "Called.", ""));
     }
 
     void changePanierQuntity() {

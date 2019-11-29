@@ -22,6 +22,7 @@ import com.iSales.R;
 import com.iSales.adapter.ClientsRadioAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.decoration.MyDividerItemDecoration;
 import com.iSales.interfaces.ClientsAdapterListener;
 import com.iSales.interfaces.DialogClientListener;
@@ -73,6 +74,8 @@ public class ClientsRadioFragment extends Fragment implements ClientsAdapterList
     //    Recupere la lsite des clients dans la bd locale
     private void loadClients() {
         showProgress(true);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsRadioFragment.class.getSimpleName(), "loadClients()", "Called.", ""));
 
         if (clientParcelableList.size() > 0) {
             if (mLimit < clientParcelableList.size()) {
@@ -91,6 +94,9 @@ public class ClientsRadioFragment extends Fragment implements ClientsAdapterList
     private void initClients() {
         List<ClientEntry> clientEntries = mDb.clientDao().getAllClient();
         clientParcelableList = new ArrayList<>();
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsRadioFragment.class.getSimpleName(), "initClients()", "Called, with " + clientEntries.size() + " clients", ""));
 
         ArrayList<ClientParcelable> clientParcelables = new ArrayList<>();
         for (ClientEntry clientEntry : clientEntries) {
@@ -172,6 +178,8 @@ public class ClientsRadioFragment extends Fragment implements ClientsAdapterList
         View rootView = inflater.inflate(R.layout.fragment_clients_radio, container, false);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientsRadioFragment.class.getSimpleName(), "onCreateView()", "Called.", ""));
 
 //        referencement des vues
         mRecyclerView = rootView.findViewById(R.id.recyclerview_clientradio);
@@ -240,7 +248,6 @@ public class ClientsRadioFragment extends Fragment implements ClientsAdapterList
 
             @Override
             public void afterTextChanged(Editable editable) {
-
 //                Log.e(TAG, "afterTextChanged: string="+editable.toString() );
                 if (editable.toString().equals("")) {
                     searchCancelIB.setVisibility(View.GONE);

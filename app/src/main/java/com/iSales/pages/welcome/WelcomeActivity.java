@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -23,8 +24,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.SettingsEntry;
+import com.iSales.pages.home.fragment.ClientsRadioFragment;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
 import com.iSales.remote.ConnectionManager;
@@ -49,7 +52,7 @@ public class WelcomeActivity extends AppCompatActivity {
      */
     private String currentVersion, latestVersion;
     private Dialog dialog;
-
+    private AppDatabase db;
     private TextView Error_Message;
 
     /**
@@ -124,6 +127,10 @@ public class WelcomeActivity extends AppCompatActivity {
 
         mContentView = findViewById(R.id.fullscreen_content);
         Error_Message = findViewById(R.id.Error_Message);
+
+        db = AppDatabase.getInstance(this);
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
         // Check version on playStore
         getCurrentVersion();
@@ -256,10 +263,14 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void getCurrentVersion() {
-        Log.e(TAG, " getCurrentVersion() : JL Test Version App");
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName(), "getCurrentVersion()", "Called.", ""));
 
         if (!ConnectionManager.isPhoneConnected(this)) {
             Log.e(TAG, " getCurrentVersion() : No Internet no Update");
+            db.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(this, (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName(), "getCurrentVersion()", "No Internet no Update.", ""));
+
             delayedHide(100);
             delayedLogged(3000);
             return;
@@ -314,6 +325,9 @@ public class WelcomeActivity extends AppCompatActivity {
         protected void onPostExecute(JSONObject jsonObject) {
             Log.e(TAG, "latestVersion: " + latestVersion);
             Log.e(TAG, "currentVersion: " + currentVersion);
+            db.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName() +" => GetLatestVersion", "onPostExecute()", "currentVersion: " + currentVersion + " || latestVersion: " + latestVersion, ""));
+
             if (latestVersion != null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)) {
                     if (!isFinishing()) { //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
@@ -321,17 +335,40 @@ public class WelcomeActivity extends AppCompatActivity {
                     }
                 } else {
                     // if version is correct then proceed
+                    db.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName() +" => GetLatestVersion", "onPostExecute()", "The version is correct!", ""));
+
                     delayedHide(100);
                     delayedLogged(3000);
                 }
-                delayedHide(100);
-                delayedLogged(3000);
+//                delayedHide(100);
+//                delayedLogged(3000);
             } else {
                 //background.start();
-                Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +
-                        "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
-                        "Veuillez vérifier votre connexion internet !");
+                CountDownTimer countDownTimer = new CountDownTimer(10 * 1000, 1000) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +
+                                "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
+                                "Veuillez vérifier votre connexion internet !\n\n" +
+                                "iSales va s'ouvrir dans "+(millisUntilFinished / 1000)+" seconds");
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        delayedHide(100);
+                        delayedLogged(1000);
+                    }
+                };
+
+                db.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName() +" => GetLatestVersion", "onPostExecute()", "Impossible de trouver la version sur le PlayStore\n" +
+                                "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
+                                "Veuillez vérifier votre connexion internet !", ""));
+
+                countDownTimer.start();
                 Toast.makeText(WelcomeActivity.this, "latestVersion == NULL", Toast.LENGTH_SHORT).show();
+
                 super.onPostExecute(jsonObject);
             }
         }
@@ -368,6 +405,9 @@ public class WelcomeActivity extends AppCompatActivity {
         builder.setPositiveButton("Mettre à jour", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                db.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName(), "showUpdateDialog()", "Show update window.", ""));
+
                 //Save user login && token info in a backup file
                 new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("SET");
 
