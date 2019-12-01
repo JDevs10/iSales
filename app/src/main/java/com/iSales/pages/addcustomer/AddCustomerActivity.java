@@ -233,7 +233,7 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
 
     //    enregistre un client dans le serveur
     private void saveOnlineClient(final String nom, final String adresse, final String email, final String telephone, final String note, final String pays, final String region, final String departement, final String ville) {
-        dmDb.debugMessageDao().insertDebugMessage(
+        mDb.debugMessageDao().insertDebugMessage(
                 new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "validateForm()", getString(R.string.client_creee_local_succes)+" En mode hors ligne.", ""));
 
 //        Si le téléphone n'est pas connecté
@@ -330,18 +330,28 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
 
                                     try {
                                         Log.e(TAG, "doEvaluationTransfert onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+                                        mDb.debugMessageDao().insertDebugMessage(
+                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse() => onResponse()", "doEvaluationTransfert onResponse err: message=" + response.message() + "\nCode=" + response.code() + " \nError=" + response.errorBody().string(), ""));
                                     } catch (IOException e) {
                                         Log.e(TAG, "onResponse: message=" + e.getMessage());
+                                        mDb.debugMessageDao().insertDebugMessage(
+                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse() => onResponse()", "IOException onResponse err: message=" + e.getMessage(), ""+e.getStackTrace()));
                                     }
                                     if (response.code() == 404) {
                                         Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                        mDb.debugMessageDao().insertDebugMessage(
+                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse() => onResponse()", "doEvaluationTransfert onResponse err: message=" + response.message() + "\nCode=" + response.code() + " \nError=" + response.errorBody(), ""));
                                         return;
                                     }
                                     if (response.code() == 401) {
                                         Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                                        mDb.debugMessageDao().insertDebugMessage(
+                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse() => onResponse()", getString(R.string.echec_authentification)+"\nDoEvaluationTransfert onResponse err: message=" + response.message() + "\nCode=" + response.code() + " \nError=" + response.errorBody(), ""));
                                         return;
                                     } else {
                                         Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                        mDb.debugMessageDao().insertDebugMessage(
+                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse() => onResponse()", getString(R.string.service_indisponible)+"\nDoEvaluationTransfert onResponse err: message=" + response.message() + "\nCode=" + response.code() + " \nError=" + response.errorBody(), ""));
                                         return;
                                     }
                                 }
@@ -350,6 +360,8 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
                             @Override
                             public void onFailure(Call<Long> call, Throwable t) {
                                 progressDialog.dismiss();
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onFailure()", getString(R.string.erreur_connexion)+"\nMessage failure: "+t.getMessage(), ""+t.getStackTrace()));
 
                                 Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                                 return;
@@ -362,8 +374,13 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
                             String errBody = responseLogoClient.body();
                             Log.e(TAG, "uploadDocument onResponse LogoClient err: message=" + responseLogoClient.message() +
                                     " | code=" + responseLogoClient.code() + " | code=" + responseLogoClient.errorBody().string() + " errBody=" + errBody);
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onFailure()", "uploadDocument onResponse LogoClient err: message=" + responseLogoClient.message() +
+                                            " | code=" + responseLogoClient.code() + " | code=" + responseLogoClient.errorBody().string() + " errBody=" + errBody, ""));
                         } catch (IOException e) {
                             Log.e(TAG, "onResponse: message=" + e.getMessage());
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onFailure()", e.getMessage(), ""+e.getStackTrace()));
                         }
 
 //                    if (responseLogoClient.code() == 404) {
@@ -387,6 +404,8 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
                     progressDialog.dismiss();
 
                     Log.e(TAG, "onFailure: message=" + t.getMessage());
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onFailure()", getString(R.string.erreur_connexion), ""));
                     Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                     return;
 
@@ -416,6 +435,9 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
             //queryBody.setName_alias(responseLogoClientBody);659331009
             queryBody.setName_alias("");
 
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient()", "Call saveThirdpartie()", ""));
+
             Call<Long> callSaveClient = ApiUtils.getISalesService(com.iSales.pages.addcustomer.AddCustomerActivity.this).saveThirdpartie(queryBody);
             callSaveClient.enqueue(new Callback<Long>() {
                 @Override
@@ -426,10 +448,15 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
                         Long responseBody = response.body();
                         Log.e(TAG, "onResponse:callSaveClient responseBody="+responseBody);
                         mDb.clientDao().updateSynchroClient(1, responseBody);
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", getString(R.string.client_creee_succes), ""));
+
                         Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.client_creee_succes), Toast.LENGTH_LONG).show();
 
                         //Synch all clients before closing the window
                         showProgressDialog(true, null, getString(R.string.synchro_comptes_cient_encours));
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", getString(R.string.synchro_comptes_cient_encours), ""));
                         mDb.clientDao().deleteAllClient();
                         //Suppression des images des clients en local
                         ISalesUtility.deleteClientsImgFolder();
@@ -441,18 +468,28 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
 
                         try {
                             Log.e(TAG, "doEvaluationTransfert onResponse err: message=" + response.message() + " | code=" + response.code() + " | errorString=" + response.errorBody().string());
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", "onResponse err:\nMessage=" + response.message() + " \nCode=" + response.code() + " \nErrorString=" + response.errorBody().string(), ""));
                         } catch (IOException e) {
                             Log.e(TAG, "onResponse: message=" + e.getMessage());
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", "***** IOException *****\nonResponse: message=" + e.getMessage(), ""+e.getStackTrace()));
                         }
                         if (response.code() == 404) {
                             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", getString(R.string.service_indisponible), ""));
                             return;
                         }
                         if (response.code() == 401) {
                             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", getString(R.string.echec_authentification), ""));
                             return;
                         } else {
                             Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onResponse()", getString(R.string.service_indisponible), ""));
                             return;
                         }
                     }
@@ -461,6 +498,8 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
                 @Override
                 public void onFailure(Call<Long> call, Throwable t) {
                     progressDialog.dismiss();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "saveOnlineClient() => onFailure()", getString(R.string.erreur_connexion), ""));
 
                     Toast.makeText(com.iSales.pages.addcustomer.AddCustomerActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                     return;
@@ -489,14 +528,13 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
 
     private void synchClient(){
         mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(this,
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" executeFindClients() => called."));
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "synchClient()", "Called.", ""));
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(this)) {
             Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "synchClient()", getString(R.string.erreur_connexion), ""));
             showProgressDialog(false, null, null);
             return;
         }
@@ -511,12 +549,16 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
     @Override
     public void onFindThirdpartieCompleted(FindThirdpartieREST findThirdpartieREST) {
         mFindClientTask = null;
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "onFindThirdpartieCompleted()", "Called.", ""));
 
 //        Si la recupération echoue, on renvoi un message d'erreur
         if (findThirdpartieREST == null) {
             //        Fermeture du loader
             showProgressDialog(false, null, null);
             Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "onFindThirdpartieCompleted()", getString(R.string.service_indisponible), ""));
             return;
         }
         if (findThirdpartieREST.getThirdparties() == null) {
@@ -528,6 +570,9 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
 //            reinitialisation du nombre de page
             mPageClient = 0;
             Toast.makeText(this, getString(R.string.comptes_clients_synchronises), Toast.LENGTH_LONG).show();
+
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "onFindThirdpartieCompleted()", getString(R.string.comptes_clients_synchronises), ""));
             showProgressDialog(false, null, null);
 
             //startActivity(new Intent(AddCustomerActivity.this, HomeActivity.class));
@@ -617,6 +662,8 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
         setContentView(R.layout.activity_add_customer);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AddCustomerActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
 //        reference des vues
         mNomEntrepriseET = (EditText) findViewById(R.id.et_client_nom_entreprise);

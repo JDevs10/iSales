@@ -1,6 +1,5 @@
 package com.iSales.adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -16,11 +15,8 @@ import android.widget.Toast;
 
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
-import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.EventsEntry;
-import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.ItemClickListenerAgenda;
-import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.calendar.Events;
 
 import java.text.ParseException;

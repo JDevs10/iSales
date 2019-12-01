@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.model.ClientParcelable;
 import com.iSales.remote.model.Order;
@@ -44,7 +45,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     private ClientParcelable userSelected;
     private Order data;
 
-    private AppDatabase mDB;
+    private AppDatabase db;
 
     //Progressdialog to show while sending email
     private ProgressDialog progressDialog;
@@ -57,12 +58,18 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
         this.subject = subject;
         this.userSelected = userSelected;
         this.data = data;
-        mDB = AppDatabase.getInstance(this.context);
+        db = AppDatabase.getInstance(this.context);
+
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this.context, (System.currentTimeMillis()/1000), "Ticket", SendMail.class.getSimpleName(), "SendMail()", "Called.", ""));
     }
 
     private String getMessage(Order data){
         List<OrderLine> listOrderLine = data.getLines();
         String orderLineMessage = "";
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this.context, (System.currentTimeMillis()/1000), "Ticket", SendMail.class.getSimpleName(), "getMessage()", "Called.", ""));
+
 
         for (int i=0; i<listOrderLine.size(); i++){
             orderLineMessage += "   • Ref: "+listOrderLine.get(i).getRef()+
@@ -74,7 +81,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
         return  "Bonjour Madame, Monsieur "+userSelected.getName()+"\n\n" +
                 "Veuillez trouver, ci-joint la commande référence: "+data.getRef()+" effectué le "+dateFormat(data.getDate_commande())+" avec vos produits selectionné :\n"+
-                orderLineMessage + "\n\n\nCordialement,\n"+mDB.serverDao().getActiveServer(true).getRaison_sociale();
+                orderLineMessage + "\n\n\nCordialement,\n"+db.serverDao().getActiveServer(true).getRaison_sociale();
     }
 
     private String priceFormat(String priceST){
@@ -95,9 +102,11 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... params) {
         //Get Email config
-        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+        SettingsEntry settings = db.settingsDao().getAllSettings().get(0);
         configEmail = settings.getEmail();
         configPassword = settings.getEmail_Pwd();
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this.context, (System.currentTimeMillis()/1000), "Ticket", SendMail.class.getSimpleName(), "SendMail() => doInBackground()", "Called.", ""));
 
         if (settings.getEmail() == null || settings.getEmail().isEmpty() ||
             settings.getEmail_Pwd() == null || settings.getEmail_Pwd().isEmpty()){
@@ -144,6 +153,8 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
         } catch (MessagingException e) {
             e.printStackTrace();
+            db.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(this.context, (System.currentTimeMillis()/1000), "Ticket", SendMail.class.getSimpleName(), "SendMail() => doInBackground()", "***** MessagingException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
         return null;
     }

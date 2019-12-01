@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.Order;
 
@@ -22,10 +24,15 @@ public class SendOrderTask extends AsyncTask<Void, Void, Void> {
     private Order mOrder;
 
     private Context mContext;
+    private AppDatabase db;
 
     public SendOrderTask(Order order, Context context) {
         this.mOrder = order;
         this.mContext = context;
+        this.db = AppDatabase.getInstance(this.mContext);
+
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this.mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "SendOrderTask()", "Called.", ""));
     }
 
     @Override
@@ -33,6 +40,9 @@ public class SendOrderTask extends AsyncTask<Void, Void, Void> {
 
 //        enregistrement de la commande dans le serveur
         Call<Long> callSave = ApiUtils.getISalesService(mContext).saveCustomerOrder(mOrder);
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this.mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground()", "Url : "+callSave.request().url(), ""));
+
         callSave.enqueue(new Callback<Long>() {
             @Override
             public void onResponse(Call<Long> call, Response<Long> response) {
@@ -56,8 +66,12 @@ public class SendOrderTask extends AsyncTask<Void, Void, Void> {
 
                                 try {
                                     Log.e(TAG, "doInBackground: onResponse err: message=" + responseValidate.message() + " | code=" + responseValidate.code() + " | code=" + responseValidate.errorBody().string());
+                                    db.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground() => onFailure()", "doInBackground: onResponse err: message=" + responseValidate.message() + " | code=" + responseValidate.code() + " | code=" + responseValidate.errorBody().string(), ""));
                                 } catch (IOException e) {
                                     Log.e(TAG, "doInBackgroundonResponse: message=" + e.getMessage());
+                                    db.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground() => onFailure()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                                 }
                             }
                         }
@@ -65,7 +79,8 @@ public class SendOrderTask extends AsyncTask<Void, Void, Void> {
                         @Override
                         public void onFailure(Call<Order> call, Throwable t) {
                             Log.e(TAG, "onFailure: "+t.getMessage());
-
+                            db.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground() => onFailure()", ""+t.getMessage(), ""+t.getStackTrace()));
                             return;
                         }
                     });
@@ -73,8 +88,12 @@ public class SendOrderTask extends AsyncTask<Void, Void, Void> {
 
                     try {
                         Log.e(TAG, "doInBackground: onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+                        db.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground()", "doInBackground: onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
                     } catch (IOException e) {
                         Log.e(TAG, "doInBackgroundonResponse: message=" + e.getMessage());
+                        db.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                     }
                 }
                 return;
@@ -83,6 +102,8 @@ public class SendOrderTask extends AsyncTask<Void, Void, Void> {
             @Override
             public void onFailure(Call<Long> call, Throwable t) {
                 Log.e(TAG, "onFailure: "+t.getMessage());
+                db.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendOrderTask.class.getSimpleName(), "doInBackground()", ""+t.getMessage(), ""+t.getStackTrace()));
                 return;
             }
         });

@@ -1,5 +1,6 @@
 package com.iSales.pages.ticketing;
 
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
+import com.iSales.interfaces.SendindMailListener;
 import com.iSales.model.ISalesIncidentTable;
 import com.iSales.task.SendTicketMail;
 import com.iSales.utility.ISalesUtility;
@@ -34,12 +36,13 @@ import java.util.List;
 
 import static com.iSales.utility.ISalesUtility.makeSureFileWasCreatedThenMakeAvailable;
 
-public class TicketingActivity extends AppCompatActivity {
+public class TicketingActivity extends AppCompatActivity implements SendindMailListener {
     private final String TAG = TicketingActivity.class.getSimpleName();
     private EditText ticketing_name, ticketing_email, ticketing_body;
     private Spinner ticketing_subject_sp;
     private Button ticketing_save, ticketing_cancel;
     private AppDatabase db;
+    private ProgressDialog mProgressDialog;
 
     private String ticketing_subject;
 
@@ -91,6 +94,7 @@ public class TicketingActivity extends AppCompatActivity {
         ticketing_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showProgressDialog(true, null, "Préparer du ticket en cours....");
                 prepareTicket(ticketing_name.getText().toString(), ticketing_subject, ticketing_email.getText().toString(), ticketing_body.getText().toString());
             }
         });
@@ -161,9 +165,27 @@ public class TicketingActivity extends AppCompatActivity {
 
         //get all logs
         String logDataText = "";
+        String logDataClassName = "";
+        boolean firstDebugMessage = true;
         List<DebugItemEntry> debugList = db.debugMessageDao().getAllDebugMessages();
-        for(int i=0; i<debugList.size(); i++){
-            logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | " + debugList.get(i).getMask() + "\n" + debugList.get(i).getErrorMessage();
+        for (int i=0; i<debugList.size(); i++){
+            if (logDataClassName.equals(debugList.get(i).getClassName())){
+                logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
+                        "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
+                        "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
+            }else{
+                logDataClassName = debugList.get(i).getClassName();
+                if(firstDebugMessage){
+                    logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
+                            "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
+                            "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
+                    firstDebugMessage = false;
+                }else{
+                    logDataText += "\n\n"+DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
+                            "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
+                            "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
+                }
+            }
         }
 
         //create log file
@@ -203,8 +225,18 @@ public class TicketingActivity extends AppCompatActivity {
         ISalesIncidentTable iSalesIncident = getISalesIncidentByName(subjetTicket);
 
         //get isales log file to send in email attachment
-        SendTicketMail mSendTicketMail = new SendTicketMail(this, "Manuel-Ticket", file, ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident);
+        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", file, ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident);
         mSendTicketMail.execute();
+    }
+    
+    @Override
+    public void onMailSend() {
+        showProgressDialog(false, null, null);
+        ticketing_name.setText("");
+        ticketing_subject_sp.setSelection(0);
+        ticketing_email.setText("");
+        ticketing_body.setText("");
+        Toast.makeText(this, "Le Ticket est envoyé avec success", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -214,5 +246,25 @@ public class TicketingActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Shows the progress UI and hides.
+     */
+    private void showProgressDialog(boolean show, String title, String message) {
+
+        if (show) {
+            mProgressDialog = new ProgressDialog(this);
+            if (title != null) mProgressDialog.setTitle(title);
+            if (message != null) mProgressDialog.setMessage(message);
+
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setCanceledOnTouchOutside(false);
+            mProgressDialog.setProgressDrawable(getResources().getDrawable(R.drawable.circular_progress_view));
+            mProgressDialog.show();
+        } else {
+            if (mProgressDialog != null) mProgressDialog.dismiss();
+        }
     }
 }

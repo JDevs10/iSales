@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.Document;
 
@@ -22,15 +24,23 @@ public class SendDocumentTask extends AsyncTask<Void, Void, Void> {
     private com.iSales.remote.model.Document mDocument;
 
     private Context mContext;
+    private AppDatabase db;
 
     public SendDocumentTask(Document document, Context context) {
         this.mDocument = document;
         this.mContext = context;
+        this.db = AppDatabase.getInstance(this.mContext);
+
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendDocumentTask.class.getSimpleName(), "SendDocumentTask()", "Called.", ""));
     }
 
     @Override
     protected Void doInBackground(Void... voids) {
         Call<String> call = ApiUtils.getISalesService(mContext).uploadDocument(mDocument);
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendDocumentTask.class.getSimpleName(), "SendDocumentTask() => doInBackground()", "Url : "+call.request().url(), ""));
+
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
@@ -40,10 +50,13 @@ public class SendDocumentTask extends AsyncTask<Void, Void, Void> {
                     return;
                 } else {
                     try {
-                        Log.e(TAG, "doInBackground onResponse document err: message=" + response.message() +
-                                " | code=" + response.code() + " | code=" + response.errorBody().string());
+                        Log.e(TAG, "doInBackground onResponse document err: message=" + response.message() +" | code=" + response.code() + " | code=" + response.errorBody().string());
+                        db.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendDocumentTask.class.getSimpleName(), "SendDocumentTask() => doInBackground() => onResponse()", "doInBackground onResponse document err: message=" + response.message() +" | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
                     } catch (IOException e) {
                         Log.e(TAG, "onResponse: message=" + e.getMessage());
+                        db.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendDocumentTask.class.getSimpleName(), "SendDocumentTask() => doInBackground() => onResponse()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                     }
                     return;
                 }
@@ -53,6 +66,8 @@ public class SendDocumentTask extends AsyncTask<Void, Void, Void> {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.e(TAG, "onFailure: ");
+                db.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendDocumentTask.class.getSimpleName(), "SendDocumentTask() => doInBackground() => onFailure()", "***** IOException *****\nMessage: "+t.getMessage(), ""+t.getStackTrace()));
                 return;
             }
         });

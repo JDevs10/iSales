@@ -31,7 +31,6 @@ import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.CategorieEntry;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.decoration.MyDividerItemDecoration;
-import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.CategorieProduitAdapterListener;
 import com.iSales.interfaces.DialogCategorieListener;
 import com.iSales.interfaces.FindCategorieListener;
@@ -175,10 +174,8 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
         if (categorieEntries.size() <= 0) {
             Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
-            new DebugMe(getActivity() ,getContext(), "WL", TAG+" "+getString(R.string.aucune_categorie_trouve)).execute();
-
             mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "loadCategories()", getString(R.string.aucune_categorie_trouve), ""));
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategorieProduitFragment.class.getSimpleName(), "loadCategories()", "No caregory found!", ""));
 //        affichage de l'image d'attente
             showProgress(false);
             return;

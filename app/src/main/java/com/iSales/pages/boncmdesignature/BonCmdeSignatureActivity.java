@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iSales.database.entry.DebugItemEntry;
+import com.iSales.pages.addcustomer.AddCustomerActivity;
 import com.iSales.remote.ApiConnectionUrl;
 import com.iSales.task.SendMail;
 import com.kyanogen.signatureview.SignatureView;
@@ -83,6 +84,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
     //    pousse la commande sur le serveur
     public void pushCommande() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Called.", ""));
 
         final ProgressDialog progressDialog = new ProgressDialog(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this);
         progressDialog.setMessage(ISalesUtility.strCapitalize(getString(R.string.enregistrement_commande_encours)));
@@ -235,6 +238,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         if (!mSynchroServeurSW.isChecked()) {
             progressDialog.dismiss();
 
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.commande_enregistre_succes)+" En local!", ""));
             Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.commande_enregistre_succes), Toast.LENGTH_LONG).show();
 
 //        retour a la page d'accueil
@@ -243,11 +248,15 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         }
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this)) {
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.erreur_connexion), ""));
             Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
             return;
         }
 
         progressDialog.setMessage("Synchronisation de la commande avec le serveur...");
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Synchronisation de la commande avec le serveur...", ""));
 
         final Order newOrder = new Order();
 
@@ -343,6 +352,9 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
 
 //        enregistrement de la commande dans le serveur
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Save the order on the server", ""));
+
         Call<Long> call = ApiUtils.getISalesService(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this).saveCustomerOrder(newOrder);
         call.enqueue(new Callback<Long>() {
             @Override
@@ -352,6 +364,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                     Log.e(TAG, "onResponse: saveCustomerOrder orderId=" + responseBody);
 
                     progressDialog.setMessage(ISalesUtility.strCapitalize(getString(R.string.validation_commande_encours)));
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "OrderId=" + responseBody+",\nValidate the order on the seuver.", ""));
 
                     //Validation de la commande sur le serveur
                     Call<Order> callValidate = ApiUtils.getISalesService(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this).validateCustomerOrder(responseBody);
@@ -364,11 +378,9 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                 Log.e(TAG, "onResponse: validateCustomerOrder orderRef=" + responseValiBody.getRef() +
                                         " orderId=" + responseValiBody.getId());
 
-                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(
-                                        getApplicationContext(),
-                                        (System.currentTimeMillis()/1000),
-                                        "DEB",
-                                        TAG+" callValidate() || onResponse responseValiBody => "+responseValiBody.toString()));
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()",
+                                                "validateCustomerOrder orderRef=" + responseValiBody.getRef() +" | orderId=" + responseValiBody.getId(), ""));
 
 //                                Mise a jour mode statut de la commande en local
                                 mDb.commandeDao().deleteAllCmde();
@@ -385,10 +397,14 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                 }
 
 //                                                        retour a la page d'accueil
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Order saved with success!", ""));
                                 finish();
 
 //                                =========== Envoi de la signature du client
                                 progressDialog.setMessage(ISalesUtility.strCapitalize(getString(R.string.envoi_signature_client)));
+                                mDb.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Save client signature...", ""));
 //                                recuperation de la signature client en bitmap
                                 Bitmap signClientBitmap = mClientSignatureView.getSignatureBitmap();
 
@@ -414,8 +430,13 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                             String responseSignClientBody = responseSignClient.body();
                                             Log.e(TAG, "onResponse: responseSignClientBody=" + responseSignClientBody);
 
+                                            mDb.debugMessageDao().insertDebugMessage(
+                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse: responseSignClientBody", "Client signature saved!\nresponseSignClientBody = " + responseSignClientBody, ""));
+
 //                                =========== Envoi de la signature du COMMERCIAL
                                             progressDialog.setMessage(ISalesUtility.strCapitalize(getString(R.string.envoi_signature_commercial)));
+                                            mDb.debugMessageDao().insertDebugMessage(
+                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse: responseSignClientBody", "Save commercial signature...", ""));
 
 //                                            recuperation de la signature commercial en bitmap
                                             Bitmap signCommBitmap = mCommSignatureView.getSignatureBitmap();
@@ -445,6 +466,9 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
                                                         Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.commande_enregistre_succes), Toast.LENGTH_LONG).show();
 
+                                                        mDb.debugMessageDao().insertDebugMessage(
+                                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse: responseSignCommBody", "Commercial signature saved!\nresponseSignCommBody=" + responseSignCommBody, ""));
+
 //                                                        Suppression du panier s'il ne s'agit pas de la relance de commande
                                                         if (mCmdeParcelable == null) {
 //                                                        Suppression du panier
@@ -454,6 +478,9 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
                                                         // SEND THE ORDER BY EMAIL TO THE CLIENT........
                                                         if (mPartageParMailSW.isChecked()){
+                                                            mDb.debugMessageDao().insertDebugMessage(
+                                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Send order by email to the client...", ""));
+
                                                             SendMail sm = new SendMail(
                                                                     getApplicationContext(),
                                                                     mClientParcelableSelected.getEmail(),
@@ -466,25 +493,38 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
 
 //                                                        retour a la page d'accueil
+                                                        mDb.debugMessageDao().insertDebugMessage(
+                                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "Sending the order on the server finished!!!", ""));
+
                                                         finish();
                                                     } else {
                                                         progressDialog.dismiss();
 
                                                         try {
-                                                            Log.e(TAG, "uploadDocument onResponse SignComm err: message=" + responseSignComm.message() +
-                                                                    " | code=" + responseSignComm.code() + " | code=" + responseSignComm.errorBody().string());
+                                                            Log.e(TAG, "uploadDocument onResponse SignComm err: message=" + responseSignComm.message() +" | code=" + responseSignComm.code() + " | code=" + responseSignComm.errorBody().string());
+                                                            mDb.debugMessageDao().insertDebugMessage(
+                                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "uploadDocument onResponse SignComm err: message=" + responseSignComm.message() +" | code=" + responseSignComm.code() + " | code=" + responseSignComm.errorBody().string(), ""));
+
                                                         } catch (IOException e) {
                                                             Log.e(TAG, "onResponse: message=" + e.getMessage());
+                                                            mDb.debugMessageDao().insertDebugMessage(
+                                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "onResponse: message=" + e.getMessage(), ""+e.getStackTrace()));
                                                         }
                                                         if (responseSignComm.code() == 404) {
                                                             Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                                            mDb.debugMessageDao().insertDebugMessage(
+                                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.service_indisponible), ""));
                                                             return;
                                                         }
                                                         if (responseSignComm.code() == 401) {
                                                             Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                                                            mDb.debugMessageDao().insertDebugMessage(
+                                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.echec_authentification), ""));
                                                             return;
                                                         } else {
                                                             Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                                            mDb.debugMessageDao().insertDebugMessage(
+                                                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.service_indisponible), ""));
                                                             return;
                                                         }
                                                     }
@@ -495,6 +535,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                                 public void onFailure(Call<String> call, Throwable t) {
                                                     Log.e(TAG, "onFailure:uploadDocumentComm Throwable="+t.getMessage() );
                                                     progressDialog.dismiss();
+                                                    mDb.debugMessageDao().insertDebugMessage(
+                                                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onFailure()", getString(R.string.erreur_connexion)+"\nonFailure:uploadDocumentComm Throwable="+t.getMessage(), ""));
 
                                                     Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                                                     return;
@@ -506,20 +548,29 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                             progressDialog.dismiss();
 
                                             try {
-                                                Log.e(TAG, "uploadDocument onResponse SignClient err: message=" + responseSignClient.message() +
-                                                        " | code=" + responseSignClient.code() + " | code=" + responseSignClient.errorBody().string());
+                                                Log.e(TAG, "uploadDocument onResponse SignClient err: message=" + responseSignClient.message() + " | code=" + responseSignClient.code() + " | code=" + responseSignClient.errorBody().string());
+                                                mDb.debugMessageDao().insertDebugMessage(
+                                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "uploadDocument onResponse SignClient err: message=" + responseSignClient.message() + " | code=" + responseSignClient.code() + " | code=" + responseSignClient.errorBody().string(), ""));
                                             } catch (IOException e) {
                                                 Log.e(TAG, "onResponse: message=" + e.getMessage());
+                                                mDb.debugMessageDao().insertDebugMessage(
+                                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "***** IOException *****\nonResponse: message=" + e.getMessage(), ""+e.getStackTrace()));
                                             }
                                             if (responseSignClient.code() == 404) {
                                                 Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                                mDb.debugMessageDao().insertDebugMessage(
+                                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.service_indisponible), ""));
                                                 return;
                                             }
                                             if (responseSignClient.code() == 401) {
                                                 Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                                                mDb.debugMessageDao().insertDebugMessage(
+                                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.echec_authentification), ""));
                                                 return;
                                             } else {
                                                 Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                                mDb.debugMessageDao().insertDebugMessage(
+                                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.service_indisponible), ""));
                                                 return;
                                             }
                                         }
@@ -530,6 +581,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                     public void onFailure(Call<String> call, Throwable t) {
                                         Log.e(TAG, "onFailure:uploadDocumentCLient Throwable="+t.getMessage() );
                                         progressDialog.dismiss();
+                                        mDb.debugMessageDao().insertDebugMessage(
+                                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onFailure()", getString(R.string.erreur_connexion)+"\nonFailure:uploadDocumentCLient Throwable="+t.getMessage(), ""));
 
                                         Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                                         return;
@@ -540,20 +593,29 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                 progressDialog.dismiss();
 
                                 try {
-                                    Log.e(TAG, "validateCustomerOrder onResponse err: message=" + responseValidate.message() +
-                                            " | code=" + responseValidate.code() + " | code=" + responseValidate.errorBody().string());
+                                    Log.e(TAG, "validateCustomerOrder onResponse err: message=" + responseValidate.message() + " | code=" + responseValidate.code() + " | code=" + responseValidate.errorBody().string());
+                                    mDb.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "validateCustomerOrder onResponse err: message=" + responseValidate.message() + " | code=" + responseValidate.code() + " | code=" + responseValidate.errorBody().string(), ""));
                                 } catch (IOException e) {
                                     Log.e(TAG, "onResponse: message=" + e.getMessage());
+                                    mDb.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", "onResponse: message=" + e.getMessage(), ""+e.getStackTrace()));
                                 }
                                 if (responseValidate.code() == 404) {
                                     Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                    mDb.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.service_indisponible), ""));
                                     return;
                                 }
                                 if (responseValidate.code() == 401) {
                                     Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                                    mDb.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.echec_authentification), ""));
                                     return;
                                 } else {
                                     Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                                    mDb.debugMessageDao().insertDebugMessage(
+                                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande()", getString(R.string.service_indisponible), ""));
                                     return;
                                 }
                             }
@@ -564,6 +626,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                         public void onFailure(Call<Order> call, Throwable t) {
                             Log.e(TAG, "onFailure:validateCustomerOrder Throwable="+t.getMessage() );
                             progressDialog.dismiss();
+                            mDb.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onFailure()", getString(R.string.erreur_connexion)+"\nonFailure:validateCustomerOrder Throwable="+t.getMessage(), ""));
 
                             Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                             return;
@@ -578,18 +642,28 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
                     try {
                         Log.e(TAG, "pushCommande onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse()", "pushCommande onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
                     } catch (IOException e) {
                         Log.e(TAG, "onResponse: message=" + e.getMessage());
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse()", "onResponse: message=" + e.getMessage(), ""+e.getStackTrace()));
                     }
                     if (response.code() == 404) {
                         Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse()", getString(R.string.service_indisponible), ""));
                         return;
                     }
                     if (response.code() == 401) {
                         Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse()", getString(R.string.echec_authentification), ""));
                         return;
                     } else {
                         Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onResponse()", getString(R.string.service_indisponible), ""));
                         return;
                     }
                 }
@@ -599,6 +673,9 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
             public void onFailure(Call<Long> call, Throwable t) {
                 Log.e(TAG, "onFailure:saveCustomerOrder Throwable="+t.toString()+" | message="+t.getMessage() );
                 progressDialog.dismiss();
+
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "pushCommande() => onFailure()", getString(R.string.erreur_connexion)+"\nonFailure:saveCustomerOrder Throwable="+t.toString()+" | message="+t.getMessage(), ""+t.getStackTrace()));
 
                 Toast.makeText(com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
                 return;
@@ -659,6 +736,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         setContentView(R.layout.activity_bon_cmde_signature);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
 //        Recuperation du commercial connecte
         List<UserEntry> userEntries = mDb.userDao().getUser();
@@ -889,9 +968,13 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
     @Override
     public void onInsertThirdpartieCompleted(InsertThirdpartieREST insertThirdpartieREST) {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "onInsertThirdpartieCompleted()", "Called.", ""));
 
         if (insertThirdpartieREST != null) {
             Log.e(TAG, "onInsertThirdpartieCompleted: id="+insertThirdpartieREST.getThirdpartie_id() );
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeSignatureActivity.class.getSimpleName(), "onInsertThirdpartieCompleted()", "onInsertThirdpartieCompleted: id="+insertThirdpartieREST.getThirdpartie_id()+"\nThen call pushCommande()", ""));
 
             pushCommande();
         }

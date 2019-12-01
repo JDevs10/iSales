@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
 
@@ -30,12 +31,20 @@ public class SaveUserTask {
     private final String FileNameBackUp = "BackUp.txt";
     private final String BackUpHeader = "BACKUP;ISALES";
     private final String FileSplit = ";";
+    private AppDatabase mDb;
 
     public SaveUserTask(Context mContext){
         this.mContext = mContext;
+        this.mDb = AppDatabase.getInstance(this.mContext);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "SaveUserTask()", "Called.", ""));
     }
 
     public void SetRestoreBackUpData(String task){
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "SetRestoreBackUpData()", "SetRestoreBackUpData( "+task+" ) | Called.", ""));
+
         if (task.equals("SET") || task.equals("Set") || task.equals("set")){
             Log.e(TAG, " SetRestoreBackUpData( SET )");
             generateSaveData(mContext, FileNameBackUp, backUpData());
@@ -47,6 +56,9 @@ public class SaveUserTask {
     }
 
     private void generateSaveData(Context context, String FileName, String Body) {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "generateSaveData()", "Called.", ""));
+
         try {
             File root = new File(DirectoryLocal, DirectoryName);
             Log.e(TAG, " root path: "+root.getAbsolutePath());
@@ -56,6 +68,8 @@ public class SaveUserTask {
                     Log.e(TAG, " Directory root: " + root.exists());
                 }else{
                     Log.e(TAG, " Directory root not created: " + root.exists());
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "generateSaveData()", "Directory root not created: " + root.exists(), ""));
                 }
             }
             if (root.exists() && !FileName.isEmpty() && Body != null) {
@@ -66,16 +80,22 @@ public class SaveUserTask {
                 writer.close();
             }else{
                 Log.e(TAG, " generateSaveData(): File doesn't exist, ");
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "generateSaveData()", "File doesn't exist", ""));
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "generateSaveData()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
     }
 
     private String backUpData(){
         AppDatabase db = AppDatabase.getInstance(mContext);
         String result = null;
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "backUpData()", "Called.", ""));
 
         if(db.userDao().getUser().size() != 0 && db.tokenDao().getAllToken().size() != 0) {
             UserEntry userEntry = db.userDao().getUser().get(0);
@@ -252,11 +272,16 @@ public class SaveUserTask {
             }
         }
 
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "backUpData()", ((result != null)? "The backUpDate return is null":"The backUpDate return is not null"), ""));
         return result;
     }
 
     private void restoreFileData(Context context){
         String line = "";
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "restoreFileData()", "Called.", ""));
+
         try {
             File file = new File(DirectoryLocal, DirectoryName+File.separator+FileNameBackUp);
             if (file.exists()) {
@@ -355,17 +380,25 @@ public class SaveUserTask {
 
                     } catch (IOException e) {
                         e.printStackTrace();
+                        mDb.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "restoreFileData()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                     }
 
                 }else if(check.equals("UPDATED=1")){
                     Log.e(TAG, "UPDATED=1");
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "restoreFileData()", "The restore already backed up", ""));
                 }
 
             }else{
                 Log.e(TAG, "Restoring Data after update, File = ' "+file.getPath()+" ' does not exist. Or its the first time.");
+                mDb.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "restoreFileData()", "Restoring Data after update, File = ' "+file.getPath()+" ' does not exist. Or its the first time.", ""));
             }
         } catch (Exception e) {
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SaveUserTask.class.getSimpleName(), "restoreFileData()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
     }
 }

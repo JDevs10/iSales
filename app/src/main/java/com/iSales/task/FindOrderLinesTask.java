@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.interfaces.FindOrdersListener;
 import com.iSales.remote.ApiUtils;
@@ -31,15 +32,18 @@ public class FindOrderLinesTask extends AsyncTask<Void, Void, FindOrderLinesREST
     private UserEntry userEntry;
 
     private Context context;
+    private AppDatabase mDb;
 
     public FindOrderLinesTask(Context context, long order_id, long cmde_ref, FindOrdersListener taskComplete) {
         this.task = taskComplete;
         this.cmde_ref = cmde_ref;
         this.order_id = order_id;
         this.context = context;
-        AppDatabase mDb = AppDatabase.getInstance(context.getApplicationContext());
+        this.mDb = AppDatabase.getInstance(context.getApplicationContext());
         userEntry = mDb.userDao().getUser().get(0);
-        Log.e(TAG, "FindOrderLinesTask: ");
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindOrderLinesTask.class.getSimpleName(), "FindOrderLinesTask()", "Called.", ""));
     }
 
     @Override
@@ -49,6 +53,9 @@ public class FindOrderLinesTask extends AsyncTask<Void, Void, FindOrderLinesREST
         String sqlfilters = "fk_user_author="+userEntry.getId();
 //        Requete de connexion de l'internaute sur le serveur
         Call<ArrayList<OrderLine>> call = ApiUtils.getISalesService(context).findOrderLines(order_id);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindOrderLinesTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "Url : "+call.request().url(), ""));
+
         try {
             Response<ArrayList<OrderLine>> response = call.execute();
             if (response.isSuccessful()) {
@@ -70,8 +77,13 @@ public class FindOrderLinesTask extends AsyncTask<Void, Void, FindOrderLinesREST
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findOrderLinesREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindOrderLinesTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
+
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindOrderLinesTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return findOrderLinesREST;
@@ -79,6 +91,8 @@ public class FindOrderLinesTask extends AsyncTask<Void, Void, FindOrderLinesREST
         } catch (IOException e) {
             Log.e(TAG, "doInBackground: IOException");
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindOrderLinesTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

@@ -28,7 +28,6 @@ import android.widget.Toast;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
 import com.iSales.database.entry.DebugItemEntry;
-import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.ClientsAdapterListener;
 import com.iSales.interfaces.DialogClientListener;
 import com.iSales.interfaces.MyCropImageListener;
@@ -528,7 +527,8 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 
     //    modifi le logo du client sur le serveur
     private void updateLogoClient(Bitmap logoBitmap) {
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" updateLogoClient() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ClientProfileFragment.class.getSimpleName(), "updateLogoClient()", "Called.", ""));
 
         //        Si le téléphone n'est pas connecté
         if (!com.iSales.remote.ConnectionManager.isPhoneConnected(getContext())) {

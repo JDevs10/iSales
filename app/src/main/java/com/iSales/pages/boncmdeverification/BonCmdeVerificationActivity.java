@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.iSales.adapter.RecapPanierAdapter;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.model.ClientParcelable;
@@ -47,6 +48,8 @@ public class BonCmdeVerificationActivity extends AppCompatActivity {
     //    recuperation des produits du panier
     private void loadPanier() {
         mProgressIV.setVisibility(View.VISIBLE);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeVerificationActivity.class.getSimpleName(), "loadPanier()", "Called.", ""));
 
         final com.iSales.pages.home.viewmodel.PanierViewModel viewModel = ViewModelProviders.of(this).get(PanierViewModel.class);
         viewModel.getAllPanierEntries().observe(this, new Observer<List<com.iSales.database.entry.PanierEntry>>() {
@@ -92,7 +95,8 @@ public class BonCmdeVerificationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bon_cmde_verification);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
-
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", BonCmdeVerificationActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
         mClientParcelableSelected = getIntent().getExtras().getParcelable("client");
         mCompagnie = mDb.serverDao().getActiveServer(true);

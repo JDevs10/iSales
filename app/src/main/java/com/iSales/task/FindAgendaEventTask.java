@@ -1,6 +1,5 @@
 package com.iSales.task;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,11 +7,10 @@ import android.util.Log;
 
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.UserEntry;
-import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.FindAgendaEventsListener;
-import com.iSales.interfaces.FindOrdersListener;
-import com.iSales.pages.calendar.CalendarActivity;
+import com.iSales.pages.home.fragment.ProfilFragment;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.rest.AgendaEventsREST;
@@ -49,8 +47,8 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
         mDb = AppDatabase.getInstance(context.getApplicationContext());
         userEntry = mDb.userDao().getUser().get(0);
 
-        new DebugMe((Activity) this.context, this.context, "WL-LL",
-                TAG+" FindAgendaEventTask() => called.").execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindAgendaEventTask.class.getSimpleName(), "FindAgendaEventTask()", "Called.", ""));
     }
 
     @Override
@@ -68,6 +66,9 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
         //Requete de connexion de l'internaute sur le serveur
         Call<ArrayList<AgendaEvents>> call = ApiUtils.getISalesService(context).getAllEvents(sqlfilters, sortfield, sortorder, limit, page);
         Log.e(TAG, " Url= "+call.request().url());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindAgendaEventTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "Url= "+call.request().url(), ""));
+
         try {
             Response<ArrayList<AgendaEvents>> response = call.execute();
             Log.e(TAG, " Response: "+response.body());
@@ -90,8 +91,12 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     mAgendaEventsREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindAgendaEventTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindAgendaEventTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return mAgendaEventsREST;
@@ -99,6 +104,8 @@ public class FindAgendaEventTask extends AsyncTask<Void, Void, AgendaEventsREST>
         } catch (IOException e) {
             Log.e(TAG, "doInBackground: IOException");
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindAgendaEventTask.class.getSimpleName(), "FindOrderLinesTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

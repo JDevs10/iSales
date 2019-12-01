@@ -477,6 +477,7 @@ public final class ISalesUtility {
         list.add(new ISalesIncidentTable("Categorie - Erreur de récupération des produits visuel","P1"));
 
         /** ############################## Dans l'onglet Commande ############################## **/
+        list.add(new ISalesIncidentTable("Commande - Erreur lors de l'envoi d'une commande","P4"));
         list.add(new ISalesIncidentTable("Commande - Erreur de filtrage des commandes","P2"));
         list.add(new ISalesIncidentTable("Commande - Erreur de relance d'un commande","P2"));
         list.add(new ISalesIncidentTable("Commande - Erreur d'envoi des mails","P0"));

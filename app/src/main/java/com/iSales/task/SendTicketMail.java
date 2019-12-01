@@ -8,9 +8,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.model.ClientParcelable;
 import com.iSales.model.ISalesIncidentTable;
+import com.iSales.pages.ticketing.TicketingActivity;
 import com.iSales.remote.model.Order;
 import com.iSales.remote.model.OrderLine;
 
@@ -56,14 +58,12 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private String refTicket;
     private ISalesIncidentTable incidentTicket;
     //private Files[] attachments;
+    private AppDatabase db;
 
-    private AppDatabase mDB;
-
-    //Progressdialog to show while sending email
-    private ProgressDialog progressDialog;
+    private TicketingActivity task;
 
     //Class Constructor
-    public SendTicketMail(Context context, String typeAction, File logFile, String email, String subject, String body, String refTicket, ISalesIncidentTable incidentTicket){
+    public SendTicketMail(Context context, TicketingActivity task, String typeAction, File logFile, String email, String subject, String body, String refTicket, ISalesIncidentTable incidentTicket){
         //Initializing variables
         this.context = context;
         this.typeAction = typeAction;
@@ -73,7 +73,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         this.ticketBody = body;
         this.refTicket = refTicket;
         this.incidentTicket = incidentTicket;
-        mDB = AppDatabase.getInstance(this.context);
+        this.task = task;
+        db = AppDatabase.getInstance(this.context);
     }
 
     private String setMessage(){
@@ -85,8 +86,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         String deviceBrand = android.os.Build.BRAND;            // Brand
 
         if (typeAction.equals("Automatic-Ticket")) {
-            String clientName = mDB.userDao().getUser().get(0).getLogin();
-            String companyName = mDB.serverDao().getActiveServer(true).getRaison_sociale();
+            String clientName = db.userDao().getUser().get(0).getLogin();
+            String companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
             return "Bonjour Team BDC,\n\n" +
                     "Ceci est un Ticket Automatique qui vient de iSales du client "+clientName+" ("+companyName+") connecter.\n" +
                     "Voici un ticket généré : \n\n" +
@@ -108,8 +109,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                     "iSales Support.";
 
         }else if(typeAction.equals("Manuel-Ticket")){
-            String clientName = mDB.userDao().getUser().get(0).getLogin();
-            String companyName = mDB.serverDao().getActiveServer(true).getRaison_sociale();
+            String clientName = db.userDao().getUser().get(0).getLogin();
+            String companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
             return "Bonjour Team BDC,\n\n" +
                     "Le client "+clientName+" ("+companyName+") sur iSales a rencontré un problème, il nous envoie un ticket Ref: "+refTicket+"\n" +
                     "Voici ci-dessous son ticket : \n\n" +
@@ -172,9 +173,8 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             mm.setFrom(new InternetAddress("jl@anexys.fr", "iSales Support Ticket"));
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress("jl@anexys.fr"));
-            mm.addRecipient(Message.RecipientType.CC, new InternetAddress(ticketEmail));
-            //mm.addRecipient(Message.RecipientType.CC, new InternetAddress("commercial@anexys.fr"));
-            //mm.addRecipient(Message.RecipientType.CC, new InternetAddress("fahd@anexys.fr"));
+            mm.addRecipient(Message.RecipientType.CC, new InternetAddress("commercial@anexys.fr"));
+            mm.addRecipient(Message.RecipientType.CC, new InternetAddress("fahd@anexys.fr"));
             //Adding subject
             mm.setSubject(ticketSubject);
 
@@ -220,5 +220,6 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         Log.e(TAG, "onPostExecute()");
+        task.onMailSend();
     }
 }

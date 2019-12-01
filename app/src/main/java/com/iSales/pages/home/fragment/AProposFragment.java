@@ -17,7 +17,6 @@ import android.widget.TextView;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
-import com.iSales.helper.DebugMe;
 
 /**
  * A simple {@link Fragment} subclass.

@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
 import com.iSales.interfaces.FindProductCustPriceListener;
 import com.iSales.remote.ApiUtils;
@@ -33,6 +34,9 @@ public class FindProductCustomerPriceTask extends AsyncTask<Void, Void, FindProd
         this.context = context;
         this.customerId = customerId;
         this.mDb = AppDatabase.getInstance(context);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductCustomerPriceTask.class.getSimpleName(), "FindProductCustomerPriceTask()", "Called.", ""));
     }
 
     @Override
@@ -41,6 +45,8 @@ public class FindProductCustomerPriceTask extends AsyncTask<Void, Void, FindProd
 
 //        Requete de connexion de l'internaute sur le serveur
         Call<List<ProductCustomerPrice>> call = ApiUtils.getISalesRYImg(context).ryFindProductPrice(this.customerId);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductCustomerPriceTask.class.getSimpleName(), "FindPaymentTypesTask() => doInBackground()", "Url : "+call.request().url(), ""));
         try {
             Response<List<ProductCustomerPrice>> response = call.execute();
             if (response.isSuccessful()) {
@@ -66,8 +72,12 @@ public class FindProductCustomerPriceTask extends AsyncTask<Void, Void, FindProd
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findProductCustomerPriceREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductCustomerPriceTask.class.getSimpleName(), "FindProductCustomerPriceTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductCustomerPriceTask.class.getSimpleName(), "FindProductCustomerPriceTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return findProductCustomerPriceREST;
@@ -75,6 +85,8 @@ public class FindProductCustomerPriceTask extends AsyncTask<Void, Void, FindProd
         } catch (IOException e) {
             Log.e(TAG, "doInBackground: IOException");
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductCustomerPriceTask.class.getSimpleName(), "FindProductCustomerPriceTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

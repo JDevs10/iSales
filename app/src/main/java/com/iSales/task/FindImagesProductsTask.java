@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.ProduitEntry;
 import com.iSales.interfaces.FindImagesProductsListener;
 import com.iSales.remote.ApiUtils;
@@ -30,6 +31,8 @@ public class FindImagesProductsTask extends AsyncTask<Void, Void, String> {
         this.context = context;
         this.produitEntry = produit;
         this.mDb = AppDatabase.getInstance(context);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindImagesProductsTask.class.getSimpleName(), "FindImagesProductsTask()", "Called.", ""));
     }
 
     @Override
@@ -70,6 +73,9 @@ public class FindImagesProductsTask extends AsyncTask<Void, Void, String> {
 
     private String downloadBitmapAndSave(String path) {
         Log.e(TAG, "downloadBitmapAndSave path="+path);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindImagesProductsTask.class.getSimpleName(), "FindImagesProductsTask() => downloadBitmapAndSave()", "downloadBitmapAndSave path="+path, ""));
+
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(path);
@@ -98,6 +104,9 @@ public class FindImagesProductsTask extends AsyncTask<Void, Void, String> {
             }
         } catch (Exception e) {
             Log.d(TAG,"URLCONNECTIONERROR "+e.toString());
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindImagesProductsTask.class.getSimpleName(), "FindImagesProductsTask() => downloadBitmapAndSave()", "***** Exception *****\nURL CONNECTION ERROR : "+e.getMessage(), ""+e.getStackTrace()));
+
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }

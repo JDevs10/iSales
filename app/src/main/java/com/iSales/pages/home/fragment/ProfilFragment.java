@@ -170,9 +170,10 @@ public class ProfilFragment extends Fragment {
                         mDb.commandeLineDao().deleteAllCmdeLine();
                         mDb.signatureDao().deleteAllSignature();
                         mDb.categorieDao().deleteAllCategorie();
+                        mDb.debugMessageDao().deleteAllDebugMessages();
 
-                        mDb.debugMessageDao().insertDebugMessage(
-                                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "onCreateView()", "Called. Disconnection button clicked", ""));
+                        //mDb.debugMessageDao().insertDebugMessage(
+                          //      new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "onCreateView()", "Called. Disconnection button clicked", ""));
 
 //                Retour a la page de Login
                         getActivity().finish();

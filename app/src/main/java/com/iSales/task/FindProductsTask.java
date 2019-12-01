@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.FindProductsListener;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.rest.FindProductsREST;
@@ -30,6 +32,7 @@ public class FindProductsTask extends AsyncTask<Void, Void, FindProductsREST> {
     private long category;
     private int mode = 1;
     private Context context;
+    private AppDatabase mDb;
 
     /**
      *
@@ -49,6 +52,10 @@ public class FindProductsTask extends AsyncTask<Void, Void, FindProductsREST> {
         this.page = page;
         this.category = category;
         this.context = context;
+        this.mDb = AppDatabase.getInstance(this.context);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsTask.class.getSimpleName(), "FindProductsTask()", "Called.", ""));
     }
 
     @Override
@@ -62,6 +69,9 @@ public class FindProductsTask extends AsyncTask<Void, Void, FindProductsREST> {
         } else {
             call = ApiUtils.getISalesService(context).findProducts(sqlfilters, sortfield, this.sortorder, this.limit, this.page, this.mode);
         }
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsTask.class.getSimpleName(), "FindProductsTask()", "Url : "+call.request().url(), ""));
+
         try {
             Response<ArrayList<Product>> response = call.execute();
             if (response.isSuccessful()) {
@@ -83,14 +93,20 @@ public class FindProductsTask extends AsyncTask<Void, Void, FindProductsREST> {
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findProductsREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsTask.class.getSimpleName(), "FindProductsTask()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsTask.class.getSimpleName(), "FindProductsTask()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return findProductsREST;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsTask.class.getSimpleName(), "FindProductsTask()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.ProductVirtual;
@@ -22,11 +24,16 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
     private long productId;
 
     private Context context;
+    private AppDatabase mDb;
 
     public FindProductVirtualTask(Context context, long productId, FindProductVirtualListener taskComplete) {
         this.task = taskComplete;
         this.context = context;
         this.productId = productId;
+        this.mDb = AppDatabase.getInstance(this.context);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask()", "Called.", ""));
     }
 
     @Override
@@ -35,6 +42,9 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
 
 //        Requete de connexion de l'internaute sur le serveur
         Call<ArrayList<ProductVirtual>> call = ApiUtils.getISalesRYImg(context).ryFindProductVirtual(this.productId);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "Url : "+call.request().url(), ""));
+
         try {
             Response<ArrayList<ProductVirtual>> response = call.execute();
             if (response.isSuccessful()) {
@@ -60,8 +70,12 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findProductVirtualREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return findProductVirtualREST;
@@ -69,6 +83,8 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
         } catch (IOException e) {
             Log.e(TAG, "doInBackground: IOException");
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

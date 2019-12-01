@@ -3,10 +3,8 @@ package com.iSales.pages.profile;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,13 +30,9 @@ import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.UserEntry;
-import com.iSales.helper.DebugMe;
 import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.remote.ConnectionManager;
-import com.iSales.remote.model.DebugItem;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +68,8 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         mDB = AppDatabase.getInstance(getApplicationContext());
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", ProfileActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
         tv_mail = (TextView) findViewById(R.id.activity_profile_text_view_email);
         tv_societe = (TextView) findViewById(R.id.activity_profile_text_view_societe);
@@ -114,6 +110,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+
+                        mDB.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", ProfileActivity.class.getSimpleName(), "onCreate()", "***** InterruptedException *****\nError on connexionState Thread.\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                         break;
                     }
                 }
@@ -163,26 +162,29 @@ public class ProfileActivity extends AppCompatActivity {
                 }
 
                 mUserEntry = userEntries.get(0);
-                new DebugMe(ProfileActivity.this, ProfileActivity.this, "WL-LL",
-                        TAG+" Server : Id : "+mUserEntry.getId()+"\n" +
-                                "Status : "+mUserEntry.getStatut()+"\n " +
-                                "Employee : "+mUserEntry.getEmployee()+"\n" +
-                                "Gender : "+mUserEntry.getGender()+"\n" +
-                                "Birth : "+mUserEntry.getBirth()+"\n" +
-                                "Email : "+mUserEntry.getEmail()+"\n" +
-                                "Firstname : "+mUserEntry.getFirstname()+"\n" +
-                                "Lastname : "+mUserEntry.getLastname()+"\n" +
-                                "Name : "+mUserEntry.getName()+"\n" +
-                                "Country : "+mUserEntry.getCountry()+"\n" +
-                                "Date employment : "+mUserEntry.getDateemployment()+"\n" +
-                                "Photo : "+mUserEntry.getPhoto()+"\n" +
-                                "Dernière connexion : "+mUserEntry.getDatelastlogin()+"\n" +
-                                "Date c : "+mUserEntry.getDatec()+"\n" +
-                                "Date m :"+mUserEntry.getDatem()+"\n" +
-                                "Admin : "+mUserEntry.getAdmin()+"\n" +
-                                "Login : "+mUserEntry.getLogin()+"\n" +
-                                "Ville : "+mUserEntry.getTown()+"\n" +
-                                "Address : "+mUserEntry.getAddress()).execute();
+
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", ProfileActivity.class.getSimpleName(), "loadUser()",
+                                "Server : Id : "+mUserEntry.getId()+"\n" +
+                                        "Status : "+mUserEntry.getStatut()+"\n " +
+                                        "Employee : "+mUserEntry.getEmployee()+"\n" +
+                                        "Gender : "+mUserEntry.getGender()+"\n" +
+                                        "Birth : "+mUserEntry.getBirth()+"\n" +
+                                        "Email : "+mUserEntry.getEmail()+"\n" +
+                                        "Firstname : "+mUserEntry.getFirstname()+"\n" +
+                                        "Lastname : "+mUserEntry.getLastname()+"\n" +
+                                        "Name : "+mUserEntry.getName()+"\n" +
+                                        "Country : "+mUserEntry.getCountry()+"\n" +
+                                        "Date employment : "+mUserEntry.getDateemployment()+"\n" +
+                                        "Photo : "+mUserEntry.getPhoto()+"\n" +
+                                        "Dernière connexion : "+mUserEntry.getDatelastlogin()+"\n" +
+                                        "Date c : "+mUserEntry.getDatec()+"\n" +
+                                        "Date m :"+mUserEntry.getDatem()+"\n" +
+                                        "Admin : "+mUserEntry.getAdmin()+"\n" +
+                                        "Login : "+mUserEntry.getLogin()+"\n" +
+                                        "Ville : "+mUserEntry.getTown()+"\n" +
+                                        "Address : "+mUserEntry.getAddress(),
+                                ""));
 
 
                 //check if current user is SuperAdmin
@@ -239,14 +241,31 @@ public class ProfileActivity extends AppCompatActivity {
         //Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(this)) {
             tv_etatConn.setBackgroundResource(R.drawable.circle_red);
-            new DebugMe(ProfileActivity.this, ProfileActivity.this, "LL",
-                    TAG+" connexionState() => called.\nConnexion offline").execute();
-
-            Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(
+                            getApplicationContext(),
+                            (System.currentTimeMillis()/1000),
+                            "Ticket",
+                            ProfileActivity.class.getSimpleName(),
+                            "connexionState()",
+                            "No internet access!",
+                            ""
+                    )
+            );
+            //Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
         }else{
             tv_etatConn.setBackgroundResource(R.drawable.circle_green);
-            new DebugMe(ProfileActivity.this, ProfileActivity.this, "LL",
-                    TAG+" connexionState() => called.\nConnexion online").execute();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(
+                            getApplicationContext(),
+                            (System.currentTimeMillis()/1000),
+                            "Ticket",
+                            ProfileActivity.class.getSimpleName(),
+                            "connexionState()",
+                            "Connected to the internet!",
+                            ""
+                    )
+            );
         }
     }
 

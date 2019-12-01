@@ -4,7 +4,10 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.OnInternauteLoginComplete;
+import com.iSales.pages.home.fragment.ClientsFragment;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.Internaute;
 import com.iSales.remote.model.InternauteSuccess;
@@ -26,11 +29,15 @@ public class InternauteLoginTask extends AsyncTask<Void, Void, com.iSales.remote
     private com.iSales.remote.model.Internaute internaute;
 
     private Context context;
+    private AppDatabase db;
 
     public InternauteLoginTask(Context context, OnInternauteLoginComplete task, Internaute internaute) {
         this.taskComplete = task;
         this.internaute = internaute;
         this.context = context;
+        this.db = AppDatabase.getInstance(this.context);
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(this.context, (System.currentTimeMillis()/1000), "Ticket", InternauteLoginTask.class.getSimpleName(), "InternauteLoginTask()", "Called.", ""));
     }
 
     @Override
@@ -42,6 +49,8 @@ public class InternauteLoginTask extends AsyncTask<Void, Void, com.iSales.remote
             if (response.isSuccessful()) {
                 InternauteSuccess internauteSuccess = response.body();
                 Log.e(TAG, "doInBackground: internauteSuccess=" + internauteSuccess.getSuccess().getToken());
+                db.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", InternauteLoginTask.class.getSimpleName(), "doInBackground()", "internauteSuccess = " + internauteSuccess.getSuccess().getToken(), ""));
                 return new com.iSales.remote.rest.LoginREST(internauteSuccess);
             } else {
                 String error = null;
@@ -55,15 +64,21 @@ public class InternauteLoginTask extends AsyncTask<Void, Void, com.iSales.remote
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     loginREST.setErrorBody(error);
 
-                } catch (IOException e) {
+                    db.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", InternauteLoginTask.class.getSimpleName(), "doInBackground()", "onResponse err: " + error + " code=" + response.code(), ""));
 
+                } catch (IOException e) {
                     e.printStackTrace();
+                    db.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", InternauteLoginTask.class.getSimpleName(), "doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return loginREST;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            db.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", InternauteLoginTask.class.getSimpleName(), "doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

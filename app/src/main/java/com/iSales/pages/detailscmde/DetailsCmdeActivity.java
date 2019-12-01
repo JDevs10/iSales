@@ -18,12 +18,14 @@ import android.widget.Toast;
 
 import com.iSales.adapter.CmdeProduitAdapter;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.SignatureEntry;
 import com.iSales.decoration.MyDividerItemDecoration;
 import com.iSales.interfaces.FindDocumentListener;
 import com.iSales.interfaces.FindThirdpartieListener;
 import com.iSales.model.CommandeParcelable;
 import com.iSales.model.ProduitParcelable;
+import com.iSales.pages.calendar.AgendaEventDetails;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.DolPhoto;
 import com.iSales.remote.model.Thirdpartie;
@@ -175,6 +177,9 @@ public class DetailsCmdeActivity extends AppCompatActivity implements FindThirdp
         }
     }
     private void executeFindSignClient() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsCmdeActivity.class.getSimpleName(), "executeFindSignClient()", "Called.", ""));
+
 //        Si le téléphone n'est pas connecté
         if (!com.iSales.remote.ConnectionManager.isPhoneConnected(DetailsCmdeActivity.this)) {
 //            Toast.makeText(DetailsCmdeActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
@@ -211,6 +216,9 @@ public class DetailsCmdeActivity extends AppCompatActivity implements FindThirdp
         }
     }
     private void executeFindSignComm() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsCmdeActivity.class.getSimpleName(), "executeFindSignComm()", "Called.", ""));
+
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(DetailsCmdeActivity.this)) {
 //            Toast.makeText(DetailsCmdeActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
@@ -260,6 +268,9 @@ public class DetailsCmdeActivity extends AppCompatActivity implements FindThirdp
                     " dateLivraison=" + mCmdeParcelable.getDate_livraison());
         }
         mDb = AppDatabase.getInstance(getApplicationContext());
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsCmdeActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
 //        Referencement des vues
         mRefTV = findViewById(R.id.tv_detailscmde_ref);

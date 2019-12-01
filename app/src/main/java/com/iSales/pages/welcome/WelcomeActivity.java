@@ -135,6 +135,9 @@ public class WelcomeActivity extends AppCompatActivity {
         // Check version on playStore
         getCurrentVersion();
 
+        //Clean debug logs every day
+        checkDebugLogs();
+
         //init debug settings
         initDebugSettings();
 
@@ -174,6 +177,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         // Check version on playStore
         getCurrentVersion();
+        checkDebugLogs();
 
     }
 
@@ -260,6 +264,13 @@ public class WelcomeActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 //        tv.append("\n\nFile written to "+file);
+    }
+
+    private void checkDebugLogs(){
+        Log.e(TAG, "checkDebugLogs() log size before => "+db.debugMessageDao().getAllDebugMessages().size());
+        long time = (System.currentTimeMillis()/1000) - 86400000;
+        db.debugMessageDao().deleteAllDebugMessagesOver24Hrs(time);
+        Log.e(TAG, "checkDebugLogs() log size after => "+db.debugMessageDao().getAllDebugMessages().size());
     }
 
     private void getCurrentVersion() {

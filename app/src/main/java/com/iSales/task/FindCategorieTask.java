@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.FindCategorieListener;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.Categorie;
@@ -30,6 +32,7 @@ public class FindCategorieTask extends AsyncTask<Void, Void, FindCategoriesREST>
     private String type;
 
     private Context context;
+    private AppDatabase db;
 
     public FindCategorieTask(Context context, FindCategorieListener taskComplete, String sortfield, String sortorder, long limit, long page, String type) {
         this.task = taskComplete;
@@ -39,6 +42,9 @@ public class FindCategorieTask extends AsyncTask<Void, Void, FindCategoriesREST>
         this.page = page;
         this.type = type;
         this.context = context;
+        this.db = AppDatabase.getInstance(this.context);
+        db.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindCategorieTask.class.getSimpleName(), "FindCategorieTask()", "Called.", ""));
     }
 
     @Override
@@ -47,9 +53,14 @@ public class FindCategorieTask extends AsyncTask<Void, Void, FindCategoriesREST>
         Call<ArrayList<Categorie>> call = ApiUtils.getISalesService(context).findCategories(sortfield, this.sortorder, this.limit, this.page, this.type);
         try {
             Response<ArrayList<Categorie>> response = call.execute();
+            db.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindCategorieTask.class.getSimpleName(), "FindCategorieTask() => doInBackground()", "Called.\nUrl: "+call.request().url(), ""));
+
             if (response.isSuccessful()) {
                 ArrayList<Categorie> categorieArrayList = response.body();
                 Log.e(TAG, "doInBackground: Categorie=" + categorieArrayList.size());
+                db.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindCategorieTask.class.getSimpleName(), "FindCategorieTask() => doInBackground()", "Category size : "+categorieArrayList.size(), ""));
 
                 return new FindCategoriesREST(categorieArrayList);
             } else {
@@ -65,6 +76,9 @@ public class FindCategorieTask extends AsyncTask<Void, Void, FindCategoriesREST>
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findCategoriesREST.setErrorBody(error);
 
+                    db.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindCategorieTask.class.getSimpleName(), "FindCategorieTask() => doInBackground()", "onResponse err: " + error + " code=" + response.code(), ""));
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -73,6 +87,8 @@ public class FindCategorieTask extends AsyncTask<Void, Void, FindCategoriesREST>
             }
         } catch (IOException e) {
             e.printStackTrace();
+            db.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindCategorieTask.class.getSimpleName(), "FindCategorieTask() => doInBackground()", ""+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

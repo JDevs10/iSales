@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PaymentTypesEntry;
 import com.iSales.interfaces.FindPaymentTypesListener;
 import com.iSales.remote.ApiUtils;
@@ -35,6 +36,9 @@ public class FindPaymentTypesTask extends AsyncTask<Void, Void, FindPaymentTypes
         this.task = taskComplete;
         this.context = context;
         this.mDb = AppDatabase.getInstance(context);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindPaymentTypesTask.class.getSimpleName(), "FindPaymentTypesTask()", "Called.", ""));
     }
 
     @Override
@@ -43,6 +47,8 @@ public class FindPaymentTypesTask extends AsyncTask<Void, Void, FindPaymentTypes
 
 //        Requete de connexion de l'internaute sur le serveur
         Call<ArrayList<PaymentTypes>> call = ApiUtils.getISalesService(context).findPaymentTypes(1);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindPaymentTypesTask.class.getSimpleName(), "FindPaymentTypesTask() => doInBackground()", "Url : "+call.request().url(), ""));
         try {
             Response<ArrayList<PaymentTypes>> response = call.execute();
             if (response.isSuccessful()) {
@@ -64,8 +70,12 @@ public class FindPaymentTypesTask extends AsyncTask<Void, Void, FindPaymentTypes
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findPaymentTypesREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindPaymentTypesTask.class.getSimpleName(), "FindPaymentTypesTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindPaymentTypesTask.class.getSimpleName(), "FindPaymentTypesTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return findPaymentTypesREST;
@@ -73,6 +83,8 @@ public class FindPaymentTypesTask extends AsyncTask<Void, Void, FindPaymentTypes
         } catch (IOException e) {
             Log.e(TAG, "doInBackground: IOException");
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindPaymentTypesTask.class.getSimpleName(), "FindPaymentTypesTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;

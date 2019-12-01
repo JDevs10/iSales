@@ -87,6 +87,9 @@ public class AgendaEventDetails extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         mDB = AppDatabase.getInstance(getApplicationContext());
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "onCreate()", "Called.", ""));
+
         loadUser();
 
         mProgressDialog = new ProgressDialog(AgendaEventDetails.this);
@@ -190,10 +193,15 @@ public class AgendaEventDetails extends AppCompatActivity {
 
     //recuperation du user connecté dans la BD
     private void loadUser() {
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "loadUser()", "Called.", ""));
         mUserEntry = mDB.userDao().getUser().get(0);
     }
 
     private void saveModifications(EventsEntry currentEvent){
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications()", "Called.", ""));
+
         showProgressDialog(true, "Modification", "Enregistrement de l'évenement en cours...");
         //set modifications
         final EventsEntry currentEventEntry = currentEvent;
@@ -225,6 +233,9 @@ public class AgendaEventDetails extends AppCompatActivity {
                 if (response.isSuccessful()){
                     AgendaEvents agendaEvents = response.body();
 
+                    mDB.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications() => onResponse()", "Found event to modify", ""));
+
                     //replace current fields
                     //agendaEvents.convertion(currentEventEntry);
                     agendaEvents.setDatem(currentEventEntry.getDATEM());
@@ -252,10 +263,15 @@ public class AgendaEventDetails extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" est Modifier!", Toast.LENGTH_SHORT).show();
                                 showProgressDialog(false, null, null);
 
+                                mDB.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications() => onResponse() => onResponse()", "Event "+currentEventEntry.getLABEL()+" modified!", ""));
+
                                 //back to aganda activity
                                 startActivity(new Intent(AgendaEventDetails.this, CalendarActivity.class));
                             }else{
                                 Toast.makeText(getApplicationContext(), "Evènement "+currentEventEntry.getLABEL()+" n'est pas Modifier!", Toast.LENGTH_SHORT).show();
+                                mDB.debugMessageDao().insertDebugMessage(
+                                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications() => onResponse() => onResponse()", "Event "+currentEventEntry.getLABEL()+" was not modified!", ""));
                                 showProgressDialog(false, null, null);
                             }
                         }
@@ -264,12 +280,17 @@ public class AgendaEventDetails extends AppCompatActivity {
                         public void onFailure(Call<AgendaEvents> call, Throwable t) {
                             Log.e(TAG, " onFailure::UpdateEventToTheServer \n"+t.getMessage());
                             Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+
+                            mDB.debugMessageDao().insertDebugMessage(
+                                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications() => onResponse() => onFailure()", getResources().getString(R.string.service_indisponible)+"\nUpdateEventToTheServer \n"+t.getMessage(), ""+t.getStackTrace()));
                             showProgressDialog(false, null, null);
                         }
                     });
                 }else {
                     //error getting the event obj from the server
                     Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+                    mDB.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications() => onResponse()", getResources().getString(R.string.service_indisponible), ""));
                     showProgressDialog(false, null, null);
                 }
             }
@@ -278,6 +299,9 @@ public class AgendaEventDetails extends AppCompatActivity {
             public void onFailure(Call<AgendaEvents> call, Throwable t) {
                 Log.e(TAG, " onFailure::GetEventFromTheServer \n"+t.getMessage());
                 Toast.makeText(getApplicationContext(), "Erreur: "+getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "saveModifications() => onFailure()", getResources().getString(R.string.service_indisponible)+"\nGetEventFromTheServer \n"+t.getMessage(), ""+t.getStackTrace()));
                 showProgressDialog(false, null, null);
             }
         });
@@ -285,12 +309,17 @@ public class AgendaEventDetails extends AppCompatActivity {
 
     private void deleteButton(final EventsEntry event) {
         showProgressDialog(true, "Supression", "Supprimer l'évènement: "+event.getLABEL());
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "deleteButton()", "Called. Delete event : "+event.getLABEL(), ""));
 
         Call<AgendaEventSuccess> call = ApiUtils.getISalesService(this).deleteEventById(event.getId());
         call.enqueue(new Callback<AgendaEventSuccess>() {
             @Override
             public void onResponse(Call<AgendaEventSuccess> call, Response<AgendaEventSuccess> response) {
                 if (response.isSuccessful()){
+                    mDB.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "deleteButton() => onResponse()", "Event "+event.getLABEL() +" deleted!", ""));
+
                     //delete local
                     mDB.eventsDao().deleteEvent(event.getId());
                     //but need to delete on the server
@@ -308,8 +337,13 @@ public class AgendaEventDetails extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
                         showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
                         Log.e(TAG, "deleteButton(): err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
+
+                        mDB.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "deleteButton() => onResponse()", "Err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
                     } catch (IOException e) {
                         Log.e(TAG, "deleteButton(): message=" + e.getMessage());
+                        mDB.debugMessageDao().insertDebugMessage(
+                                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "deleteButton() => onResponse()", "***** IOException *****\n"+e.getMessage(), ""+e.getStackTrace()));
                     }
                 }
             }
@@ -319,6 +353,9 @@ public class AgendaEventDetails extends AppCompatActivity {
                 showProgressDialog(false, "Supression", "Supprimer l'évènement: "+event.getLABEL());
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
                 Log.e(TAG, "deleteButton(): message=" + t.getMessage());
+
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", AgendaEventDetails.class.getSimpleName(), "deleteButton() => onFailure()", t.getMessage(), ""+t.getStackTrace()));
             }
         });
     }

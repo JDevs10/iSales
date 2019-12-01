@@ -4,26 +4,15 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.FocusFinder;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -34,9 +23,7 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -46,32 +33,21 @@ import com.iSales.R;
 import com.iSales.adapter.AgendaAdapter;
 import com.iSales.adapter.AgendaEventAdapter;
 import com.iSales.database.AppDatabase;
-import com.iSales.database.DBHelper.DatabaseHelper;
-import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.ClientEntry;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
-import com.iSales.database.entry.UserEntry;
-import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.FindAgendaEventsListener;
 import com.iSales.interfaces.ItemClickListenerAgenda;
-import com.iSales.pages.profile.ProfileActivity;
-import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.model.AgendaUserassigned;
 import com.iSales.remote.rest.AgendaEventsREST;
 import com.iSales.task.FindAgendaEventTask;
-import com.iSales.task.FindThirdpartieTask;
 import com.iSales.task.SendAgendaEventTask;
-import com.iSales.utility.ISalesUtility;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -80,7 +56,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CalendarActivity extends AppCompatActivity implements FindAgendaEventsListener {
@@ -124,6 +99,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         setContentView(R.layout.activity_calendar_view);
 
         mDB = AppDatabase.getInstance(getApplicationContext());
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
 
         initLayout();
         initCalendar();
@@ -148,24 +125,20 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             @Override
             public void onClick(View view) {
                 //delete local db data
-                new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                        "synchro_ib::onClick() before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size()).execute();
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onCreate()", "synchro_ib::onClick() before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size(), ""));
 
                 mDB.eventsDao().deleteAllEvent();
                 getEventsFromServer();
             }
         });
 
-
-        //debug message
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" onCreate() => called.\nDone onCreate()").execute();
     }
 
     private void initLayout(){
         //debug message
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" initLayout() => called.\nInit all views").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "initLayout()", "Called.", ""));
 
         previousBtn = findViewById(R.id.calendar_previousMontBtn);
         nextBtn = findViewById(R.id.calendar_activity_nextMontBtn);
@@ -178,9 +151,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private void initCalendar(){
-        //debug message
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" initCalendar() => called.\nInit calendar, ").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "initCalendar()", "Called.", ""));
 
         String currentDate = dateFormat.format(calendar.getTime());
         this.currentDate.setText(currentDate);
@@ -206,8 +178,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             @Override
             public void OnItemClickAgendaEventAdd(int position) {
                 //debug message
-                new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                        TAG+" OnItemClickAgendaEventAdd() => called.").execute();
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "OnItemClickAgendaEventAdd()", "Called.", ""));
 
                 mDialog = new Dialog(CalendarActivity.this);
                 mDialog.setContentView(R.layout.dialog_add_new_event_layout);
@@ -218,8 +190,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
             @Override
             public void OnItemLongClickAgendaEvent(int position) {
-                new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                        TAG+" OnItemLongClickAgendaEvent() => called.").execute();
+                mDB.debugMessageDao().insertDebugMessage(
+                        new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "OnItemLongClickAgendaEvent()", "Called.", ""));
 
                 String date = eventDateFormat.format(dates.get(position));
                 Log.e(TAG, " OnItemLongClickAgendaEvent()::OnLongClickEvent || Date: "+date);
@@ -248,8 +220,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         String myLog = " SaveEvent() label: "+label+" location: "+location+" percentage: "+percentage+" fullDayEvent: "+fullDayEvent +
                 " time: "+time+" date: "+date+" month: "+month+" year: "+year+" startEvent: "+startEvent+" endEvent: "+endEvent+" concernTier socId: "+concernTier+" description: "+description;
 
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
-                TAG+" saveEvent() => called.\n"+myLog).execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "saveEvent()", myLog, ""));
 
 
         final ProgressDialog progressDialog = new ProgressDialog(CalendarActivity.this);
@@ -262,7 +234,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
         if (!ConnectionManager.isPhoneConnected(getApplication())){
             Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-            //progressDialog.dismiss();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "saveEvent()", getString(R.string.erreur_connexion), ""));
             return;
         }
 
@@ -316,14 +289,15 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
              //get object as a json string
             String jsonStr = Obj.writeValueAsString(mAgendaEvents);
 
-            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
-                    TAG+" saveEvent() => called.\n" +
-                            "Converting AgendaEvents Object to Json Object string.\n\n"+jsonStr).execute();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "saveEvent()", "Converting AgendaEvents Object to Json Object string.\n\n"+jsonStr, ""));
 
             Log.e(TAG, "Save JSON:\n\n"+jsonStr);
         }
         catch (IOException e) {
             e.printStackTrace();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "saveEvent()", "***** IOException *****\n"+e.getMessage(), ""+e.getStackTrace()));
         }
 
 
@@ -333,22 +307,22 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private List<EventsEntry> collectEventsByDate(String Date){
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" collectEventsByDate() => called.\nStart collectEventsByDate()").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "collectEventsByDate()", "Called. collectEventsByDate("+Date+")", ""));
 
         Log.e(TAG, " start collectEventsByDate()");
         List<EventsEntry> listEvents = mDB.eventsDao().getEventsByDate(Date);
         ArrayList<Events> arrayList = new ArrayList<>();
 
         for (int i=0; i<listEvents.size(); i++){
-            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
-                    TAG+" collectEventsByDate() => called.\n" +
-                            "List size: "+i+"/"+listEvents.size()+"\n" +
-                            "Event: "+listEvents.get(i).getLABEL()+"\n" +
-                            "Time: "+listEvents.get(i).getTIME()+"\n" +
-                            "Date: "+listEvents.get(i).getDATE()+"\n" +
-                            "Month: "+listEvents.get(i).getMONTH()+"\n" +
-                            "Year: "+listEvents.get(i).getYEAR()+"\n\n").execute();
+//            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
+//                    TAG+" collectEventsByDate() => called.\n" +
+//                            "List size: "+i+"/"+listEvents.size()+"\n" +
+//                            "Event: "+listEvents.get(i).getLABEL()+"\n" +
+//                            "Time: "+listEvents.get(i).getTIME()+"\n" +
+//                            "Date: "+listEvents.get(i).getDATE()+"\n" +
+//                            "Month: "+listEvents.get(i).getMONTH()+"\n" +
+//                            "Year: "+listEvents.get(i).getYEAR()+"\n\n").execute();
 
             Long id = listEvents.get(i).getId();
             String label = listEvents.get(i).getLABEL();
@@ -370,9 +344,14 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private void collectEventsPerMonth(String Month, String Year){
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" collectEventsPerMonth( "+Month+", "+Year+" ) => called.\n" +
-                        "clearing event list size: "+eventsList.size()).execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(),
+                        (System.currentTimeMillis()/1000),
+                        "Ticket",
+                        CalendarActivity.class.getSimpleName(),
+                        "collectEventsPerMonth()",
+                        "Called. collectEventsPerMonth( "+Month+", "+Year+" ). About to clear event list size: "+eventsList.size(),
+                        ""));
 
         Log.e(TAG, " collectEventsPerMonth( "+Month+", "+Year+" )");
         Log.e(TAG, " clearing event list size: "+eventsList.size());
@@ -384,8 +363,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private void InitAddAgendaDialog(final Dialog dialog, final int position){
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" InitAddAgendaDialog() => called.\n").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "InitAddAgendaDialog()", "Called.", ""));
 
         final EditText libelle_et = dialog.findViewById(R.id.dialog_add_new_event_libelle);
         final EditText lieu_et = dialog.findViewById(R.id.dialog_add_new_event_lieu);
@@ -598,11 +577,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         add_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDB.debugMessageDao().insertDebugMessage(
-                        new DebugItemEntry(CalendarActivity.this,
-                                (System.currentTimeMillis()/1000),
-                                "DEB",
-                                TAG+" Add.onClick() => called.\n"));
 
                 boolean cancel = false;
                 View focusView = null;
@@ -666,8 +640,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private List<String> getAllClients(){
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" getAllClients() => called.\n").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "getAllClients()", "Called.", ""));
 
         List<String> theList = new ArrayList<>();
         List<ClientEntry> list = mDB.clientDao().getAllClient();
@@ -680,8 +654,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private ClientEntry getSelectedClient(String clientName){
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" getSelectedClient("+clientName+") => called.\n").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "getSelectedClient()", "Called. getSelectedClient( "+clientName+" )", ""));
 
         ClientEntry clientEntry = null;
         List<ClientEntry> clientList = mDB.clientDao().getAllClient();
@@ -708,11 +682,13 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     }
 
     private void getEventsFromServer(){
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" getEventsFromServer() => called.\n").execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "getEventsFromServer()", "Called.", ""));
 
         if (!ConnectionManager.isPhoneConnected(getApplication())){
             Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "getEventsFromServer()", getString(R.string.erreur_connexion), ""));
             //progressDialog.dismiss();
             return;
         }
@@ -735,6 +711,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
     @Override
     public void onFindAgendaEventsTaskComplete(AgendaEventsREST mAgendaEventsREST) {
         mFindAgendaEventTask = null;
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onFindAgendaEventsTaskComplete()", "Called.", ""));
 
         //Si la recupération echoue, on renvoi un message d'erreur
         if (mAgendaEventsREST == null) {
@@ -742,6 +720,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             //showProgressDialog(false, null, null);
             mDB.eventsDao().deleteAllEvent();
             Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onFindAgendaEventsTaskComplete()", getString(R.string.service_indisponible), ""));
             return;
         }
         if (mAgendaEventsREST.getAgendaEvents() == null) {
@@ -751,10 +731,10 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             //reinitialisation du nombre de page
             mPageEvent = 0;
 
-            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                    TAG+" onFindAgendaEventsTaskComplete() => called.\nDB table size: "+mDB.eventsDao().getAllEvents().size()).execute();
-
             Log.e(TAG, " onFindAgendaEventsTaskComplete:: DB table size: "+mDB.eventsDao().getAllEvents().size());
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onFindAgendaEventsTaskComplete()", "Calendar event saved!", ""));
+
             Toast.makeText(this, "Evènements synchronizé !", Toast.LENGTH_LONG).show();
 
             //update the calendar
@@ -762,9 +742,6 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             mAgendaAdapter.notifyDataSetChanged();
             return;
         }
-
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" onFindAgendaEventsTaskComplete("+mAgendaEventsREST.getAgendaEvents().size()+") => called.\n").execute();
 
         for (AgendaEvents eventItem : mAgendaEventsREST.getAgendaEvents()) {
 
@@ -778,15 +755,19 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
             eventsEntry.setTRANSPARENCY(eventItem.getTransparency());
 
             /***********************************For AdminDebugging***********************************/
-
-            new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL",
-                    " AgendaEvents id: "+eventItem.getId()+"\n" +
-                            "AgendaEvents datec: "+(eventItem.getDatec()*1000)+"\n" +
-                            "AgendaEvents datep: "+(eventItem.getDatep()*1000)+"\n" +
-                            "EventsEntry Event Time: "+new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
-                            "EventsEntry Event Date: "+eventDateFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
-                            "EventsEntry Event month: "+monthFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
-                            "EventsEntry Event Year: "+yearFormat.format(new Date( (eventItem.getDatep()*1000) ))).execute();
+            mDB.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getApplicationContext(),
+                            (System.currentTimeMillis()/1000),
+                            "Ticket", CalendarActivity.class.getSimpleName(),
+                            "onFindAgendaEventsTaskComplete()",
+                            "AgendaEvents id: "+eventItem.getId()+"\n" +
+                                    "AgendaEvents datec: "+(eventItem.getDatec()*1000)+"\n" +
+                                    "AgendaEvents datep: "+(eventItem.getDatep()*1000)+"\n" +
+                                    "EventsEntry Event Time: "+new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                                    "EventsEntry Event Date: "+eventDateFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                                    "EventsEntry Event month: "+monthFormat.format(new Date( (eventItem.getDatep()*1000) ))+"\n" +
+                                    "EventsEntry Event Year: "+yearFormat.format(new Date( (eventItem.getDatep()*1000) )),
+                            ""));
 
             eventsEntry.setTIME(new SimpleDateFormat("K:mm a", Locale.FRENCH).format(new Date( (eventItem.getDatep()*1000) )));
             eventsEntry.setDATE(eventDateFormat.format(new Date( (eventItem.getDatep()*1000) )));
@@ -807,9 +788,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
     @Override
     public void onSendAgendaEventsTaskComplete() {
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" onSendAgendaEventsTaskComplete() => called.\n" +
-                        "Before deleting local db data, size: " + mDB.eventsDao().getAllEvents().size()).execute();
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onSendAgendaEventsTaskComplete()", "Called.", ""));
 
         mDB.eventsDao().deleteAllEvent();
         getEventsFromServer();
@@ -817,8 +797,8 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
 
     @Override
     public void onDeleteAgendasTaskComplete() {
-        new DebugMe(CalendarActivity.this, CalendarActivity.this, "WL-LL",
-                TAG+" onDeleteAgendasTaskComplete() => called.");
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", CalendarActivity.class.getSimpleName(), "onDeleteAgendasTaskComplete()", "Called.", ""));
         initCalendar();
     }
 

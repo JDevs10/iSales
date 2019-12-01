@@ -35,6 +35,9 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
         this.mContext = context;
         this.task = taskComplete;
         mDB = AppDatabase.getInstance(this.mContext);
+
+        mDB.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendAgendaEventTask.class.getSimpleName(), "SendAgendaEventTask()", "Called.", ""));
     }
 
     @Override
@@ -42,13 +45,8 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
         //Save the event to the server
         Call<Long> call = ApiUtils.getISalesService(mContext).createEvent(agendaEvents);
         Log.e(TAG, " Url: "+call.request().url());
-
         mDB.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(mContext,
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" doInBackground() => called.\n" +
-                                " Url: "+call.request().url()));
+                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendAgendaEventTask.class.getSimpleName(), "SendAgendaEventTask() => doInBackground()", "Url: "+call.request().url(), ""));
 
         call.enqueue(new Callback<Long>() {
             @Override
@@ -60,34 +58,18 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
                     Toast.makeText(mContext, "L'évenement enregisté!!!", Toast.LENGTH_SHORT).show();
                     mProgressDialog.dismiss();
 
-                    mDB.debugMessageDao().insertDebugMessage(
-                            new DebugItemEntry(mContext,
-                                    (System.currentTimeMillis()/1000),
-                                    "DEB",
-                                    TAG+" onResponse() => called.\n" +
-                                            " saveAgendaEvent id= " + responseAgendaId));
-
                 }else {
                     Toast.makeText(mContext, "L'évenement non enregisté!\n"+
                             mContext.getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
                     try {
                         Log.e(TAG, "doInBackground: onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string());
                         mDB.debugMessageDao().insertDebugMessage(
-                                new DebugItemEntry(mContext,
-                                        (System.currentTimeMillis()/1000),
-                                        "DEB",
-                                        TAG+" doInBackground() => called.\n" +
-                                                " onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string()));
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendAgendaEventTask.class.getSimpleName(), "doInBackground() => doInBackground()", "doInBackground: onResponse err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string(), ""));
 
                     } catch (IOException e) {
                         Log.e(TAG, "doInBackgroundonResponse: message=" + e.getMessage());
                         mDB.debugMessageDao().insertDebugMessage(
-                                new DebugItemEntry(mContext,
-                                        (System.currentTimeMillis()/1000),
-                                        "DEB",
-                                        TAG+" doInBackground() => called.\n" +
-                                                " onResponse err: message=" + e.getMessage()));
-
+                                new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "Ticket", SendAgendaEventTask.class.getSimpleName(), "doInBackground() => doInBackground()", "doInBackgroundonResponse: message = " + e.getMessage(), ""+e.getStackTrace()));
                     }
                     mProgressDialog.dismiss();
                 }
@@ -99,14 +81,6 @@ public class SendAgendaEventTask extends AsyncTask<Void, Void, Void> {
                         mContext.getResources().getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "onFailure: "+call.request().url().encodedQuery());
                 Log.e(TAG, "onFailure: "+t.getMessage());
-
-                mDB.debugMessageDao().insertDebugMessage(
-                        new DebugItemEntry(mContext,
-                                (System.currentTimeMillis()/1000),
-                                "DEB",
-                                TAG+" onFailure() => called.\n" +
-                                        "L'évenement non enregisté!\n"+call.request().url().encodedQuery()+"\n" +
-                                        "Message: "+t.getMessage()));
 
                 mProgressDialog.dismiss();
                 return;

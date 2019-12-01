@@ -28,10 +28,12 @@ import com.iSales.R;
 import com.iSales.adapter.ProductVirtualAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.AppExecutors;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
 import com.iSales.interfaces.ProductVirtualAdapterListener;
 import com.iSales.model.ProduitParcelable;
+import com.iSales.pages.calendar.AgendaEventDetails;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.ProductVirtual;
 import com.iSales.remote.rest.FindProductVirtualREST;
@@ -118,6 +120,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     public void initValues() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "initValues()", "Called.", ""));
+
         mProductVirtual = new ProductVirtual();
         mProductVirtual.setRowid("" + mProduitParcelable.getId());
         mProductVirtual.setFk_product_fils("" + mProduitParcelable.getId());
@@ -251,6 +256,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         double prix = 0;
         double remiseVal = 0;
         double remisePercent = 0;
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "addPanier()", "Called.", ""));
 
         if (mQuantiteNumberBtn.getText().toString().equals("")) {
             mQuantiteNumberBtn.setError(getString(R.string.veuillez_saisir_quantite));
@@ -421,6 +429,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     private void executeFindproductVirtual() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "executeFindproductVirtual()", "Called.", ""));
+
         FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
         task.execute();
     }
@@ -437,6 +448,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
+
         if (getIntent().getExtras().getParcelable("produit") != null) {
             mProduitParcelable = getIntent().getExtras().getParcelable("produit");
             Log.e(TAG, "onCreate: " + mProduitParcelable.getRef() +

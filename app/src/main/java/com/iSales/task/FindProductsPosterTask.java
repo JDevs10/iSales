@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.FindProductsPosterListener;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.DolPhoto;
@@ -27,6 +29,7 @@ public class FindProductsPosterTask extends AsyncTask<Void, Void, FindDolPhotoRE
     private int productsPosition;
 
     private Context context;
+    private AppDatabase mDb;
 
     public FindProductsPosterTask(Context context, FindProductsPosterListener taskComplete, String photoName, String refProducts, int productsPosition) {
         this.task = taskComplete;
@@ -34,6 +37,10 @@ public class FindProductsPosterTask extends AsyncTask<Void, Void, FindDolPhotoRE
         this.refProducts = refProducts;
         this.productsPosition = productsPosition;
         this.context = context;
+        this.mDb = AppDatabase.getInstance(this.context);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsPosterTask.class.getSimpleName(), "FindProductsPosterTask()", "Called.", ""));
     }
 
     @Override
@@ -43,6 +50,9 @@ public class FindProductsPosterTask extends AsyncTask<Void, Void, FindDolPhotoRE
 
 //        Requete de connexion de l'internaute sur le serveur
         Call<DolPhoto> call = ApiUtils.getISalesService(context).findProductsPoster(module_part, original_file);
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsPosterTask.class.getSimpleName(), "FindProductsPosterTask() => doInBackground()", "Url : "+call.request().url(), ""));
+
         try {
             Response<DolPhoto> response = call.execute();
             if (response.isSuccessful()) {
@@ -62,14 +72,20 @@ public class FindProductsPosterTask extends AsyncTask<Void, Void, FindDolPhotoRE
 //                    Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findDolPhotoREST.setErrorBody(error);
 
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsPosterTask.class.getSimpleName(), "FindProductsPosterTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
                     e.printStackTrace();
+                    mDb.debugMessageDao().insertDebugMessage(
+                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsPosterTask.class.getSimpleName(), "FindProductsPosterTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
 
                 return findDolPhotoREST;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductsPosterTask.class.getSimpleName(), "FindProductsPosterTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
 
         return null;
