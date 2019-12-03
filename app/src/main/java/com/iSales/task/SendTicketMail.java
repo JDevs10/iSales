@@ -13,8 +13,10 @@ import com.iSales.database.entry.SettingsEntry;
 import com.iSales.model.ClientParcelable;
 import com.iSales.model.ISalesIncidentTable;
 import com.iSales.pages.ticketing.TicketingActivity;
+import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Order;
 import com.iSales.remote.model.OrderLine;
+import com.iSales.utility.ISalesUtility;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -55,15 +57,17 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private String ticketEmail;
     private String ticketSubject;
     private String ticketBody;
-    private String refTicket;
+    private String ticketRef;
+    private String ticketDelay = null;
     private ISalesIncidentTable incidentTicket;
     //private Files[] attachments;
     private AppDatabase db;
+    private boolean internetCheck;
 
     private TicketingActivity task;
 
     //Class Constructor
-    public SendTicketMail(Context context, TicketingActivity task, String typeAction, File logFile, String email, String subject, String body, String refTicket, ISalesIncidentTable incidentTicket){
+    public SendTicketMail(Context context, TicketingActivity task, String typeAction, File logFile, String email, String subject, String body, String ticketRef, ISalesIncidentTable incidentTicket){
         //Initializing variables
         this.context = context;
         this.typeAction = typeAction;
@@ -71,13 +75,14 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         this.ticketEmail = email;
         this.ticketSubject = subject;
         this.ticketBody = body;
-        this.refTicket = refTicket;
+        this.ticketRef = ticketRef;
         this.incidentTicket = incidentTicket;
         this.task = task;
         db = AppDatabase.getInstance(this.context);
+        this.internetCheck = true;
     }
 
-    private String setMessage(){
+    public String setMessage(){
         String deviceOS = System.getProperty("os.version");     // OS version
         String deviceSDK = android.os.Build.VERSION.SDK;        // API Level
         String device = android.os.Build.DEVICE;                // Device
@@ -91,7 +96,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             return "Bonjour Team BDC,\n\n" +
                     "Ceci est un Ticket Automatique qui vient de iSales du client "+clientName+" ("+companyName+") connecter.\n" +
                     "Voici le ticket généré : \n\n" +
-                    "Ref : "+refTicket+"\n" +
+                    "Ref : "+ticketRef+"\n" +
                     "Date: "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
                     "Sujet : "+incidentTicket.getName()+"\n" +
                     "Priorité : "+incidentTicket.getPriority()+"\n" +
@@ -111,10 +116,11 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         }else if(typeAction.equals("Manuel-Ticket")){
             String clientName = db.userDao().getUser().get(0).getLogin();
             String companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
+
             return "Bonjour Team BDC,\n\n" +
-                    "Le client "+clientName+" ("+companyName+") sur iSales a rencontré un problème, il nous envoie un ticket Ref: "+refTicket+"\n" +
+                    "Le client "+clientName+" ("+companyName+") sur iSales a rencontré un problème, il nous envoie un ticket Ref: "+ticketRef+"\n" +
                     "Voici ci-dessous son ticket : \n\n" +
-                    "Ref : "+refTicket+"\n" +
+                    "Ref : "+ticketRef+"\n" +
                     "Date : "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
                     "Sujet : "+incidentTicket.getName()+"\n" +
                     "Priorité : "+incidentTicket.getPriority()+"\n" +
@@ -144,6 +150,10 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        if (!ConnectionManager.isPhoneConnected(context)){
+            internetCheck = false;
+            return null;
+        }
         //Creating properties
         Properties props = new Properties();
         String newBody = setMessage();
@@ -200,7 +210,6 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
 
             //Sending email
             Transport.send(mm);
-            //multipart.removeBodyPart(1);
 
             //delete file after send
             if (logFile.exists()){
@@ -208,10 +217,15 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                 logFile.delete();
             }
 
+            //set the ticket delay message to the user depending of the priority
+            ticketDelay = new ISalesUtility().getiSalesPriorityTableByPriority(incidentTicket.getPriority())[0][2];
+
         } catch (MessagingException e) {
             e.printStackTrace();
+            ticketDelay = null;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            ticketDelay = null;
         }
         return null;
     }
@@ -220,6 +234,6 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         Log.e(TAG, "onPostExecute()");
-        task.onMailSend();
+        task.onMailSend(internetCheck, ticketDelay);
     }
 }

@@ -40,6 +40,7 @@
     <string name="erreur_connexion">Erreur réseau. Veuillez vérifier votre connexion internet.</string>
     <string name="parametres_connexion_incorrect">Erreur d\'authentification. Paramètres de connexion incorrects.</string>
     <string name="service_indisponible">Service indisponible. Veuillez réessayer plustard.</string>
+    <string name="service_indisponible_email">Service indisponible. Erreur d\'envoi du mail.</string>
     <string name="aucune_commande_trouvee">Aucune commande trouvée.</string>
     <string name="aucun_produit_trouve">Aucun produit trouvé.</string>
     <string name="aucune_commande_trouve">Aucune commande trouvé.</string>

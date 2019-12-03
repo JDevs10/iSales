@@ -1,6 +1,9 @@
 package com.iSales.pages.ticketing;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +27,7 @@ import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.SendindMailListener;
 import com.iSales.model.ISalesIncidentTable;
+import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.task.SendTicketMail;
 import com.iSales.utility.ISalesUtility;
 
@@ -40,7 +45,7 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
     private final String TAG = TicketingActivity.class.getSimpleName();
     private EditText ticketing_name, ticketing_email, ticketing_body;
     private Spinner ticketing_subject_sp;
-    private Button ticketing_save, ticketing_cancel;
+    private Button ticketing_save, ticketing_preview, ticketing_cancel;
     private AppDatabase db;
     private ProgressDialog mProgressDialog;
 
@@ -61,6 +66,7 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         ticketing_email = findViewById(R.id.ticketingActivity_ticket_email_et);
         ticketing_body = findViewById(R.id.ticketingActivity_ticket_body_et);
         ticketing_cancel = findViewById(R.id.ticketingActivity_ticket_cancel_btn);
+        ticketing_preview = findViewById(R.id.ticketingActivity_ticket_preview_btn);
         ticketing_save = findViewById(R.id.ticketingActivity_ticket_send_btn);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, getIncidentNameList());
@@ -88,6 +94,13 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
                 ticketing_email.setText("");
                 ticketing_body.setText("");
                 onBackPressed();
+            }
+        });
+
+        ticketing_preview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPreview(ticketing_name.getText().toString(), ticketing_subject, ticketing_email.getText().toString(), ticketing_body.getText().toString());
             }
         });
 
@@ -126,6 +139,34 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
             incident = null;
         }
         return incident;
+    }
+
+    private void showPreview(String ticketName, String subjetTicket, String ticketEmail, String ticketBody){
+        //get ref Ticket from date
+        Date date = new Date((System.currentTimeMillis()/1000)*1000);
+        String companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
+        String refTicket = "ST_"+companyName.replace(' ','_')+"_" + date.getTime();
+
+        ISalesIncidentTable iSalesIncident = getISalesIncidentByName(subjetTicket);
+
+        final Dialog mDialog = new Dialog(this);
+        mDialog.setContentView(R.layout.dialog_ticket_preview_layout);
+        mDialog.setTitle("Aperçu du Ticket");
+
+        ImageButton close_ticketPreview = mDialog.findViewById(R.id.dialog_ticket_preview_close_btn);
+        TextView text_ticketPreview = mDialog.findViewById(R.id.dialog_ticket_preview_text_tv);
+
+        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", new ISalesUtility().generateAttchmentFile(this), ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident);
+
+        text_ticketPreview.setText(mSendTicketMail.setMessage());
+        close_ticketPreview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDialog.dismiss();
+            }
+        });
+
+        mDialog.show();
     }
 
     private void prepareTicket(String ticketName, String subjetTicket, String ticketEmail, String ticketBody){
@@ -170,80 +211,31 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         String companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
         String refTicket = "ST_"+companyName.replace(' ','_')+"_" + date.getTime();
 
-        //get all logs
-        String logDataText = "";
-        String logDataClassName = "";
-        boolean firstDebugMessage = true;
-        List<DebugItemEntry> debugList = db.debugMessageDao().getAllDebugMessages();
-        for (int i=0; i<debugList.size(); i++){
-            if (logDataClassName.equals(debugList.get(i).getClassName())){
-                logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
-                        "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
-                        "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
-            }else{
-                logDataClassName = debugList.get(i).getClassName();
-                if(firstDebugMessage){
-                    logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
-                            "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
-                            "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
-                    firstDebugMessage = false;
-                }else{
-                    logDataText += "\n\n"+DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
-                            "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
-                            "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
-                }
-            }
-        }
-
-        //create log file
-        File dir = new File(Environment.getExternalStorageDirectory(), "iSales/iSales Logs");
-        if (!dir.exists()) {
-            if (dir.mkdirs()){
-                Log.e(TAG, "Log folder created" );
-            }
-        }
-
-        File file = new File(dir, String.format("%s.log", "iSales_logs_"+(System.currentTimeMillis()/1000)));
-
-        if (file.exists ()) file.delete();
-
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(logDataText.getBytes());
-
-            fos.flush();
-            fos.close();
-            makeSureFileWasCreatedThenMakeAvailable(this, file);
-
-            file.getAbsolutePath();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.e(TAG, "saveProduitImage:FileNotFoundException "+e.getMessage() );
-
-            //send email with ticket of exception
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(TAG, "saveProduitImage:IOException "+e.getMessage() );
-
-            //send email with ticket of exception
-        }
-
         ISalesIncidentTable iSalesIncident = getISalesIncidentByName(subjetTicket);
 
         //get isales log file to send in email attachment
-        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", file, ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident);
+        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", new ISalesUtility().generateAttchmentFile(this), ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident);
         mSendTicketMail.execute();
     }
     
     @Override
-    public void onMailSend() {
-        showProgressDialog(false, null, null);
-        ticketing_name.setText("");
-        ticketing_subject_sp.setSelection(0);
-        ticketing_email.setText("");
-        ticketing_body.setText("");
-        Toast.makeText(this, "Le Ticket est envoyé avec success", Toast.LENGTH_SHORT).show();
+    public void onMailSend(boolean internetCheck, String ticketDelay) {
+        if (internetCheck){
+            if (ticketDelay != null){
+                showProgressDialog(false, null, null);
+                ticketing_name.setText("");
+                ticketing_subject_sp.setSelection(0);
+                ticketing_email.setText("");
+                ticketing_body.setText("");
+                Toast.makeText(this, "Le Ticket est envoyé avec success!\n"+ticketDelay, Toast.LENGTH_SHORT).show();
+            }else{
+                showProgressDialog(false, null, null);
+                Toast.makeText(this, getString(R.string.service_indisponible_email), Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            showProgressDialog(false, null, null);
+            Toast.makeText(this, getString(R.string.service_indisponible), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

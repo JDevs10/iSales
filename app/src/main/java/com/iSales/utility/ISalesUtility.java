@@ -12,10 +12,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
 import com.iSales.R;
+import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.model.ISalesIncidentTable;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -27,7 +30,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -430,15 +435,92 @@ public final class ISalesUtility {
         return color;
     }
 
-    public static String[][] getiSalesPriorityTable(){
-        String[][] table = new String[6][2];
-        table[0][0] = "P0"; table[0][1] = "#000000";
-        table[1][0] = "P1"; table[1][1] = "#FF0000";
-        table[2][0] = "P2"; table[2][1] = "#FF4400";
-        table[3][0] = "P3"; table[3][1] = "##E8700C";
-        table[4][0] = "P4"; table[4][1] = "#FFFF00";
-        table[5][0] = "P0-P4"; table[5][1] = "#0C83E8";
+    public File generateAttchmentFile(Context context){
+        AppDatabase db = AppDatabase.getInstance(context);
+
+        //get all logs
+        String logDataText = "";
+        String logDataClassName = "";
+        boolean firstDebugMessage = true;
+        List<DebugItemEntry> debugList = db.debugMessageDao().getAllDebugMessages();
+        for (int i=0; i<debugList.size(); i++){
+            if (logDataClassName.equals(debugList.get(i).getClassName())){
+                logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
+                        "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
+                        "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
+            }else{
+                logDataClassName = debugList.get(i).getClassName();
+                if(firstDebugMessage){
+                    logDataText += DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
+                            "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
+                            "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
+                    firstDebugMessage = false;
+                }else{
+                    logDataText += "\n\n"+DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugList.get(i).getDatetimeLong()*1000)).toString() + " | Mask: " + debugList.get(i).getMask() + "\n" +
+                            "Class: " + debugList.get(i).getClassName() + " => Method: " +debugList.get(i).getMethodName() + "\n" +
+                            "Message: "+debugList.get(i).getMessage()+"\nStraceStack: "+debugList.get(i).getStackTrace()+"\n";
+                }
+            }
+        }
+
+        //create log file
+        File dir = new File(Environment.getExternalStorageDirectory(), "iSales/iSales Logs");
+        if (!dir.exists()) {
+            if (dir.mkdirs()){
+                Log.e(TAG, "Log folder created" );
+            }
+        }
+
+        File file = new File(dir, String.format("%s.log", "iSales_logs_"+(System.currentTimeMillis()/1000)));
+
+        if (file.exists ()) file.delete();
+
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(logDataText.getBytes());
+
+            fos.flush();
+            fos.close();
+            makeSureFileWasCreatedThenMakeAvailable(context, file);
+
+            file.getAbsolutePath();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.e(TAG, "saveProduitImage:FileNotFoundException "+e.getMessage() );
+
+            //send email with ticket of exception
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "saveProduitImage:IOException "+e.getMessage() );
+
+            //send email with ticket of exception
+        }
+        return file;
+    }
+
+    public static String[][] getAlliSalesPriorityTable(){
+        String[][] table = new String[6][3];
+        table[0][0] = "P0"; table[0][1] = "#000000"; table[0][2] = "Votre ticket sera traité dans 24 heurs ouvrables";
+        table[1][0] = "P1"; table[1][1] = "#FF0000"; table[1][2] = "Votre ticket sera traité dans 24 heurs ouvrables";
+        table[2][0] = "P2"; table[2][1] = "#FF4400"; table[2][2] = "Votre ticket sera traité dans 1-2 jours ouvrables";
+        table[3][0] = "P3"; table[3][1] = "##E8700C"; table[3][2] = "Votre ticket sera traité dans 2-3 jours ouvrables";
+        table[4][0] = "P4"; table[4][1] = "#FFFF00"; table[4][2] = "Votre ticket sera traité dans 2-3 jours ouvrables";
+        table[5][0] = "P0-P4"; table[5][1] = "#0C83E8"; table[5][2] = "Votre ticket sera traité au plus vite";
         return table;
+    }
+
+    public String[][] getiSalesPriorityTableByPriority(String priority){
+        String[][] result = null;
+        String[][] table = getAlliSalesPriorityTable();
+
+        for (int i=0; i<table.length; i++){
+            if (table[i][0].equals(priority)){
+                result = new String[1][3];
+                result[0][0] = table[i][0]; result[0][1] = table[i][1]; result[0][2] = table[i][2];
+            }
+        }
+        return result;
     }
 
     public static ArrayList<ISalesIncidentTable> getiSalesIncidentList(){

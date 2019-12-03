@@ -120,6 +120,12 @@
             android:text="Annuler"
             android:layout_margin="10dp"/>
         <Button
+            android:id="@+id/ticketingActivity_ticket_preview_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aperçu"
+            android:layout_margin="10dp"/>
+        <Button
             android:id="@+id/ticketingActivity_ticket_send_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

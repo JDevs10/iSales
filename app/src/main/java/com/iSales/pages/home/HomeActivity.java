@@ -17,6 +17,7 @@ import com.iSales.pages.home.fragment.ClientsRadioFragment;
 import com.iSales.pages.home.fragment.CommandesFragment;
 import com.iSales.pages.home.fragment.PanierFragment;
 import com.iSales.pages.home.fragment.ProfilFragment;
+import com.iSales.pages.welcome.WelcomeActivity;
 import com.iSales.task.FindPaymentTypesTask;
 import com.iSales.R;
 
@@ -294,6 +295,8 @@ public class HomeActivity extends AppCompatActivity {
         setupTabLayout();
 
         initTab();
+
+        new WelcomeActivity().checkDebugLogs();
 
         if (savedInstanceState != null) {
 

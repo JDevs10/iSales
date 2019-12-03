@@ -266,7 +266,7 @@ public class WelcomeActivity extends AppCompatActivity {
 //        tv.append("\n\nFile written to "+file);
     }
 
-    private void checkDebugLogs(){
+    public void checkDebugLogs(){
         Log.e(TAG, "checkDebugLogs() log size before => "+db.debugMessageDao().getAllDebugMessages().size());
         long time = (System.currentTimeMillis()/1000) - 86400000;
         db.debugMessageDao().deleteAllDebugMessagesOver24Hrs(time);
