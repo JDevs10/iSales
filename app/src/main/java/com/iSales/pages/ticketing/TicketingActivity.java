@@ -130,6 +130,7 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
 
     private void prepareTicket(String ticketName, String subjetTicket, String ticketEmail, String ticketBody){
         boolean error = false;
+        boolean error_ticketBody = false;
 
         if (ticketName.isEmpty()){
             ticketing_name.setFocusable(true);
@@ -151,6 +152,12 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         }
         if (ticketBody.isEmpty()){
             ticketing_body.setError("Expliquer en détail l'anomalie!");
+            ticketing_body.setFocusable(true);
+            error = true;
+            error_ticketBody = true;
+        }
+        if(!error_ticketBody && ticketBody.length() < 15){
+            ticketing_body.setError("Veuillez expliquer votre situation avec plus de 15 charactères!");
             ticketing_body.setFocusable(true);
             error = true;
         }

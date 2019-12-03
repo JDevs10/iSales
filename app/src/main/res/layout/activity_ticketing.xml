@@ -37,14 +37,16 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nom du Ticket"
+            android:text="Nom du Ticket *"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
+
         <EditText
             android:id="@+id/ticketingActivity_ticket_name_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nom du ticket..."/>
+            android:hint="Nom du ticket..."
+            android:singleLine="true" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,7 +58,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sujet du Ticket"
+            android:text="Sujet du Ticket *"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
         <Spinner
@@ -74,14 +76,16 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Adresse Courriel"
+            android:text="Adresse Courriel *"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
-    <EditText
-        android:id="@+id/ticketingActivity_ticket_email_et"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Votre adresse courriel..."/>
+
+        <EditText
+            android:id="@+id/ticketingActivity_ticket_email_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Votre adresse courriel..."
+            android:singleLine="true" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -93,16 +97,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Texte du Ticket"
+            android:text="Texte du Ticket *"
             android:textColor="@android:color/black"
             android:textStyle="bold"/>
+
         <EditText
             android:id="@+id/ticketingActivity_ticket_body_et"
             android:layout_width="match_parent"
             android:layout_height="100dp"
-            android:hint="Expliquer le plus détaillé possible, ce que vous faisait avant et quand le bug est survenu..."
-            android:inputType="textMultiLine"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginBottom="20dp"
+            android:hint="Expliquer en détail, ce que vous faisait avant et quand le bug est survenu..."
+            android:inputType="textMultiLine" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

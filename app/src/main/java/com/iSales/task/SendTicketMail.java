@@ -90,7 +90,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             String companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
             return "Bonjour Team BDC,\n\n" +
                     "Ceci est un Ticket Automatique qui vient de iSales du client "+clientName+" ("+companyName+") connecter.\n" +
-                    "Voici un ticket généré : \n\n" +
+                    "Voici le ticket généré : \n\n" +
                     "Ref : "+refTicket+"\n" +
                     "Date: "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
                     "Sujet : "+incidentTicket.getName()+"\n" +
@@ -104,7 +104,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                     "Model (Model) ===> "+deviceModel+"\n" +
                     "SDK (SDK) ===> "+deviceSDK+"\n" +
                     "OS (OS) ===> "+deviceOS+"\n\n" +
-                    "Message écrit par l'utilisateur :\n" + ticketBody + "\n\n\n" +
+                    "Message généré :\n" + ticketBody + "\n\n\n" +
                     "Bien Cordialement,\n" +
                     "iSales Support.";
 
