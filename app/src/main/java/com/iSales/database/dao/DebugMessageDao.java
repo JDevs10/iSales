@@ -14,8 +14,8 @@ import java.util.List;
 @Dao
 public interface DebugMessageDao {
 
-    @Query("SELECT * FROM debug_message ORDER BY datetimeLong ASC")
     //@Query("SELECT * FROM debug_message order by datetimeLong ASC, ClassName ASC")
+    @Query("SELECT * FROM debug_message ORDER BY datetimeLong ASC")
     List<DebugItemEntry> getAllDebugMessages();
 
     @Query("DELETE FROM debug_message WHERE :millisecondsInOneDate > datetimeLong")

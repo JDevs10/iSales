@@ -267,7 +267,10 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     public void checkDebugLogs(){
-        Log.e(TAG, "checkDebugLogs() log size before => "+db.debugMessageDao().getAllDebugMessages().size());
+        if (db == null){
+            db = AppDatabase.getInstance(this);
+        }
+        Log.e(TAG, "checkDebugLogs() log size before => " + db.debugMessageDao().getAllDebugMessages().size());
         long time = (System.currentTimeMillis()/1000) - 86400000;
         db.debugMessageDao().deleteAllDebugMessagesOver24Hrs(time);
         Log.e(TAG, "checkDebugLogs() log size after => "+db.debugMessageDao().getAllDebugMessages().size());
