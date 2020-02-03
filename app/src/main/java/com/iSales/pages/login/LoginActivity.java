@@ -36,6 +36,7 @@ import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.interfaces.OnInternauteLoginComplete;
 import com.iSales.pages.home.HomeActivity;
+import com.iSales.pages.ticketing.TicketingActivity;
 import com.iSales.pages.welcome.WelcomeActivity;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
@@ -261,8 +262,20 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             }
         });
 
+        Button  mTicketingReport = (Button) findViewById(R.id.ticketing_button);
+        mTicketingReport.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTicketingReport();
+            }
+        });
+
         mProgressView = findViewById(R.id.login_progress);
         mLoginFormView = findViewById(R.id.login_form);
+    }
+
+    private void openTicketingReport(){
+        startActivity(new Intent(LoginActivity.this, TicketingActivity.class));
     }
 
     @Override
@@ -384,7 +397,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
 
-            String doliServer = mServerET.getText().toString();
+            String doliServer = mServerET.getText().toString().trim();
 //            String doliServer = mServer;
 
             serverEntries = mDb.serverDao().getAllServers();

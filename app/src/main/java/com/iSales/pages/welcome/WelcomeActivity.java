@@ -342,6 +342,9 @@ public class WelcomeActivity extends AppCompatActivity {
             db.debugMessageDao().insertDebugMessage(
                     new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", WelcomeActivity.class.getSimpleName() +" => GetLatestVersion", "onPostExecute()", "currentVersion: " + currentVersion + " || latestVersion: " + latestVersion, ""));
 
+            Log.e(TAG, "Check version desable: latestVersion == currentVersion");
+            latestVersion = currentVersion;
+
             if (latestVersion != null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)) {
                     if (!isFinishing()) { //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error

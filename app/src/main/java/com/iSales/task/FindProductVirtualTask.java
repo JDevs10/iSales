@@ -45,6 +45,7 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
         mDb.debugMessageDao().insertDebugMessage(
                 new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "Url : "+call.request().url(), ""));
 
+        Log.e(TAG, "URL: "+call.request().url());
         try {
             Response<ArrayList<ProductVirtual>> response = call.execute();
             if (response.isSuccessful()) {

@@ -175,12 +175,17 @@ public final class ISalesUtility {
     }
 
     public static String amountFormat2(String value) {
-
+        Log.e(TAG, "amountFormat2( "+value+" )");
         if(value != null){
-            double valueDouble = Double.parseDouble(value);
-            String str = String.format(Locale.FRANCE,
-                    "%,-10.2f", valueDouble);
-            return String.valueOf(str).replace(" ", "");
+            if (value != ""){
+                double valueDouble = Double.parseDouble(value);
+                String str = String.format(Locale.FRANCE,
+                        "%,-10.2f", valueDouble);
+                return String.valueOf(str).replace(" ", "");
+            }else{
+                //the value is empty so send a 0
+                return "0";
+            }
         }else{
             return "0";
         }

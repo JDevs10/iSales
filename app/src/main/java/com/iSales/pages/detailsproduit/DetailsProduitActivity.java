@@ -459,6 +459,12 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
                     " produitID=" + mProduitParcelable.getPoster().getContent());
         }
 
+        /*
+        * if there is internet
+        *   executeFindproductVirtual
+        * else
+        *   getLocalVirtualProduct
+        * */
         executeFindproductVirtual();
 
 //        Referencement des vues
