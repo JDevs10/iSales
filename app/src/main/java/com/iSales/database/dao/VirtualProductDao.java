@@ -10,6 +10,7 @@ import android.arch.persistence.room.Update;
 
 import com.iSales.database.entry.UserEntry;
 import com.iSales.database.entry.VirtualProductEntry;
+import com.iSales.remote.model.ProductVirtual;
 
 import java.util.List;
 
@@ -20,19 +21,25 @@ import java.util.List;
 @Dao
 public interface VirtualProductDao {
     @Query("SELECT * FROM virtual_product")
-    List<UserEntry> getAllVirtualProduct();
+    List<ProductVirtual> getAllVirtualProduct();
 
-    @Query("SELECT * FROM virtual_product WHERE _0 = :id")
-    List<UserEntry> getVirtualProductById(String id);
+    @Query("SELECT * FROM virtual_product WHERE fk_product_fils = :id")
+    List<ProductVirtual> getVirtualProductByChildId(Long id);
+
+    @Query("SELECT * FROM virtual_product WHERE fk_product_fils = :id")
+    List<ProductVirtual> getVirtualProductByParentId(String id);
+
+    @Query("SELECT * FROM virtual_product WHERE fk_product_fils = :id AND rowid = (rowid + 1)")
+    List<ProductVirtual> getVirtualProductByChildAndParentId(Long id);
 
     @Insert
-    void insertVirtualProduct(VirtualProductEntry mVirtualProductEntry);
+    void insertVirtualProduct(ProductVirtual mProductVirtual);
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    void updateVirtualProduct(VirtualProductEntry mVirtualProductEntry);
+    void updateVirtualProduct(ProductVirtual mProductVirtual);
 
     @Delete
-    void deleteVirtualProduct(VirtualProductEntry mVirtualProductEntry);
+    void deleteVirtualProduct(ProductVirtual mProductVirtual);
 
     @Query("DELETE FROM virtual_product")
     void deleteAllVirtualProduct();

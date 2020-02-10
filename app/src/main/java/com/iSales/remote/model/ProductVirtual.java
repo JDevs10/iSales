@@ -1,7 +1,14 @@
 package com.iSales.remote.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
+
+@Entity(tableName = "virtual_product")
 public class ProductVirtual {
-    private String rowid;
+    @PrimaryKey(autoGenerate = false)
+    private Long _0;
+    private String rowid; // is the product of the virtual product
     private String fk_product_pere;
     private String fk_product_fils;
     private String qty;
@@ -22,6 +29,14 @@ public class ProductVirtual {
     private String local_poster_path;
 
     public ProductVirtual() {
+    }
+
+    public Long get_0() {
+        return _0;
+    }
+
+    public void set_0(Long _0) {
+        this._0 = _0;
     }
 
     public String getRowid() {

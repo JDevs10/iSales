@@ -27,9 +27,16 @@
         android:title="Activer la description du produit dans le catalogue" />
     <SwitchPreference
         android:defaultValue="false"
-        android:key="@string/parametres_activer_movement_stock_cmd"
+        android:key="@string/parametres_activer_synchronisation_ProduitVirtuel"
         android:summaryOff="@string/desactive"
         android:summaryOn="@string/active"
         android:textSize="12sp"
-        android:title="@string/parametres_activer_movement_stock_cmd" />
+        android:title="Activer la synchronisation des produits virtuel" />
+    <!--<SwitchPreference-->
+        <!--android:defaultValue="false"-->
+        <!--android:key="@string/parametres_activer_movement_stock_cmd"-->
+        <!--android:summaryOff="@string/desactive"-->
+        <!--android:summaryOn="@string/active"-->
+        <!--android:textSize="12sp"-->
+        <!--android:title="@string/parametres_activer_movement_stock_cmd" />-->
 </PreferenceScreen>

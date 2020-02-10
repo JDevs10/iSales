@@ -41,4 +41,5 @@ public class FindProductVirtualREST extends ISalesREST {
     public void setProduct_parent_id(long product_parent_id) {
         this.product_parent_id = product_parent_id;
     }
+
 }

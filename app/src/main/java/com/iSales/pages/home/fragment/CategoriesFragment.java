@@ -50,6 +50,7 @@ import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
 import com.iSales.database.entry.ProduitEntry;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.VirtualProductEntry;
 import com.iSales.interfaces.DialogCategorieListener;
 import com.iSales.interfaces.FindCategorieListener;
@@ -94,6 +95,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     private FindCategorieTask mFindCategorieTask = null;
     //    task de recuperation des virtuel product
     private FindProductVirtualTask mFindVirtualProductTask = null;
+    private int totalProducts = 0;
 
     private int mPageCategorie = 0;
     private int mPageVirtualProduct = 0;
@@ -129,6 +131,10 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     private int mLimit = 500;
     private int mCountRequestImg = 0;
     private int mCountRequestImgTotal = 0;
+
+    //Virtual product counters for progress dialog
+    private int mVirtualProductCurrent = 0;
+    private int mVirtualProductCount = 0;
 
     public CategoriesFragment() {
         // Required empty public constructor
@@ -664,74 +670,102 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         mDb.debugMessageDao().insertDebugMessage(
                 new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductsCompleted()", "mCurrentPdtQuery=" + mCurrentPdtQuery + " mTotalPdtQuery=" + mTotalPdtQuery, ""));
 
-        if (findProductsREST != null && findProductsREST.getProducts() != null) {
-//            Log.e(TAG, "onFindProductsCompleted: saving product categorie=" + findProductsREST.getCategorie_id() + " pdtSize=" + findProductsREST.getProducts().size());
-            for (Product productItem : findProductsREST.getProducts()) {
-//                Log.e(TAG, "onFindProductsCompleted: tva_tx=" + productItem.getTva_tx());
-                final ProduitEntry produitEntry = new ProduitEntry();
-                produitEntry.setId(Long.parseLong(productItem.getId()));
-                produitEntry.setCategorie_id(findProductsREST.getCategorie_id());
-                produitEntry.setLabel(productItem.getLabel());
-                produitEntry.setPrice(productItem.getPrice());
-                produitEntry.setPrice_ttc(productItem.getPrice_ttc());
-                produitEntry.setRef(productItem.getRef());
-                produitEntry.setStock_reel(productItem.getStock_reel());
-                produitEntry.setDescription(productItem.getDescription());
-                produitEntry.setTva_tx(productItem.getTva_tx());
-                produitEntry.setNote(productItem.getNote());
-                produitEntry.setNote_public(productItem.getNote_public());
-                produitEntry.setNote_private(productItem.getNote_private());
+        //Si la recupération echoue, on renvoi un message d'erreur
+        if (findProductsREST == null) {
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductsREST == null");
+            //Fermeture du loader
+            showProgressDialog(false, null, null);
+            Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
 
-//                    Log.e(TAG, "onFindThirdpartieCompleted: insert produitEntry");
-//            insertion du client dans la BD
-                if (mDb.produitDao().getProduitById(produitEntry.getId()) == null) {
-                    mDb.produitDao().insertProduit(produitEntry);
-                }
-            }
-//            Log.e(TAG, "onFindProductsCompleted: mPage=" + mCurrentPdtQuery);
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductVirtualCompleted()", getString(R.string.service_indisponible), ""));
+            return;
+        }
 
-            if (mCurrentPdtQuery >= mTotalPdtQuery - 1) {
-                Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-                //Fermeture du loader
-                //Fermeture du loader
-                showProgressDialog(false, null, null);
-
-                initContent();
-                Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
-
-                /*
-                Log.e(TAG, " onFindProductsCompleted() || findImage() => Start");
-                //showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
-
-                //Suppression des images des clients en local
-                ISalesUtility.deleteProduitsImgFolder();
-
-                findImage();
-                Log.e(TAG, " onFindProductsCompleted() || findImage() => End");
-
-                initContent();
-                */
-                return;
-            }
-        } else {
-//            Log.e(TAG, "onFindProductsCompleted: FindProductsREST getThirdparties null");
+        if (findProductsREST.getProducts() == null) {
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductsREST.getProducts() == null");
 
             if (mCurrentPdtQuery >= mTotalPdtQuery - 1) {
                 Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                 //        Fermeture du loader
                 showProgressDialog(false, null, null);
 
+                Log.e(TAG, getString(R.string.liste_produits_synchronises) + " Null != Null 2");
                 Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
 //                loadProduits(-1, null, 0);
                 initContent();
 
                 return;
             }
+            //Products Product sync with success
         }
 
-        //get virtual products
-        if(mDb.produitDao().getAllProduits().size() != 0){
-            executeFindVirtualProducts(mDb.produitDao().getAllProduits().get(0).getId());
+        totalProducts += findProductsREST.getProducts().size();
+//            Log.e(TAG, "onFindProductsCompleted: saving product categorie=" + findProductsREST.getCategorie_id() + " pdtSize=" + findProductsREST.getProducts().size());
+        for (Product productItem : findProductsREST.getProducts()) {
+//                Log.e(TAG, "onFindProductsCompleted: tva_tx=" + productItem.getTva_tx());
+            final ProduitEntry produitEntry = new ProduitEntry();
+            produitEntry.setId(Long.parseLong(productItem.getId()));
+            produitEntry.setCategorie_id(findProductsREST.getCategorie_id());
+            produitEntry.setLabel(productItem.getLabel());
+            produitEntry.setPrice(productItem.getPrice());
+            produitEntry.setPrice_ttc(productItem.getPrice_ttc());
+            produitEntry.setRef(productItem.getRef());
+            produitEntry.setStock_reel(productItem.getStock_reel());
+            produitEntry.setDescription(productItem.getDescription());
+            produitEntry.setTva_tx(productItem.getTva_tx());
+            produitEntry.setNote(productItem.getNote());
+            produitEntry.setNote_public(productItem.getNote_public());
+            produitEntry.setNote_private(productItem.getNote_private());
+
+//            Log.e(TAG, "onFindThirdpartieCompleted: insert produitEntry");
+//            insertion du client dans la BD
+            if (mDb.produitDao().getProduitById(produitEntry.getId()) == null) {
+                mDb.produitDao().insertProduit(produitEntry);
+            }
+        }
+//            Log.e(TAG, "onFindProductsCompleted: mPage=" + mCurrentPdtQuery);
+
+        Log.e(TAG, " mCurrentPdtQuery: "+mCurrentPdtQuery+" >= mTotalPdtQuery: "+mTotalPdtQuery);
+        if (mCurrentPdtQuery >= mTotalPdtQuery) {
+            Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+
+
+            Log.e(TAG, "Hostname : "+getServeurHostname());
+            if (getServeurHostname().contains("food")) {
+                SettingsEntry config = mDb.settingsDao().getAllSettings().get(0);
+
+                if (config.isEnableVirtualProductSync()){
+                    if (totalProducts > mDb.produitDao().getAllProduits().size()) {
+                        Log.e(TAG, "Get All Virtual products");
+                        findVirtualProducts();
+                    }
+                }else{
+                    Log.e(TAG, "Products : " + totalProducts + " | " + mDb.produitDao().getAllProduits().size());
+                    //Fermeture du loader
+                    showProgressDialog(false, null, null);
+                    Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
+                }
+            }else{
+                //Fermeture du loader
+                showProgressDialog(false, null, null);
+                Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
+            }
+
+            //initContent();
+            /*
+            Log.e(TAG, " onFindProductsCompleted() || findImage() => Start");
+            //showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
+
+            //Suppression des images des clients en local
+            ISalesUtility.deleteProduitsImgFolder();
+
+            findImage();
+            Log.e(TAG, " onFindProductsCompleted() || findImage() => End");
+
+            initContent();
+            */
+            return;
         }
     }
 
@@ -746,6 +780,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                     new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "executeFindVirtualProducts()", getString(R.string.erreur_connexion), ""));
 
             showProgressDialog(false, null, null);
+            return;
         }
 
         if (mFindVirtualProductTask == null) {
@@ -756,98 +791,14 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         }
     }
 
-    @Override
-    public void onFindProductVirtualCompleted(FindProductVirtualREST findProductVirtualREST) {
-        mFindVirtualProductTask = null;
-
-        //        Si la recupération echoue, on renvoi un message d'erreur
-        if (findProductVirtualREST == null) {
-            //        Fermeture du loader
-            showProgressDialog(false, null, null);
-            Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductVirtualCompleted()", getString(R.string.service_indisponible), ""));
-            return;
-        }
-        if (findProductVirtualREST.getProductVirtuals() == null) {
-//            Log.e(TAG, "onFindCategorieCompleted: findCategoriesREST findCategoriesREST null");
-//            showProgressDialog(false, null, null);
-//            reinitialisation du nombre de page
-            mPageVirtualProduct = 0;
-//            Toast.makeText(SynchronisationActivity.this, getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
-
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductVirtualCompleted()", getString(R.string.liste_produits_synchronises), ""));
-
-            //Virtual Product sync with success
-            return;
-        }
-
-        for (ProductVirtual productVirtualItem : findProductVirtualREST.getProductVirtuals()) {
-            VirtualProductEntry virtualProductEntry = new VirtualProductEntry();
-            virtualProductEntry.setRowid(Integer.valueOf(productVirtualItem.getRowid()));
-            virtualProductEntry.setFk_product_pere(Integer.valueOf(productVirtualItem.getFk_product_pere()));
-            virtualProductEntry.setFk_product_fils(Integer.valueOf(productVirtualItem.getFk_product_fils()));
-            virtualProductEntry.setQty(Integer.valueOf(productVirtualItem.getQty()));
-            virtualProductEntry.setRef(productVirtualItem.getRef());
-            private String datec;
-            private String label;
-            private String description;
-            private String note_public;
-            private String note;
-            private String price;
-            private String price_ttc;
-            private String price_min;
-            private String price_min_ttc;
-            private String price_base_type;
-            private String tva_tx;
-            private String seuil_stock_alerte;
-            private String stock;
-            private String local_poster_path;
-
-            Log.e(TAG, "onFindThirdpartieCompleted: insert categorieEntry");
-//            insertion du client dans la BD
-            mDb.categorieDao().insertCategorie(categorieEntry);
-        }
-        Log.e(TAG, "onFindCategorieCompleted: mPage=" + mPageCategorie);
-
-        mPageCategorie++;
-        executeFindCategorieProducts();
-
-        if (findProductVirtualREST.getProductVirtuals().size() > 0) {
-            Log.e(TAG, "onFindProductVirtualCompleted: size="+findProductVirtualREST.getProductVirtuals().size()+" product_parent_id="+findProductVirtualREST.getProduct_parent_id());
-
-            double price0 = Double.parseDouble(mProduitParcelable.getPrice()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(0).getQty());
-            double priceTTC0 = Double.parseDouble(mProduitParcelable.getPrice_ttc()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(0).getQty());
-            findProductVirtualREST.getProductVirtuals().get(0).setPrice("" + price0);
-            findProductVirtualREST.getProductVirtuals().get(0).setPrice_ttc("" + priceTTC0);
-
-            for (int i = 1; i < findProductVirtualREST.getProductVirtuals().size(); i++) {
-                double price = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(i - 1).getPrice()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(i).getQty());
-                double priceTTC = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(i - 1).getPrice_ttc()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(i).getQty());
-                findProductVirtualREST.getProductVirtuals().get(i).setPrice("" + price);
-                findProductVirtualREST.getProductVirtuals().get(i).setPrice_ttc("" + priceTTC);
-            }
-
-            productVirtualList.addAll(findProductVirtualREST.getProductVirtuals());
-
-            productVirtualAdapter.notifyDataSetChanged();
-
-            int activePos = productVirtualList.size() >= 1 ? 1 : 0;
-
-            updateProductValues(productVirtualList.get(activePos));
-        }
-    }
-
-    void findImage() {
+    private void findImage() {
         final List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
         mDb.debugMessageDao().insertDebugMessage(
                 new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "findImage()", "Called, with " + produitEntries.size()+" product images.", ""));
 
         mCountRequestImg = 0;
         mCountRequestImgTotal = produitEntries.size();
-        Log.e(TAG, "findImage: produitEntriesSize=" + produitEntries.size() + " mCountRequestImgTotal=" + mCountRequestImgTotal);
+        Log.e(TAG, "findImage: produitEntriesSize=" + produitEntries.size() + " || mCountRequestImgTotal=" + mCountRequestImgTotal);
         if (produitEntries.size() > 0) {
 //            setAutoOrientationEnabled(getContext(), true);
             for (ProduitEntry produitEntry : produitEntries) {
@@ -868,6 +819,110 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             Toast.makeText(getContext(), "Aucun produits", Toast.LENGTH_LONG).show();
             return;
         }
+    }
+
+    private void findVirtualProducts(){
+        //showProgressDialog(true, null, "Récupération des produits virtuel");
+        Log.e(TAG, "There are "+mDb.virtualProductDao().getAllVirtualProduct().size()+" to be deleted!");
+        mDb.virtualProductDao().deleteAllVirtualProduct();
+        final List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
+
+        mVirtualProductCurrent = 0;
+        mVirtualProductCount = produitEntries.size();
+        //get virtual products
+        Log.e(TAG, "findVirtualProducts: produitEntriesSize = " + produitEntries.size() + " || mVirtualProductCount: "+mVirtualProductCount);
+        if (produitEntries.size() > 0) {
+            int x = 1;
+            for (int i=0; i<produitEntries.size(); i++) {
+
+                //Si le téléphone n'est pas connecté
+                if (!ConnectionManager.isPhoneConnected(getContext())) {
+                    showProgressDialog(false, null, null);
+                    mDb.virtualProductDao().deleteAllVirtualProduct();
+                    Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if(!produitEntries.get(i).getRef().contains("C") && !produitEntries.get(i).getRef().contains("P")) {
+                    //executeFindVirtualProducts(Long.valueOf(produitEntry.getId()));
+                    Log.e(TAG, "findVirtualProducts: Init: " + x + " / "+mVirtualProductCount);
+                    Log.e(TAG, "findVirtualProducts: FindProductVirtualTask ID = " + produitEntries.get(i).getId() + " | Ref: "+produitEntries.get(i).getRef());
+                    FindProductVirtualTask task = new FindProductVirtualTask(getContext(), produitEntries.get(i).getId(), CategoriesFragment.this);
+                    task.execute();
+                    x++;
+                }else{
+                    Log.e(TAG, "Product contains 'C' or 'P' in the reference!");
+                    Log.e(TAG, "findVirtualProducts: FindProductVirtualTask ID = " + produitEntries.get(i).getId() + " | Ref: "+produitEntries.get(i).getRef());
+                }
+            }
+            showProgressDialog(false, null, null);
+            return;
+        } else {
+            showProgressDialog(false, null, null);
+            Toast.makeText(getContext(), "Aucun produit synchronisé! ", Toast.LENGTH_LONG).show();
+            return;
+        }
+    }
+
+    @Override
+    public void onFindProductVirtualCompleted(FindProductVirtualREST findProductVirtualREST) {
+        Log.e(TAG, "onFindProductVirtualCompleted()");
+
+        //Si la recupération echoue, on renvoi un message d'erreur
+        if (findProductVirtualREST == null) {
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductVirtualREST == null");
+            //Fermeture du loader
+            showProgressDialog(false, null, null);
+            Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductVirtualCompleted()", getString(R.string.service_indisponible), ""));
+            return;
+        }
+
+        if (findProductVirtualREST.getProductVirtuals() == null) {
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductVirtualREST.getProductVirtuals() == null");
+
+            //reinitialisation du nombre de page
+            Toast.makeText(getContext(), "Liste des produits virtuel synchroniser avec succes", Toast.LENGTH_LONG).show();
+
+            mDb.debugMessageDao().insertDebugMessage(
+                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductVirtualCompleted()", "Liste des produits virtuel synchroniser avec succes", ""));
+
+            //Fermeture du loader
+            showProgressDialog(false, null, null);
+
+            initContent();
+            //Virtual Product sync with success
+            return;
+        }
+
+        mVirtualProductCurrent++;
+        if (mProgressDialog != null) {
+            mProgressDialog.setMessage(String.format("%s. %s / %s ", "Récupération des produits virtuel... ", mVirtualProductCurrent, mVirtualProductCount));
+        }
+        Log.e(TAG, String.format("%s. %s / %s ", " Récupération des produits virtuel... ", mVirtualProductCurrent, mVirtualProductCount));
+
+        double price0 = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(0).getPrice()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(0).getQty());
+        double priceTTC0 = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(0).getPrice_ttc()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(0).getQty());
+        findProductVirtualREST.getProductVirtuals().get(0).setPrice("" + price0);
+        findProductVirtualREST.getProductVirtuals().get(0).setPrice_ttc("" + priceTTC0);
+
+        Log.e(TAG, "onFindThirdpartieCompleted: insert virtualProductEntry int: 0");
+        //insertion du client dans la BD
+        mDb.virtualProductDao().insertVirtualProduct(findProductVirtualREST.getProductVirtuals().get(0));
+
+        for (int i = 1; i < findProductVirtualREST.getProductVirtuals().size(); i++) {
+            double price = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(i - 1).getPrice()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(i).getQty());
+            double priceTTC = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(i - 1).getPrice_ttc()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(i).getQty());
+            findProductVirtualREST.getProductVirtuals().get(i).setPrice("" + price);
+            findProductVirtualREST.getProductVirtuals().get(i).setPrice_ttc("" + priceTTC);
+
+            Log.e(TAG, "onFindThirdpartieCompleted: insert virtualProductEntry int: " + i);
+            //insertion du client dans la BD
+            mDb.virtualProductDao().insertVirtualProduct(findProductVirtualREST.getProductVirtuals().get(i));
+        }
+        Log.e(TAG, "onFindThirdpartieCompleted: done!");
     }
 
     @Override
@@ -1297,5 +1352,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
         //Prevent the keyboard from displaying on activity start
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+    }
+
+    private String getServeurHostname(){
+        /*
+         * Returns food (France Food Company) || soifexpress (Soif Express) || asiafood (Asia Food) || bdc (BDC)
+         */
+        String hostname = mDb.serverDao().getActiveServer(true).getHostname();
+        String new_str;
+        new_str = hostname.replace("http://"," ");
+        return new_str.replace(".apps-dev.fr/api/index.php"," ");
     }
 }

@@ -150,7 +150,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void initSettings() {
         if (AppDatabase.getInstance(getApplicationContext()).settingsDao().getAllSettings().size() == 0) {
-            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true));
+            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true, false));
         }
     }
 

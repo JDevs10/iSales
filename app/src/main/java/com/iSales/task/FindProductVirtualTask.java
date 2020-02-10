@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
@@ -38,7 +39,7 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
 
     @Override
     protected FindProductVirtualREST doInBackground(Void... voids) {
-        Log.e(TAG, "doInBackground: ");
+        Log.e(TAG, "doInBackground called! ");
 
 //        Requete de connexion de l'internaute sur le serveur
         Call<ArrayList<ProductVirtual>> call = ApiUtils.getISalesRYImg(context).ryFindProductVirtual(this.productId);
@@ -48,15 +49,25 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
         Log.e(TAG, "URL: "+call.request().url());
         try {
             Response<ArrayList<ProductVirtual>> response = call.execute();
+            Log.e(TAG, "JSon: "+toJSON(response.body()));
             if (response.isSuccessful()) {
                 ArrayList<ProductVirtual> productVirtualArrayList = response.body();
-                Log.e(TAG, "doInBackground: FindProductVirtualREST=" + productVirtualArrayList.size());
+                Log.e(TAG, "doInBackground: FindProductVirtualREST size =" + productVirtualArrayList.size());
 
-                FindProductVirtualREST rest = new FindProductVirtualREST();
-                rest.setProductVirtuals(productVirtualArrayList);
-                rest.setProduct_parent_id(this.productId);
-
-                return rest;
+                if(productVirtualArrayList.size() > 0) {
+                    FindProductVirtualREST rest = new FindProductVirtualREST();
+                    rest.setProductVirtuals(productVirtualArrayList);
+                    rest.setProduct_parent_id(this.productId);
+                    Log.e(TAG, "doInBackground: FindProductVirtualREST Found Virtual Products");
+                    return rest;
+                }else{
+                    FindProductVirtualREST rest = new FindProductVirtualREST();
+                    rest.setProductVirtuals(null);
+                    rest.setErrorCode(response.code());
+                    rest.setErrorBody("Aucun produit virtuel n'est attaché au produit ref: "+this.productId);
+                    Log.e(TAG, "doInBackground: FindProductVirtualREST No Virtual Products");
+                    return rest;
+                }
             } else {
                 Log.e(TAG, "doInBackground: !isSuccessful");
                 String error = null;
@@ -74,7 +85,10 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
                     mDb.debugMessageDao().insertDebugMessage(
                             new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "doInBackground: ********** IOException !isSuccessful **********");
+                    Log.e(TAG, "URL: "+call.request().url());
+                    Log.e(TAG, "Message: "+e.getMessage());
+                    Log.e(TAG, "StackTrace: "+e.getStackTrace());
                     mDb.debugMessageDao().insertDebugMessage(
                             new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
                 }
@@ -82,8 +96,10 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
                 return findProductVirtualREST;
             }
         } catch (IOException e) {
-            Log.e(TAG, "doInBackground: IOException");
-            e.printStackTrace();
+            Log.e(TAG, "doInBackground: ********** IOException **********");
+            Log.e(TAG, "URL: "+call.request().url());
+            Log.e(TAG, "Message: "+e.getMessage());
+            Log.e(TAG, "StackTrace: "+e.getStackTrace());
             mDb.debugMessageDao().insertDebugMessage(
                     new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
         }
@@ -91,9 +107,18 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
         return null;
     }
 
+    String toJSON(ArrayList<ProductVirtual> list) {
+        Gson gson = new Gson();
+        StringBuilder sb = new StringBuilder();
+        for(ProductVirtual d : list) {
+            sb.append(gson.toJson(d)+"");
+        }
+        return sb.toString();
+    }
+
     @Override
     protected void onPostExecute(FindProductVirtualREST findProductVirtualREST) {
-//        Log.e(TAG, "onPostExecute: ");
+        //Log.e(TAG, "onPostExecute: ");
 
         if (task != null) {
             task.onFindProductVirtualCompleted(findProductVirtualREST);

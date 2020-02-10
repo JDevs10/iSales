@@ -8,6 +8,7 @@ public class SettingsEntry {
     @PrimaryKey(autoGenerate = false)
     private int id;
     private boolean showDescripCataloge;
+    private boolean enableVirtualProductSync;
     private String email;
     private String email_Pwd;
 
@@ -15,9 +16,10 @@ public class SettingsEntry {
 
     }
 
-    public SettingsEntry(int id, boolean showDescripCataloge) {
+    public SettingsEntry(int id, boolean showDescripCataloge, boolean enableVirtualProductSync) {
         this.id = id;
         this.showDescripCataloge = showDescripCataloge;
+        this.enableVirtualProductSync = enableVirtualProductSync;
     }
 
     public int getId() {
@@ -34,6 +36,14 @@ public class SettingsEntry {
 
     public void setShowDescripCataloge(boolean showDescripCataloge) {
         this.showDescripCataloge = showDescripCataloge;
+    }
+
+    public boolean isEnableVirtualProductSync() {
+        return enableVirtualProductSync;
+    }
+
+    public void setEnableVirtualProductSync(boolean enableVirtualProductSync) {
+        this.enableVirtualProductSync = enableVirtualProductSync;
     }
 
     public String getEmail() {

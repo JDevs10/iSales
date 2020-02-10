@@ -476,7 +476,7 @@ public final class ISalesUtility {
             }
         }
 
-        File file = new File(dir, String.format("%s.log", "iSales_logs_"+(System.currentTimeMillis()/1000)));
+        File file = new File(dir, String.format("%s.txt", "iSales_logs_"+(System.currentTimeMillis()/1000)));
 
         if (file.exists ()) file.delete();
 

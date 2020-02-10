@@ -30,6 +30,8 @@ import com.iSales.database.AppDatabase;
 import com.iSales.database.AppExecutors;
 import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
+import com.iSales.database.entry.SettingsEntry;
+import com.iSales.database.entry.VirtualProductEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
 import com.iSales.interfaces.ProductVirtualAdapterListener;
 import com.iSales.model.ProduitParcelable;
@@ -429,16 +431,47 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     private void executeFindproductVirtual() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "executeFindproductVirtual()", "Called.", ""));
+        SettingsEntry config = mDb.settingsDao().getAllSettings().get(0);
 
-        FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
-        task.execute();
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "executeFindproductVirtual()", "Called! && isEnableVirtualProductSync : " + config.isEnableVirtualProductSync(), ""));
+
+        if (config.isEnableVirtualProductSync()){
+            Log.e(TAG, " executeFindproductVirtual() : mProduitParcelable.getId() = " + mProduitParcelable.getId());
+            //List<ProductVirtual> virtualProduct = mDb.virtualProductDao().getVirtualProductById(mProduitParcelable.getId()+"");
+
+            ProductVirtual virtualProduct_Child = mDb.virtualProductDao().getVirtualProductByChildId(mProduitParcelable.getId()).get(0);
+            ProductVirtual virtualProduct_Parent = mDb.virtualProductDao().getVirtualProductByParentId(virtualProduct_Child.getFk_product_pere()).get(0);
+            List<ProductVirtual> virtualProductList = new ArrayList<ProductVirtual>();
+            virtualProductList.add(virtualProduct_Child);
+            virtualProductList.add(virtualProduct_Parent);
+
+            Log.e(TAG, " executeFindproductVirtual() : virtualProduct.size() = " + virtualProductList.size());
+
+            if(virtualProductList.size() > 0){
+                for (ProductVirtual product : virtualProductList) {
+                    Log.e(TAG, "_0 : " + product.get_0()+"\n" +
+                            "Rowid : " + product.getRowid()+"\n" +
+                            "Ref : " + product.getRef()+"\n" +
+                            "Fk_product_pere : " + product.getFk_product_pere()+"\n" +
+                            "Fk_product_fils : " + product.getFk_product_fils());
+                }
+                productVirtualList.addAll(virtualProductList);
+                productVirtualAdapter.notifyDataSetChanged();
+
+                int activePos = productVirtualList.size() >= 1 ? 1 : 0;
+                updateProductValues(productVirtualList.get(activePos));
+            }
+
+        }else{
+            FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
+            task.execute();
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        Creation fichier de log pour les erreurs
+    //Creation fichier de log pour les erreurs
         showLog();
 
         super.onCreate(savedInstanceState);
@@ -459,13 +492,6 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
                     " produitID=" + mProduitParcelable.getPoster().getContent());
         }
 
-        /*
-        * if there is internet
-        *   executeFindproductVirtual
-        * else
-        *   getLocalVirtualProduct
-        * */
-        executeFindproductVirtual();
 
 //        Referencement des vues
         activityView = (View) findViewById(R.id.iv_produitdetails_poster);
@@ -493,7 +519,6 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         mPosterIV.setScaleType(ImageView.ScaleType.FIT_XY);
 
         productVirtualList = new ArrayList<>();
-
         productVirtualAdapter = new ProductVirtualAdapter(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, productVirtualList, com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, LinearLayoutManager.HORIZONTAL, false);
@@ -517,6 +542,14 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         }
 
         initValues();
+        /*
+         * if there is internet
+         *   executeFindproductVirtual
+         * else
+         *   getLocalVirtualProduct
+         * */
+        executeFindproductVirtual();
+
         mPriceUnitaireET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
