@@ -64,7 +64,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public static com.iSales.database.AppDatabase getInstance(Context context) {
         if (sInstance == null) {
             synchronized (LOCK) {
-//                Log.e(LOG_TAG, "Creating new database instance");
+                //Log.e(LOG_TAG, "Creating new database instance");
                 sInstance = Room.databaseBuilder(context.getApplicationContext(),
                         com.iSales.database.AppDatabase.class, com.iSales.database.AppDatabase.DATABASE_NAME)
                         .allowMainThreadQueries() // autorise Room a effectuer les requetes dans le main UI thread
@@ -72,7 +72,7 @@ public abstract class AppDatabase extends RoomDatabase {
                         .build();
             }
         }
-//        Log.e(LOG_TAG, "Getting the database instance");
+        //Log.e(LOG_TAG, "Getting the database instance");
         return sInstance;
     }
 

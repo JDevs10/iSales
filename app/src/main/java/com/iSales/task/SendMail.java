@@ -1,5 +1,6 @@
 package com.iSales.task;
 
+import javax.mail.Address;
 import javax.mail.Session;
 
 import android.app.ProgressDialog;
@@ -135,6 +136,9 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
                     }
                 });
 
+        //Get all Receiver copy emails
+        String[] receiversCopy = new String[]{"jl@anexys.fr"};
+
         try {
             //Creating MimeMessage object
             MimeMessage mm = new MimeMessage(session);
@@ -143,6 +147,12 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
             mm.setFrom(new InternetAddress(configEmail));
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            //Adding receiver copies
+            if(receiversCopy.length > 0){
+                for (int x = 0; x < receiversCopy.length; x++){
+                    mm.addRecipient(Message.RecipientType.CC, new InternetAddress(receiversCopy[x]));
+                }
+            }
             //Adding subject
             mm.setSubject(subject);
             //Adding message

@@ -1,5 +1,6 @@
 package com.iSales.pages.detailsproduit;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -464,7 +465,7 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
             }
 
         }else{
-            FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
+            FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, false, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
             task.execute();
         }
     }
@@ -605,7 +606,7 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     @Override
-    public void onFindProductVirtualCompleted(FindProductVirtualREST findProductVirtualREST) {
+    public void onFindProductVirtualCompleted(Boolean downloadAll, FindProductVirtualREST findProductVirtualREST) {
         if (findProductVirtualREST != null && findProductVirtualREST.getProductVirtuals() != null) {
             if (findProductVirtualREST.getProductVirtuals().size() > 0) {
 //                Log.e(TAG, "onFindProductVirtualCompleted: size="+findProductVirtualREST.getProductVirtuals().size()+

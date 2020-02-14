@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugItemEntry;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.profile.ProfileActivity;
@@ -171,6 +172,9 @@ public class ProfilFragment extends Fragment {
                         mDb.signatureDao().deleteAllSignature();
                         mDb.categorieDao().deleteAllCategorie();
                         mDb.debugMessageDao().deleteAllDebugMessages();
+                        mDb.virtualProductDao().deleteAllVirtualProduct();
+                        mDb.settingsDao().deleteSettings();
+                        mDb.settingsDao().insertSettings(new SettingsEntry(1, true, false));
 
                         //mDb.debugMessageDao().insertDebugMessage(
                           //      new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", ProfilFragment.class.getSimpleName(), "onCreateView()", "Called. Disconnection button clicked", ""));

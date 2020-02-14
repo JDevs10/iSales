@@ -285,6 +285,67 @@
 
             </LinearLayout>
 
+            <!---->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
+                android:background="@color/white"
+                android:orientation="vertical"
+                android:padding="15dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="E-Mail Destinataire : "
+                    android:textColor="@color/black"
+                    android:textSize="20dp"
+                    android:textStyle="bold"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp">
+                    <ListView
+                        android:id="@+id/activity_profile_list_receiver_email"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/activity_profile_image_vien_edit_receiver_email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_edit_black"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/activity_profile_view_edit_receiver_email_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
+                android:background="@color/white"
+                android:orientation="vertical"
+                android:padding="15dp"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+                <EditText
+                    android:id="@+id/activity_profile_view_edit_email_view_receiver_email_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Entrer votre email..."
+                    android:inputType="textEmailAddress"/>
+
+            </LinearLayout>
+
+            <!---->
+
             <LinearLayout
                 android:id="@+id/activity_profile_layout_admin_1"
                 android:layout_width="match_parent"
