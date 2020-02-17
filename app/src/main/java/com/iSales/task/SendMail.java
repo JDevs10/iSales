@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.design.widget.TabLayout;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
@@ -19,6 +20,8 @@ import com.iSales.remote.model.OrderLine;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -111,8 +114,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
         if (settings.getEmail() == null || settings.getEmail().isEmpty() ||
             settings.getEmail_Pwd() == null || settings.getEmail_Pwd().isEmpty()){
-
-            Toast.makeText(context, "Veuillez configurer votre adresse mail dans votre profile!", Toast.LENGTH_LONG).show();
+            Log.e("SendMail", "Veuillez configurer votre adresse mail dans votre profile!");
             return null;
         }
 
@@ -137,7 +139,10 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
                 });
 
         //Get all Receiver copy emails
-        String[] receiversCopy = new String[]{"jl@anexys.fr"};
+        String[] receiversCopy = null;
+        if (settings.getEmailReceiverList() != null && !settings.getEmailReceiverList().equals("") && !settings.getEmailReceiverList().isEmpty()) {
+            receiversCopy = settings.getEmailReceiverList().split(";");
+        }
 
         try {
             //Creating MimeMessage object
@@ -148,9 +153,11 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
             //Adding receiver copies
-            if(receiversCopy.length > 0){
+            if(receiversCopy != null && receiversCopy.length > 0){
+                Log.e("SendMail", "receiversCopy: "+receiversCopy.length);
                 for (int x = 0; x < receiversCopy.length; x++){
                     mm.addRecipient(Message.RecipientType.CC, new InternetAddress(receiversCopy[x]));
+                    Log.e("SendMail", "Email en CC : "+receiversCopy[x]);
                 }
             }
             //Adding subject

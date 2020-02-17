@@ -125,6 +125,10 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     //    Categorie des produits selectionée
     private CategorieParcelable mCategorieParcelable;
 
+    private ArrayList<Long> virtuelProductList = new ArrayList<>();
+    private int virtuelProductID = 0;
+    private int virtuelProductTotalID = 0;
+
     private AppDatabase mDb;
 
     private long categorieIdGlobal = 0;
@@ -741,8 +745,21 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 if (config.isEnableVirtualProductSync()){
                     if (totalProducts > mDb.produitDao().getAllProduits().size()) {
                         Log.e(TAG, "Get All Virtual products");
-                        findVirtualProducts(true,0,9);
-                        //executeFindVirtualProducts(-1);
+
+                        virtuelProductList = new ArrayList<>();
+                        for (int x = 0; x < mDb.produitDao().getAllProduits().size(); x++){
+                            if(!mDb.produitDao().getAllProduits().get(x).getRef().contains("C") && !mDb.produitDao().getAllProduits().get(x).getRef().contains("P")) {
+                                //executeFindVirtualProducts(Long.valueOf(produitEntry.getId()));
+                                Log.e(TAG, "findVirtualProductsList: ID = " + mDb.produitDao().getAllProduits().get(x).getId() + " | Ref: "+mDb.produitDao().getAllProduits().get(x).getRef());
+
+                                virtuelProductList.add(mDb.produitDao().getAllProduits().get(x).getId());
+                            }
+                        }
+                        Log.e(TAG, "There are "+mDb.virtualProductDao().getAllVirtualProduct().size()+" to be deleted!");
+                        mDb.virtualProductDao().deleteAllVirtualProduct();
+                        virtuelProductTotalID = virtuelProductList.size();
+                        //findVirtualProducts(true,0,9);
+                        executeFindVirtualProducts();
                     }
                 }else{
                     Log.e(TAG, "Products : " + totalProducts + " | " + mDb.produitDao().getAllProduits().size());
@@ -778,7 +795,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         }
     }
 
-    private void executeFindVirtualProducts(long virtuelProduct){
+    private void executeFindVirtualProducts(){
         mDb.debugMessageDao().insertDebugMessage(
                 new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "executeFindVirtualProducts()", "Called.", ""));
 
@@ -795,7 +812,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         if (mFindVirtualProductTask == null) {
 
             //Log.e(TAG, "executeFindVirtualProducts: page=" + mPageVirtualProduct);
-            mFindVirtualProductTask = new FindProductVirtualTask(getContext(), true, virtuelProduct, CategoriesFragment.this);
+            mFindVirtualProductTask = new FindProductVirtualTask(getContext(), false, virtuelProductList.get(virtuelProductID), CategoriesFragment.this);
             mFindVirtualProductTask.execute();
         }
     }
@@ -831,13 +848,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     }
 
     private void findVirtualProducts(boolean delete, int start, int limit){
-        //Si le téléphone n'est pas connecté
-        if (!ConnectionManager.isPhoneConnected(getContext())) {
-            showProgressDialog(false, null, null);
-            Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-            return;
-        }
-
         Log.e(TAG, " findVirtualProducts( "+start+", "+limit+")");
         List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
 
@@ -920,13 +930,12 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 return;
             }
 
-
 //            if (mProgressDialog != null) {
 //                mProgressDialog.setMessage(String.format("%s. %s / %s ", "Installation des produits virtuel... ", mVirtualProductCurrent, mVirtualProductCount));
 //            }
             try{
-                mVirtualProductCurrent++;
-                Log.e(TAG, String.format("%s. %s / %s ", " Récupération des produits virtuel... ", mVirtualProductCurrent, mVirtualProductCount));
+                //mVirtualProductCurrent++;
+                Log.e(TAG, String.format("%s. %s / %s ", " Récupération des produits virtuel... ", virtuelProductID, virtuelProductTotalID));
 
                 double price0 = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(0).getPrice()) * Math.round(Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(0).getQty()));
                 double priceTTC0 = Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(0).getPrice_ttc()) * Math.round(Double.parseDouble(findProductVirtualREST.getProductVirtuals().get(0).getQty()));
@@ -934,7 +943,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 findProductVirtualREST.getProductVirtuals().get(0).setPrice_ttc("" + priceTTC0);
 
                 Log.e(TAG, "onFindThirdpartieCompleted: insert virtualProductEntry int: 0");
-                //insertion du client dans la BD
                 mDb.virtualProductDao().insertVirtualProduct(findProductVirtualREST.getProductVirtuals().get(0));
 
                 for (int i = 1; i < findProductVirtualREST.getProductVirtuals().size(); i++) {
@@ -945,7 +953,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                     findProductVirtualREST.getProductVirtuals().get(i).setPrice_ttc("" + priceTTC);
 
                     Log.e(TAG, "onFindThirdpartieCompleted: insert virtualProductEntry int: " + i);
-                    //insertion du client dans la BD
                     mDb.virtualProductDao().insertVirtualProduct(findProductVirtualREST.getProductVirtuals().get(i));
                 }
             }catch (Exception e){
@@ -953,7 +960,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 Log.e(TAG, "onFindThirdpartieCompleted: Error Message: " + e.getMessage());
             }
 
+            if ((virtuelProductID+1) < virtuelProductTotalID){
+                virtuelProductID++;
+                Log.e(TAG, "Find virtuel products for id : "+virtuelProductID);
+                executeFindVirtualProducts();
+            }else{
+                Toast.makeText(getContext(), "Liste des produits virtuel synchroniser avec succes", Toast.LENGTH_LONG).show();
+            }
 
+            /*
             Log.e(TAG, "onFindThirdpartieCompleted: mVirtualProductCurrent : " + mVirtualProductCurrent + " == mVirtualProductLimit : " + mVirtualProductLimit);
             if (mVirtualProductCurrent == mVirtualProductLimit) {
                 int oldLimit = mVirtualProductLimit;
@@ -968,6 +983,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 Log.e(TAG, "onFindThirdpartieCompleted: || ELSE || mVirtualProductCurrent : " + mVirtualProductCurrent + " == mVirtualProductLimit : " + mVirtualProductLimit);
             }
             Log.e(TAG, "onFindThirdpartieCompleted: done!");
+            */
 
         }
     }

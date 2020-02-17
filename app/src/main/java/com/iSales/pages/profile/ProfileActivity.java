@@ -2,10 +2,12 @@ package com.iSales.pages.profile;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,11 +15,14 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,17 +38,22 @@ import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.remote.ConnectionManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class ProfileActivity extends AppCompatActivity {
     private String TAG = ProfileActivity.class.getSimpleName();
 
-    private LinearLayout ly_admin1, ly_admin2, ly_admin3,ll_email;
+    private LinearLayout ly_admin1, ly_admin2, ly_admin3,ll_email, ll_email_receiver;
 
     private TextView tv_mail, tv_societe, tv_server, tv_nom, tv_login, tv_lastConnexion, tv_etatConn, tv_email, tv_email_pwd;
-    private EditText et_email, et_email_pwd;
-    private ImageView iv_email_edit;
+    private EditText et_email, et_email_pwd, et_email_receiver;
+    private ImageView iv_email_edit, iv_email_receiver;
+    private ListView l_email_receiver;
+    private ArrayList<String> emailReceiverStringList;
+    private ArrayAdapter emailReceiverAdapter;
     private Switch sw_msgDebogage;
     private Button btn_winDebogage;
     private RecyclerView rv_debogage;
@@ -60,6 +70,7 @@ public class ProfileActivity extends AppCompatActivity {
     private UserEntry mUserEntry;
 
     private boolean edit_email_visible = false;
+    private boolean edit_email_receiver_visible = false;
 
 
     @Override
@@ -85,6 +96,20 @@ public class ProfileActivity extends AppCompatActivity {
         et_email = (EditText) findViewById(R.id.activity_profile_view_edit_email_view_email_et);
         et_email_pwd = (EditText) findViewById(R.id.activity_profile_view_edit_email_view_pwd_et);
         iv_email_edit = (ImageView) findViewById(R.id.activity_profile_image_vien_edit_email);
+
+        l_email_receiver = (ListView) findViewById(R.id.activity_profile_list_receiver_email);
+        iv_email_receiver = (ImageView) findViewById(R.id.activity_profile_image_vien_edit_receiver_email);
+        ll_email_receiver = (LinearLayout) findViewById(R.id.activity_profile_view_edit_receiver_email_view);
+        et_email_receiver = (EditText) findViewById(R.id.activity_profile_view_edit_email_view_receiver_email_et);
+
+        //add receiver emails
+        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+        if(settings.getEmailReceiverList() != null && !settings.getEmailReceiverList().isEmpty()){
+            String[] emailReceiverTable = settings.getEmailReceiverList().split(";");
+            emailReceiverStringList = new ArrayList<String>(Arrays.asList(emailReceiverTable));
+            emailReceiverAdapter = new ArrayAdapter(ProfileActivity.this, android.R.layout.simple_list_item_1, emailReceiverStringList);
+            l_email_receiver.setAdapter(emailReceiverAdapter);
+        }
 
         //check if the device is connected to the internet every 10secs
         handler = new Handler();
@@ -144,6 +169,92 @@ public class ProfileActivity extends AppCompatActivity {
                     ll_email.setVisibility(View.VISIBLE);
                     edit_email_visible = true;
                 }
+            }
+        });
+
+        iv_email_receiver.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (edit_email_receiver_visible){
+                    if (!et_email_receiver.getText().toString().isEmpty() && !et_email_receiver.getText().toString().equals(" ")){
+                        SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+                        String[] emailReceiverTable;
+                        if(settings.getEmailReceiverList() == null){
+                            emailReceiverStringList = new ArrayList<String>(Arrays.asList(new String[]{}));
+                        }else{
+                            emailReceiverTable = settings.getEmailReceiverList().split(";");
+                            emailReceiverStringList = new ArrayList<String>(Arrays.asList(emailReceiverTable));
+                        }
+                        emailReceiverStringList.add(et_email_receiver.getText().toString().trim());
+
+                        String result = "";
+                        for (int x=0; x<emailReceiverStringList.size(); x++){
+                            if(emailReceiverStringList.get(x).equals("") || emailReceiverStringList.get(x).isEmpty()){
+                                emailReceiverStringList.remove(x);
+                            }else{
+                                result += emailReceiverStringList.get(x) + ";";
+                            }
+                        }
+                        settings.setEmailReceiverList(result);
+                        mDB.settingsDao().updateSettings(settings);
+                        //reload List
+
+                        emailReceiverAdapter = new ArrayAdapter(ProfileActivity.this, android.R.layout.simple_list_item_1, emailReceiverStringList);
+                        l_email_receiver.setAdapter(emailReceiverAdapter);
+                    }
+
+                    ll_email_receiver.setVisibility(View.GONE);
+                    edit_email_receiver_visible = false;
+                }else{
+                    ll_email_receiver.setVisibility(View.VISIBLE);
+                    edit_email_receiver_visible = true;
+                }
+            }
+        });
+
+        l_email_receiver.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                if (emailReceiverStringList != null && emailReceiverStringList.size() > 0){
+
+                    AlertDialog.Builder adb=new AlertDialog.Builder(ProfileActivity.this);
+                    adb.setTitle("Supprimer ?");
+                    adb.setMessage("Voulez vous supprimer cette email \""+emailReceiverStringList.get(position)+"\" ?");
+                    final int positionToRemove = position;
+                    adb.setNegativeButton("Cancel", null);
+                    adb.setPositiveButton("Ok", new AlertDialog.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            SettingsEntry settings = mDB.settingsDao().getAllSettings().get(0);
+                            emailReceiverStringList.remove(positionToRemove);
+
+                            if(emailReceiverStringList.size() > 0){
+                                String result = "";
+                                for (int x=0; x<emailReceiverStringList.size(); x++){
+                                    if (!emailReceiverStringList.get(x).equals("")){
+                                        result += emailReceiverStringList.get(x) + ";";
+                                    }else{
+                                        emailReceiverStringList.remove(x);
+                                    }
+                                }
+                                settings.setEmailReceiverList(result);
+                                mDB.settingsDao().updateSettings(settings);
+                                emailReceiverStringList = new ArrayList<String>(Arrays.asList(result.split(";")));
+                                emailReceiverAdapter = new ArrayAdapter(ProfileActivity.this, android.R.layout.simple_list_item_1, emailReceiverStringList);
+                                Toast.makeText(ProfileActivity.this, "Email supprimé!", Toast.LENGTH_SHORT).show();
+                            }else{
+                                settings.setEmailReceiverList(new String());
+                                mDB.settingsDao().updateSettings(settings);
+                                emailReceiverStringList = new ArrayList<String>();
+                                emailReceiverAdapter = new ArrayAdapter(ProfileActivity.this, android.R.layout.simple_list_item_1, emailReceiverStringList);
+                                Toast.makeText(ProfileActivity.this, "La liste est vide", Toast.LENGTH_SHORT).show();
+                            }
+
+                            l_email_receiver.setAdapter(emailReceiverAdapter);
+                        }});
+                    adb.show();
+                }
+                return true;
             }
         });
     }

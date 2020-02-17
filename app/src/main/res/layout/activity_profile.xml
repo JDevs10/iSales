@@ -308,20 +308,21 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp">
+                    android:orientation="horizontal">
                     <ListView
                         android:id="@+id/activity_profile_list_receiver_email"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="120dp"
+                        android:nestedScrollingEnabled="true"
+                        android:layout_weight="1"/>
+                    <ImageView
+                        android:id="@+id/activity_profile_image_vien_edit_receiver_email"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/ic_edit_black"/>
                 </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/activity_profile_image_vien_edit_receiver_email"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_edit_black"/>
+
             </LinearLayout>
 
             <LinearLayout
