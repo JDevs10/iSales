@@ -7,6 +7,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+import android.database.Cursor;
 
 import com.iSales.database.entry.UserEntry;
 import com.iSales.database.entry.VirtualProductEntry;
@@ -15,7 +16,7 @@ import com.iSales.remote.model.ProductVirtual;
 import java.util.List;
 
 /**
- * Created by JDevs on 16/01/2020.
+ * Created by JDevs on 16/02/2020.
  */
 
 @Dao

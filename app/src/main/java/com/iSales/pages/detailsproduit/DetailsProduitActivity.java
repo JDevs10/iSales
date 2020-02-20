@@ -636,6 +636,11 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     @Override
+    public void onFindProductVirtualCompleted_test(int result) {
+
+    }
+
+    @Override
     public void onProductVirtualClicked(ProductVirtual productVirtual, int position) {
         Log.e(TAG, "onProductVirtualClicked: position=" + position +
                 " label=" + productVirtual.getLabel() +

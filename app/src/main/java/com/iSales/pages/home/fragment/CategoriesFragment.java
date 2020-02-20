@@ -71,6 +71,7 @@ import com.iSales.remote.model.ProductVirtual;
 import com.iSales.remote.rest.FindCategoriesREST;
 import com.iSales.remote.rest.FindProductVirtualREST;
 import com.iSales.remote.rest.FindProductsREST;
+import com.iSales.task.FindAllVirtualProductsTask;
 import com.iSales.task.FindCategorieTask;
 import com.iSales.task.FindImagesProductsTask;
 import com.iSales.task.FindProductVirtualTask;
@@ -746,6 +747,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                     if (totalProducts > mDb.produitDao().getAllProduits().size()) {
                         Log.e(TAG, "Get All Virtual products");
 
+                        /*
                         virtuelProductList = new ArrayList<>();
                         for (int x = 0; x < mDb.produitDao().getAllProduits().size(); x++){
                             if(!mDb.produitDao().getAllProduits().get(x).getRef().contains("C") && !mDb.produitDao().getAllProduits().get(x).getRef().contains("P")) {
@@ -758,8 +760,12 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                         Log.e(TAG, "There are "+mDb.virtualProductDao().getAllVirtualProduct().size()+" to be deleted!");
                         mDb.virtualProductDao().deleteAllVirtualProduct();
                         virtuelProductTotalID = virtuelProductList.size();
+                        */
                         //findVirtualProducts(true,0,9);
-                        executeFindVirtualProducts();
+                        //executeFindVirtualProducts();
+                        showProgressDialog(false, null, null);
+                        FindAllVirtualProductsTask task = new FindAllVirtualProductsTask(getContext(), CategoriesFragment.this);
+                        task.execute();
                     }
                 }else{
                     Log.e(TAG, "Products : " + totalProducts + " | " + mDb.produitDao().getAllProduits().size());
@@ -985,6 +991,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             Log.e(TAG, "onFindThirdpartieCompleted: done!");
             */
 
+        }
+    }
+
+    @Override
+    public void onFindProductVirtualCompleted_test(int result) {
+        if(result == 1){
+            Toast.makeText(getContext(), "Des Produits Virtuel Synchronise", Toast.LENGTH_SHORT).show();
+        }else if(result == -1){
+            Toast.makeText(getContext(), "Aucun Produits Virtuel Synchronise", Toast.LENGTH_SHORT).show();
         }
     }
 
