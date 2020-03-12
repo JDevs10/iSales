@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -101,7 +102,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
         if (settings.getEmail() == null || settings.getEmail().isEmpty() ||
             settings.getEmail_Pwd() == null || settings.getEmail_Pwd().isEmpty()){
-
+            Log.e("SendMail", "Veuillez configurer votre adresse mail dans votre profile!");
             Toast.makeText(context, "Veuillez configurer votre adresse mail dans votre profile!", Toast.LENGTH_LONG).show();
             return null;
         }
@@ -126,6 +127,12 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
                     }
                 });
 
+        //Get all Receiver copy emails
+        String[] receiversCopy = null;
+        if (settings.getEmailReceiverList() != null && !settings.getEmailReceiverList().equals("") && !settings.getEmailReceiverList().isEmpty()) {
+            receiversCopy = settings.getEmailReceiverList().split(";");
+        }
+
         try {
             //Creating MimeMessage object
             MimeMessage mm = new MimeMessage(session);
@@ -134,6 +141,14 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
             mm.setFrom(new InternetAddress(configEmail));
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            //Adding receiver copies
+            if(receiversCopy != null && receiversCopy.length > 0){
+                Log.e("SendMail", "receiversCopy: "+receiversCopy.length);
+                for (int x = 0; x < receiversCopy.length; x++){
+                    mm.addRecipient(Message.RecipientType.CC, new InternetAddress(receiversCopy[x]));
+                    Log.e("SendMail", "Email en CC : "+receiversCopy[x]);
+                }
+            }
             //Adding subject
             mm.setSubject(subject);
             //Adding message
