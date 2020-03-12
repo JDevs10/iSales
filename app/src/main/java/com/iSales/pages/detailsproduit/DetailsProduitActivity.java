@@ -1,5 +1,6 @@
 package com.iSales.pages.detailsproduit;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,17 +23,26 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.iSales.R;
 import com.iSales.adapter.ProductVirtualAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.AppExecutors;
+import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
+import com.iSales.database.entry.SettingsEntry;
+import com.iSales.database.entry.VirtualProductEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
 import com.iSales.interfaces.ProductVirtualAdapterListener;
 import com.iSales.model.ProduitParcelable;
+import com.iSales.model.VirtualProductParcelable;
+import com.iSales.pages.calendar.AgendaEventDetails;
 import com.iSales.remote.ApiUtils;
+import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.ProductVirtual;
 import com.iSales.remote.rest.FindProductVirtualREST;
 import com.iSales.task.FindProductVirtualTask;
@@ -40,10 +50,19 @@ import com.iSales.utility.ISalesUtility;
 import com.iSales.utility.InputFilterMinMax;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class DetailsProduitActivity extends AppCompatActivity implements FindProductVirtualListener, ProductVirtualAdapterListener {
     private static final String TAG = com.iSales.pages.detailsproduit.DetailsProduitActivity.class.getSimpleName();
@@ -118,6 +137,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     public void initValues() {
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "initValues()", "Called.", ""));
+
         mProductVirtual = new ProductVirtual();
         mProductVirtual.setRowid("" + mProduitParcelable.getId());
         mProductVirtual.setFk_product_fils("" + mProduitParcelable.getId());
@@ -251,6 +273,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         double prix = 0;
         double remiseVal = 0;
         double remisePercent = 0;
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "addPanier()", "Called.", ""));
 
         if (mQuantiteNumberBtn.getText().toString().equals("")) {
             mQuantiteNumberBtn.setError(getString(R.string.veuillez_saisir_quantite));
@@ -421,13 +446,98 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     private void executeFindproductVirtual() {
-        FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
-        task.execute();
+
+        // ###########################################################################################
+        // LAST EDIT : afficher les details produits du fichier JSON
+        // ###########################################################################################
+
+
+        SettingsEntry config = mDb.settingsDao().getAllSettings().get(0);
+
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "executeFindproductVirtual()", "Called! && isEnableVirtualProductSync : " + config.isEnableVirtualProductSync(), ""));
+
+        if (config.isEnableVirtualProductSync()){
+
+            File file_infos = new File(Environment.getExternalStorageDirectory()+"/iSales_Produits/produits_details.json");
+            if (file_infos.exists()){
+                try {
+                    FileReader fileReader = new FileReader(Environment.getExternalStorageDirectory()+"/iSales_Produits/produits_details.json");
+
+                    JSONParser parser = new JSONParser();
+                    JSONArray array = (JSONArray)parser.parse(fileReader);
+
+                    int cpt = 0;
+                    Log.e(TAG, "Find VP count : "+cpt);
+
+                    for(Object obj : array){
+                        /* Extract each JSONObject */
+
+                        JSONObject jsonObject = (JSONObject) obj;
+                        long id_product_unit = (long) jsonObject.get("id_product_unit");
+
+                        cpt++;
+                        Log.e(TAG, "Find VP count : "+cpt+" || rowid : "+id_product_unit);
+
+                        if(mProduitParcelable.getId().equals(id_product_unit)){
+                            Log.e(TAG, "Find VP count : "+cpt+" || rowid : "+id_product_unit+ " || found !!!!!");
+                            // getting product infos
+                            Gson gson = new Gson();
+                            VirtualProductParcelable vp = gson.fromJson(jsonObject.get("Produit_details").toString(), VirtualProductParcelable.class);
+
+                            //Colis
+                            ProductVirtual mProductVirtual_c = new ProductVirtual();
+                            mProductVirtual_c.setRowid(vp.getRowid_Colis());
+                            mProductVirtual_c.setQty(vp.getQuantite_Colis());
+                            mProductVirtual_c.setRef(vp.getRef_Colis());
+                            mProductVirtual_c.setLabel(vp.getName_Colis());
+                            mProductVirtual_c.setPrice(vp.getPrice_Colis());
+                            mProductVirtual_c.setPrice_ttc(vp.getPrice_TTC_Colis());
+                            mProductVirtual_c.setTva_tx(vp.getTVA_Colis());
+                            mProductVirtual_c.setStock(vp.getStock_Colis());
+                            productVirtualList.add(mProductVirtual_c);
+
+                            //Palette
+                            if (vp.getRef_Palette() != null && !vp.getRef_Palette().isEmpty()){
+                                ProductVirtual mProductVirtual_p = new ProductVirtual();
+                                mProductVirtual_p.setRowid(vp.getRowid_Palette());
+                                mProductVirtual_p.setQty(vp.getQuantite_Palette());
+                                mProductVirtual_p.setRef(vp.getRef_Palette());
+                                mProductVirtual_p.setLabel(vp.getName_Palette());
+                                mProductVirtual_p.setPrice(vp.getPrice_Palette());
+                                mProductVirtual_p.setPrice_ttc(vp.getPrice_TTC_Palette());
+                                mProductVirtual_p.setTva_tx(vp.getTVA_Palette());
+                                mProductVirtual_p.setStock(vp.getStock_Palette());
+                                productVirtualList.add(mProductVirtual_p);
+                            }
+
+                            productVirtualAdapter.notifyDataSetChanged();
+                            int activePos = productVirtualList.size() >= 1 ? 1 : 0;
+                            updateProductValues(productVirtualList.get(activePos));
+                            break;
+                        }
+
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (org.json.simple.parser.ParseException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                Toast.makeText(getApplicationContext(), "Aucun produit virtuel trouvé.\nVeuillez synchronise les produits dans l'onglet caterogies!", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }else{
+            FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
+            task.execute();
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        Creation fichier de log pour les erreurs
+        //Creation fichier de log pour les erreurs
         showLog();
 
         super.onCreate(savedInstanceState);
@@ -437,6 +547,9 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
+        mDb.debugMessageDao().insertDebugMessage(
+                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
+
         if (getIntent().getExtras().getParcelable("produit") != null) {
             mProduitParcelable = getIntent().getExtras().getParcelable("produit");
             Log.e(TAG, "onCreate: " + mProduitParcelable.getRef() +
@@ -445,7 +558,6 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
                     " produitID=" + mProduitParcelable.getPoster().getContent());
         }
 
-        executeFindproductVirtual();
 
 //        Referencement des vues
         activityView = (View) findViewById(R.id.iv_produitdetails_poster);
@@ -473,7 +585,6 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         mPosterIV.setScaleType(ImageView.ScaleType.FIT_XY);
 
         productVirtualList = new ArrayList<>();
-
         productVirtualAdapter = new ProductVirtualAdapter(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, productVirtualList, com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, LinearLayoutManager.HORIZONTAL, false);
@@ -497,6 +608,14 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         }
 
         initValues();
+        /*
+         * if there is internet
+         *   executeFindproductVirtual
+         * else
+         *   getLocalVirtualProduct
+         * */
+        executeFindproductVirtual();
+
         mPriceUnitaireET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -558,6 +677,8 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
 //                Log.e(TAG, "onFindProductVirtualCompleted: size="+findProductVirtualREST.getProductVirtuals().size()+
 //                        " product_parent_id="+findProductVirtualREST.getProduct_parent_id());
 
+
+                //################################# calcule prices
                 double price0 = Double.parseDouble(mProduitParcelable.getPrice()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(0).getQty());
                 double priceTTC0 = Double.parseDouble(mProduitParcelable.getPrice_ttc()) * Integer.parseInt(findProductVirtualREST.getProductVirtuals().get(0).getQty());
                 findProductVirtualREST.getProductVirtuals().get(0).setPrice("" + price0);
@@ -577,8 +698,16 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
                 int activePos = productVirtualList.size() >= 1 ? 1 : 0;
 
                 updateProductValues(productVirtualList.get(activePos));
+
+
+                Log.e(TAG, "Message test");
+
             }
         }
+    }
+
+    @Override
+    public void onFindProductVirtualCompleted(int result) {
     }
 
     @Override
@@ -592,4 +721,5 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
             updateProductValues(productVirtual);
         }
     }
+
 }

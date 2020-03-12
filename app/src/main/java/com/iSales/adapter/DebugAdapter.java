@@ -57,7 +57,7 @@ public class DebugAdapter extends RecyclerView.Adapter<com.iSales.adapter.DebugA
 
         holder.tv_dateTime.setText(dateString);
         holder.tv_mask.setText(debugList.get(position).getMask());
-        holder.tv_message.setText(debugList.get(position).getErrorMessage());
+        holder.tv_message.setText(debugList.get(position).getMessage());
     }
 
     @Override

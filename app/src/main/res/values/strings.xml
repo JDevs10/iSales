@@ -36,6 +36,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="parametres_activer_synchronisation_ProduitVirtuel">parametres_activer_synchronisation_ProduitVirtuel</string>
 
     <string name="erreur_connexion">Erreur réseau. Veuillez vérifier votre connexion internet.</string>
     <string name="parametres_connexion_incorrect">Erreur d\'authentification. Paramètres de connexion incorrects.</string>

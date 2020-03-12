@@ -66,21 +66,26 @@ public class ProductVirtualAdapter extends RecyclerView.Adapter<com.iSales.adapt
 
     @Override
     public void onBindViewHolder(@NonNull final com.iSales.adapter.ProductVirtualAdapter.ProduitsVirtualViewHolder holder, final int position) {
-        Log.e(TAG, "onBindViewHolder: categorieId="+productVirtuals.get(position).getFk_product_pere()+
-                " label="+productVirtuals.get(position).getLabel()+
-                " id="+productVirtuals.get(position).getRowid()+
-                " price="+productVirtuals.get(position).getPrice()+
-                " qty="+productVirtuals.get(position).getQty());
+        Log.e(TAG, "onBindViewHolder: categorieId=" + productVirtuals.get(position).getFk_product_pere() +
+                " label=" + productVirtuals.get(position).getLabel() +
+                " id=" + productVirtuals.get(position).getRowid() +
+                " price=" + productVirtuals.get(position).getPrice() +
+                " qty=" + productVirtuals.get(position).getQty());
 
-        String[] label = productVirtuals.get(position).getLabel().split(" ");
+        try{
+            String[] label = productVirtuals.get(position).getLabel().split(" ");
 
-        holder.label.setText(label[label.length-1]+" x "+productVirtuals.get(position).getQty());
-        holder.priceHT.setText(String.format("%s %s HT",
-                ISalesUtility.amountFormat2(productVirtuals.get(position).getPrice()),
-                ISalesUtility.CURRENCY));
-        holder.priceTTC.setText(String.format("%s %s TTC",
-                ISalesUtility.amountFormat2(productVirtuals.get(position).getPrice_ttc()),
-                ISalesUtility.CURRENCY));
+            holder.label.setText(label[label.length - 1] + " x " + productVirtuals.get(position).getQty());
+            holder.priceHT.setText(String.format("%s %s HT",
+                    ISalesUtility.amountFormat2(productVirtuals.get(position).getPrice()),
+                    ISalesUtility.CURRENCY));
+            holder.priceTTC.setText(String.format("%s %s TTC",
+                    ISalesUtility.amountFormat2(productVirtuals.get(position).getPrice_ttc()),
+                    ISalesUtility.CURRENCY));
+        }catch(Exception e){
+            Log.e(TAG, " Erreur Message : "+e.getMessage());
+        }
+
     }
 
     @Override

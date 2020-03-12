@@ -23,6 +23,7 @@ import com.iSales.database.dao.SettingsDao;
 import com.iSales.database.dao.SignatureDao;
 import com.iSales.database.dao.TokenDao;
 import com.iSales.database.dao.UserDao;
+import com.iSales.database.dao.VirtualProductDao;
 import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.AgendaUserassignedEntry;
 import com.iSales.database.entry.CategorieEntry;
@@ -41,14 +42,16 @@ import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.SignatureEntry;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.database.entry.VirtualProductEntry;
+import com.iSales.remote.model.ProductVirtual;
 
 /**
  * Created by netserve on 21/09/2018.
  * Updates by JDevs
  */
 
-@Database(entities = {SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
-        version = 15,
+@Database(entities = {ProductVirtual.class, SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
+        version = 21,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -61,7 +64,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public static com.iSales.database.AppDatabase getInstance(Context context) {
         if (sInstance == null) {
             synchronized (LOCK) {
-//                Log.e(LOG_TAG, "Creating new database instance");
+                //Log.e(LOG_TAG, "Creating new database instance");
                 sInstance = Room.databaseBuilder(context.getApplicationContext(),
                         com.iSales.database.AppDatabase.class, com.iSales.database.AppDatabase.DATABASE_NAME)
                         .allowMainThreadQueries() // autorise Room a effectuer les requetes dans le main UI thread
@@ -69,7 +72,7 @@ public abstract class AppDatabase extends RoomDatabase {
                         .build();
             }
         }
-//        Log.e(LOG_TAG, "Getting the database instance");
+        //Log.e(LOG_TAG, "Getting the database instance");
         return sInstance;
     }
 
@@ -125,4 +128,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     //SettingsEntry
     public abstract SettingsDao settingsDao();
+
+    //VirtualProductEntry
+    public abstract VirtualProductDao virtualProductDao();
 }

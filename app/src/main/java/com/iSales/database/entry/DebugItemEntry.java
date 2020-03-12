@@ -4,6 +4,7 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.Context;
 import android.util.Log;
+import android.widget.Spinner;
 
 import com.iSales.database.AppDatabase;
 import com.iSales.remote.model.DebugItem;
@@ -15,7 +16,10 @@ public class DebugItemEntry {
     private int rowId;
     private long datetimeLong;
     private String mask;
-    private String errorMessage;
+    private String className;
+    private String methodName;
+    private String message;
+    private String stackTrace;
 
     public DebugItemEntry() {
     }
@@ -23,7 +27,19 @@ public class DebugItemEntry {
     public DebugItemEntry(Context context, long timeStamp, String mask, String message){
         this.datetimeLong = timeStamp;
         this.mask = mask + AppDatabase.getInstance(context).debugMessageDao().getAllDebugMessages().size();
-        this.errorMessage = message;
+        this.className =className;
+        this.methodName =methodName;
+        this.message = message;
+        this.stackTrace = stackTrace;
+    }
+
+    public DebugItemEntry(Context context, long timeStamp, String mask, String className, String methodName, String message, String stackTrace){
+        this.datetimeLong = timeStamp;
+        this.mask = mask + AppDatabase.getInstance(context).debugMessageDao().getAllDebugMessages().size();
+        this.className =className;
+        this.methodName =methodName;
+        this.message = message;
+        this.stackTrace = stackTrace;
     }
 
     public int getRowId() {
@@ -50,11 +66,35 @@ public class DebugItemEntry {
         this.mask = mask;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getClassName() {
+        return className;
     }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getStackTrace() {
+        return stackTrace;
+    }
+
+    public void setStackTrace(String stackTrace) {
+        this.stackTrace = stackTrace;
     }
 }

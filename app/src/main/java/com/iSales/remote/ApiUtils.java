@@ -83,6 +83,7 @@ public final class ApiUtils {
     }
 
     // Renvoit l'url de recuperation des produits virtuels
+    // Renvoit l'url de recuperation des produits virtuels
     public static com.iSales.remote.ISalesServicesRemote getISalesRYImg(Context context) {
 
         com.iSales.database.AppDatabase mDb = AppDatabase.getInstance(context.getApplicationContext());
@@ -95,6 +96,13 @@ public final class ApiUtils {
         String url = String.format("%s/", serverEntry.getHostname_img());
 //        Log.e(TAG, "getISalesProductVirtual: url="+url);
 
+        return RetrofitClient.getClient(context, url).create(ISalesServicesRemote.class);
+    }
+
+    public static com.iSales.remote.ISalesServicesRemote getISalesRYImg(Context context, String url) {
+        if (url == null || url.equals("")) {
+            return com.iSales.remote.RetrofitClient.getClient(context, "/").create(com.iSales.remote.ISalesServicesRemote.class);
+        }
         return RetrofitClient.getClient(context, url).create(ISalesServicesRemote.class);
     }
 

@@ -9,6 +9,8 @@ import com.iSales.remote.ApiUtils;
 import com.iSales.remote.rest.FindProductsREST;
 import com.iSales.remote.model.Product;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -99,6 +101,12 @@ public class FindProductsTask extends AsyncTask<Void, Void, FindProductsREST> {
     @Override
     protected void onPostExecute(FindProductsREST findProductsREST) {
 //        super.onPostExecute(findProductsREST);
-        task.onFindProductsCompleted(findProductsREST);
+        try {
+            task.onFindProductsCompleted(findProductsREST);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

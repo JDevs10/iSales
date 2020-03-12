@@ -4,4 +4,5 @@ import com.iSales.remote.rest.FindProductVirtualREST;
 
 public interface FindProductVirtualListener {
     void onFindProductVirtualCompleted(FindProductVirtualREST findProductVirtualREST);
+    void onFindProductVirtualCompleted(int result);
 }
