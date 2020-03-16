@@ -47,7 +47,6 @@ import com.iSales.adapter.ProduitsAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.AppExecutors;
 import com.iSales.database.entry.CategorieEntry;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
 import com.iSales.database.entry.ProduitEntry;
@@ -62,8 +61,11 @@ import com.iSales.interfaces.ProduitsAdapterListener;
 import com.iSales.model.CategorieParcelable;
 import com.iSales.model.ProduitParcelable;
 import com.iSales.pages.addcategorie.AddCategorieActivity;
+import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.detailsproduit.DetailsProduitActivity;
 import com.iSales.pages.home.dialog.FullScreenCatPdtDialog;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Categorie;
@@ -104,7 +106,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     private static final String TAG = com.iSales.pages.home.fragment.CategoriesFragment.class.getSimpleName();
 
-
     //    task de recuperation des produits
     private FindProductsTask mFindProductsTask = null;
     //    task de recuperation des categories
@@ -141,21 +142,12 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     //    Categorie des produits selectionée
     private CategorieParcelable mCategorieParcelable;
 
-    private ArrayList<Long> virtuelProductList = new ArrayList<>();
-    private int virtuelProductID = 0;
-    private int virtuelProductTotalID = 0;
-
     private AppDatabase mDb;
 
     private long categorieIdGlobal = 0;
     private int mLimit = 500;
     private int mCountRequestImg = 0;
     private int mCountRequestImgTotal = 0;
-
-    //Virtual product counters for progress dialog
-    private int mVirtualProductCurrent = 0;
-    private int mVirtualProductCount = 0;
-    private int mVirtualProductLimit = 0;
 
     public CategoriesFragment() {
         // Required empty public constructor
@@ -227,15 +219,29 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     //    Recupération de la liste des produits sur le serveur
     private void executeFindProducts() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "executeFindProducts()", "Called.", ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "executeFindProducts()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
             showProgressDialog(false, null, null);
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "executeFindProducts()", getString(R.string.erreur_connexion), ""));
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "executeFindProducts()",
+                            getString(R.string.erreur_connexion),
+                            ""
+                    )
+            );
             return;
         }
 
@@ -275,15 +281,28 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     //    Recupération de la liste des categories produits sur le serveur
     private void executeFindCategorieProducts() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "executeFindCategorieProducts()", "Called.", ""));
-
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "executeFindCategorieProducts()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "executeFindCategorieProducts()", getString(R.string.erreur_connexion), ""));
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "executeFindCategorieProducts()",
+                            getString(R.string.erreur_connexion),
+                            ""
+                    )
+            );
 
             showProgressDialog(false, null, null);
         }
@@ -299,9 +318,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     }
 
     private void initContent() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "initContent()", "Called.", ""));
-
         showProgress(true);
         initProduits();
         loadProduits(0, null, 0);
@@ -311,9 +327,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     }
 
     private void initProduits() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "initProduits()", "Called.", ""));
-
         List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
         this.produitsParcelableList = new ArrayList<>();
 
@@ -366,8 +379,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 " searchString=" + searchString +
                 " lastposition=" + lastposition);
 
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "loadProduits()", "loadProduits: produitazero=" + produitazero + " || categorieId=" + categorieId + " || searchString=" + searchString + " || lastposition=" + lastposition, ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "loadProduits()",
+                        "loadProduits: produitazero=" + produitazero + " || categorieId=" + categorieId + " || searchString=" + searchString + " || lastposition=" + lastposition,
+                        ""
+                )
+        );
 
 //        reinitialisation de la vue
         List<ProduitParcelable> emptyList = new ArrayList<>();
@@ -608,8 +628,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     //    insert a movie in database
     public void addPanier(final ProduitParcelable produitParcelable) {
         Log.e(TAG, "addPanier: id" + produitParcelable.getId());
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "addPanier()", "Called.", ""));
 
         // get movie in db
         final PanierEntry panierEntryTest = mDb.panierDao().getPanierById(produitParcelable.getId());
@@ -619,9 +637,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 //            Toast.makeText(getContext(), String.format("%s ajouté dans le panier.", produitParcelable.getLabel()), Toast.LENGTH_SHORT).show();
             final Snackbar snackbar = Snackbar
                     .make(getView(), String.format("%s existe dans le panier.", produitParcelable.getLabel()), Snackbar.LENGTH_LONG);
-
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "addPanier()", String.format("%s existe dans le panier.", produitParcelable.getLabel()), ""));
 
 // Changing action button text color
             View sbView = snackbar.getView();
@@ -657,6 +672,16 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         panierEntry.setRemise("0");
         panierEntry.setRemise_percent("0");
 
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "addPanier()",
+                        "Produit :\nID : "+panierEntry.getLabel()+"\nName : "+panierEntry.getLabel() + "\nPrix : " + panierEntry.getPrice() + "\nQte : " + panierEntry.getQuantity(),
+                        ""
+                )
+        );
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -666,9 +691,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 //                Toast.makeText(getContext(), String.format("%s ajouté dans le panier.", produitParcelable.getLabel()), Toast.LENGTH_SHORT).show();
                 final Snackbar snackbar = Snackbar
                         .make(getView(), String.format("%s ajouté dans le panier.", produitParcelable.getLabel()), Snackbar.LENGTH_LONG);
-
-                mDb.debugMessageDao().insertDebugMessage(
-                        new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "addPanier()", String.format("%s ajouté dans le panier.", produitParcelable.getLabel()), ""));
 
 // Changing action button text color
                 View sbView = snackbar.getView();
@@ -692,8 +714,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 //            modification de la position de la requete courante de recupération des produits
         mCurrentPdtQuery++;
 //        Log.e(TAG, "onFindProductsCompleted: FindProductsREST getThirdparties mCurrentPdtQuery=" + mCurrentPdtQuery + " mTotalPdtQuery=" + mTotalPdtQuery);
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductsCompleted()", "mCurrentPdtQuery=" + mCurrentPdtQuery + " mTotalPdtQuery=" + mTotalPdtQuery, ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onFindProductsCompleted()",
+                        "mCurrentPdtQuery=" + mCurrentPdtQuery + " mTotalPdtQuery=" + mTotalPdtQuery,
+                        ""
+                )
+        );
 
         //Si la recupération echoue, on renvoi un message d'erreur
         if (findProductsREST == null) {
@@ -701,8 +730,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             //Fermeture du loader
             showProgressDialog(false, null, null);
             Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindProductVirtualCompleted()", getString(R.string.service_indisponible), ""));
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindProductsCompleted()",
+                            getString(R.string.service_indisponible),
+                            ""
+                    )
+            );
             return;
         }
 
@@ -813,8 +849,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     private void findImage() {
         final List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "findImage()", "Called, with " + produitEntries.size()+" product images.", ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "findImage()",
+                        "Called, with " + produitEntries.size()+" product images.",
+                        ""
+                )
+        );
 
         mCountRequestImg = 0;
         mCountRequestImgTotal = produitEntries.size();
@@ -849,19 +892,31 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     public void onFindProductVirtualCompleted(int result) {
         if(result == 0){
             Toast.makeText(getContext(), "Des Produits Virtuel Synchronise", Toast.LENGTH_SHORT).show();
-
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "FindAllVirtualProductsTask()", "Produit virtuel enregistre dans le fichier 'iSales_Produits/produits_details.json'", ""));
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindProductVirtualCompleted()",
+                            "Produit virtuel enregistre dans le fichier 'iSales_Produits/produits_details.json'",
+                            ""
+                    )
+            );
         }
         else if(result == -1){
             Toast.makeText(getContext(), "Aucun Produits Virtuel Synchronise", Toast.LENGTH_SHORT).show();
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "FindAllVirtualProductsTask()", "Erreur d'enregistrement des produits virtuel.", ""));
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindProductVirtualCompleted()",
+                            "Erreur d'enregistrement des produits virtuel.",
+                            ""
+                    )
+            );
         }
 
         loadProduits(0, null, 0);
         initContent();
-        //reloadCategorieFragment();
     }
 
     @Override
@@ -883,9 +938,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             showProgressDialog(false, null, null);
 //            setAutoOrientationEnabled(getContext(), false);
             Toast.makeText(getContext(), getString(R.string.miseajour_images_produits_effectuee), Toast.LENGTH_LONG).show();
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindImagesProductsComplete()", getString(R.string.miseajour_images_produits_effectuee)+"\nFile path : " + pathFile, ""));
-
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindImagesProductsComplete()",
+                            getString(R.string.miseajour_images_produits_effectuee)+"\nFile path : " + pathFile,
+                            ""
+                    )
+            );
             return;
         }
     }
@@ -900,8 +961,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             showProgressDialog(false, null, null);
             Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
 
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.service_indisponible), ""));
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindCategorieCompleted()",
+                            getString(R.string.service_indisponible),
+                            ""
+                    )
+            );
             return;
         }
         if (findCategoriesREST.getCategories() == null) {
@@ -911,9 +979,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             mPageCategorie = 0;
 //            Toast.makeText(SynchronisationActivity.this, getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
 
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onFindCategorieCompleted()", getString(R.string.liste_produits_synchronises), ""));
-
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindCategorieCompleted()",
+                            getString(R.string.liste_produits_synchronises),
+                            ""
+                    )
+            );
             executeFindProducts();
 
 
@@ -944,8 +1018,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         showLog();
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onCreate()", "Called.", ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onCreate()",
+                        "Called.",
+                        ""
+                )
+        );
     }
 
     @Override
@@ -1109,9 +1190,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 //Si le téléphone n'est pas connecté
                 if (!ConnectionManager.isPhoneConnected(getContext())) {
                     Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-                    mDb.debugMessageDao().insertDebugMessage(
-                            new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onOptionsItemSelected()", "action_fragcategorie_sync ===> " +getString(R.string.erreur_connexion), ""));
-
+                    new SaveLogs(getContext()).writeLogFile(
+                            new DebugItem(
+                                    (System.currentTimeMillis()/1000),
+                                    "DEB", CategoriesFragment.class.getSimpleName(),
+                                    "onOptionsItemSelected()",
+                                    "action_fragcategorie_sync ===> " +getString(R.string.erreur_connexion),
+                                    ""
+                            )
+                    );
 
                     return true;
                 }
@@ -1147,8 +1234,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                                 //Si le téléphone n'est pas connecté
                                 if (!ConnectionManager.isPhoneConnected(getContext())) {
                                     Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
-                                    mDb.debugMessageDao().insertDebugMessage(
-                                            new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onOptionsItemSelected()", "action_fragcategorie_sync_image ===> " +getString(R.string.erreur_connexion), ""));
+                                    new SaveLogs(getContext()).writeLogFile(
+                                            new DebugItem(
+                                                    (System.currentTimeMillis()/1000),
+                                                    "DEB", CategoriesFragment.class.getSimpleName(),
+                                                    "onOptionsItemSelected()",
+                                                    "action_fragcategorie_sync ===> " +getString(R.string.erreur_connexion),
+                                                    ""
+                                            )
+                                    );
                                     return;
                                 }
 
@@ -1212,8 +1306,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     public void onDetailsSelected(ProduitParcelable produitParcelable) {
 //        Toast.makeText(getContext(), "Detail "+ produitParcelable.getLabel(), Toast.LENGTH_SHORT).show();
 //        Log.e(TAG, "onDetailsSelected: "+produitParcelable.getDescription());
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onDetailsSelected()", "Selected product : ID => " +produitParcelable.getId() + " || Name => " + produitParcelable.getLabel(), ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onDetailsSelected()",
+                        "Selected product : ID => " +produitParcelable.getId() + " || Name => " + produitParcelable.getLabel(),
+                        ""
+                )
+        );
 
         Intent intent = new Intent(getContext(), DetailsProduitActivity.class);
         intent.putExtra("produit", produitParcelable);
@@ -1228,8 +1329,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     @Override
     public void onCategorieDialogSelected(CategorieParcelable categorieParcelable) {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "onCategorieDialogSelected()", "Selected product : ID => " +categorieParcelable.getId() + " || Name => " + categorieParcelable.getLabel(), ""));
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onCategorieDialogSelected()",
+                        "Selected product : ID => " +categorieParcelable.getId() + " || Name => " + categorieParcelable.getLabel(),
+                        ""
+                )
+        );
 
 //        scroll du recyclerview en debut de liste
         mRecyclerViewProduits.smoothScrollToPosition(0);
@@ -1278,9 +1386,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     private void reloadCategorieFragment(){
         Log.e(TAG, "JL reloadCategorieFragment() ");
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(), (System.currentTimeMillis()/1000), "Ticket", CategoriesFragment.class.getSimpleName(), "reloadCategorieFragment()", "Called.", ""));
-
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "reloadCategorieFragment()",
+                        "Called.",
+                        ""
+                )
+        );
         Fragment currentFragment = getActivity().getSupportFragmentManager().findFragmentById(R.id.master_frame);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.detach(currentFragment);

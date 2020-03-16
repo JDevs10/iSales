@@ -31,7 +31,6 @@ import android.widget.Toast;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.pages.home.viewmodel.UserViewModel;

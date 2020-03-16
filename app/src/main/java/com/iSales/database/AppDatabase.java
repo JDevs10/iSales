@@ -11,7 +11,6 @@ import com.iSales.database.dao.CategorieDao;
 import com.iSales.database.dao.ClientDao;
 import com.iSales.database.dao.CommandeDao;
 import com.iSales.database.dao.CommandeLineDao;
-import com.iSales.database.dao.DebugMessageDao;
 import com.iSales.database.dao.DebugSettingsDao;
 import com.iSales.database.dao.EventsDao;
 import com.iSales.database.dao.PanierDao;
@@ -30,7 +29,6 @@ import com.iSales.database.entry.CategorieEntry;
 import com.iSales.database.entry.ClientEntry;
 import com.iSales.database.entry.CommandeEntry;
 import com.iSales.database.entry.CommandeLineEntry;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.EventsEntry;
 import com.iSales.database.entry.PanierEntry;
@@ -42,7 +40,6 @@ import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.SignatureEntry;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
-import com.iSales.database.entry.VirtualProductEntry;
 import com.iSales.remote.model.ProductVirtual;
 
 /**
@@ -50,8 +47,8 @@ import com.iSales.remote.model.ProductVirtual;
  * Updates by JDevs
  */
 
-@Database(entities = {ProductVirtual.class, SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class,DebugItemEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
-        version = 21,
+@Database(entities = {ProductVirtual.class, SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
+        version = 22,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -111,9 +108,6 @@ public abstract class AppDatabase extends RoomDatabase {
 
     //    ProductCustomerPrice DAO
     public abstract ProductCustPriceDao productCustPriceDao();
-
-    //DebugMessage Dao
-    public abstract DebugMessageDao debugMessageDao();
 
     //DebugSettings Dao
     public abstract DebugSettingsDao debugSettingsDao();

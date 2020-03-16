@@ -209,6 +209,19 @@
                 android:buttonTint="@color/colorPrimary"/>
 
             <Button
+                android:id="@+id/ticketing_button"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_gravity="right"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:background="@drawable/bg_primary_corner_btn"
+                android:textColor="@color/white"
+                android:layout_marginTop="5dp"
+                android:text="Envoyer un rapport"
+                android:textSize="10dp"/>
+
+            <Button
                 android:id="@+id/email_sign_in_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

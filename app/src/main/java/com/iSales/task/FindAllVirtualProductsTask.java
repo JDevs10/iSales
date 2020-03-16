@@ -10,10 +10,12 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.ProduitEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
+import com.iSales.pages.home.fragment.CommandesFragment;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.model.ProductVirtual;
 import com.iSales.remote.rest.FindProductVirtualREST;
@@ -124,6 +126,16 @@ public class FindAllVirtualProductsTask extends AsyncTask<Void, Void, Integer> {
 
             try {
                 Log.e(TAG, "URL : "+call.request().url());
+                new SaveLogs(context).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB", CommandesFragment.class.getSimpleName(),
+                                "onCommandeSelected()",
+                                "URL : " + call.request().url(),
+                                ""
+                        )
+                );
+
                 response = call.execute();
                 if (response.isSuccessful()){
 
@@ -197,90 +209,6 @@ public class FindAllVirtualProductsTask extends AsyncTask<Void, Void, Integer> {
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
-            /*
-            try{
-                Log.e(TAG, "Try URL : "+call.request().url());
-                call.enqueue(new Callback<ArrayList<ProductVirtual>>() {
-                    @Override
-                    public void onResponse(Call<ArrayList<ProductVirtual>> call, Response<ArrayList<ProductVirtual>> response) {0
-                        if (response.isSuccessful()){
-
-                            try {
-                                ArrayList<ProductVirtual> virtualArrayList = response.body();
-                                if (virtualArrayList.size() > 0){
-                                    Log.e(TAG, "virtualArrayList size : "+virtualArrayList.size());
-
-                                    //calcule colis
-                                    double price0 = Double.parseDouble(produit.getPrice()) * Integer.parseInt(virtualArrayList.get(0).getQty());
-                                    double priceTTC0 = Double.parseDouble(produit.getPrice_ttc()) * Integer.parseInt(virtualArrayList.get(0).getQty());
-                                    virtualArrayList.get(0).setPrice("" + price0);
-                                    virtualArrayList.get(0).setPrice_ttc("" + priceTTC0);
-
-                                    details.put("Rowid_Colis",virtualArrayList.get(0).getRowid());
-                                    details.put("Ref_Colis",virtualArrayList.get(0).getRef());
-                                    details.put("Name_Colis", virtualArrayList.get(0).getLabel());
-                                    details.put("Price_Colis", virtualArrayList.get(0).getPrice());
-                                    details.put("Price_TTC_Colis", virtualArrayList.get(0).getPrice_ttc());
-                                    details.put("Quantite_Colis", virtualArrayList.get(0).getQty());
-                                    details.put("TVA_Colis", virtualArrayList.get(0).getTva_tx());
-                                    details.put("Stock_Colis", virtualArrayList.get(0).getStock());
-
-                                    //calcule palette et autres
-                                    for (int i = 0; i < virtualArrayList.size(); i++) {
-                                        double price = Double.parseDouble(virtualArrayList.get(i).getPrice()) * Integer.parseInt(virtualArrayList.get(i).getQty());
-                                        double priceTTC = Double.parseDouble(virtualArrayList.get(i).getPrice_ttc()) * Integer.parseInt(virtualArrayList.get(i).getQty());
-                                        virtualArrayList.get(i).setPrice("" + price);
-                                        virtualArrayList.get(i).setPrice_ttc("" + priceTTC);
-
-                                        details.put("Rowid_Palette",virtualArrayList.get(i).getRowid());
-                                        details.put("Ref_Palette",virtualArrayList.get(i).getRef());
-                                        details.put("Name_Palette", virtualArrayList.get(i).getLabel());
-                                        details.put("Price_Palette", virtualArrayList.get(i).getPrice());
-                                        details.put("Price_TTC_Palette", virtualArrayList.get(i).getPrice_ttc());
-                                        details.put("Quantite_Palette", virtualArrayList.get(i).getQty());
-                                        details.put("TVA_Palette", virtualArrayList.get(i).getTva_tx());
-                                        details.put("Stock_Palette", virtualArrayList.get(i).getStock());
-
-                                    }
-                                    //                        details.put("id_produit_unit : ",produit.getId());
-                                    //writer.append("\n#############################################\n");
-                                    //writer.flush();
-
-                                }
-
-                                products.put("id_product_unit",produit.getId());
-                                products.put("Produit_details", details);
-                                productsList.put(products);
-
-                            }catch (Exception e){
-                                Log.e(TAG, "********** Error CallBack Exception **********");
-                                Log.e(TAG, "URL : "+call.request().url());
-                                Log.e(TAG, " onFailure() "+e.getMessage());
-                                e.printStackTrace();
-                            }
-
-                        }else{
-                            Log.e(TAG, "not isSuccessful");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ArrayList<ProductVirtual>> call, Throwable t) {
-                        Log.e(TAG, "\n\n********** Error CallBack **********");
-                        Log.e(TAG, "URL : "+call.request().url());
-                        Log.e(TAG, " onFailure() Message : "+t.getMessage());
-                        Log.e(TAG, " onFailure() Cause : "+t.getCause());
-                        t.getStackTrace();
-
-                        call.cancel();
-                    }
-                });
-
-            }catch (Exception e){
-                Log.e(TAG, "Message : "+e.getMessage()+" \n");
-                e.printStackTrace();
-            }
-            */
 
         }
 
@@ -291,6 +219,17 @@ public class FindAllVirtualProductsTask extends AsyncTask<Void, Void, Integer> {
             e.printStackTrace();
             return -1;
         }
+
+        new SaveLogs(context).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CommandesFragment.class.getSimpleName(),
+                        "onCommandeSelected()",
+                        "Virtual Product file location : " + file_infos.getAbsolutePath() + " || size : "+(file_infos.length()/1024) + " KB",
+                        ""
+                )
+        );
+
         return 0;
     }
 

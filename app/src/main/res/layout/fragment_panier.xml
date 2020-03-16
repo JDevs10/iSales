@@ -18,38 +18,55 @@
             android:gravity="center_vertical"
             android:padding="4dp">
 
-            <ImageView
-                android:id="@+id/iv_selected_client"
-                android:layout_width="@dimen/logo"
-                android:layout_height="@dimen/logo"
-                android:layout_centerVertical="true"
-                android:background="@drawable/default_avatar_client"
-                android:elevation="@dimen/login_page_logo_elevation"
-                android:foregroundGravity="center" />
-
-            <TextView
-                android:id="@+id/tv_selected_client"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="4dp"
-                android:layout_toEndOf="@+id/iv_selected_client"
-                android:gravity="start"
-                android:text="@string/selectionner_un_client"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/ed_search_textsize" />
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-            <ImageButton
-                android:id="@+id/ib_clientsradio_show"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@id/tv_selected_categorie"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:foregroundGravity="center"
-                android:src="@drawable/ic_arrow_dropdown_white"
-                android:visibility="gone"/>
+                    <ImageView
+                        android:id="@+id/iv_selected_client"
+                        android:layout_width="@dimen/logo"
+                        android:layout_height="@dimen/logo"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/default_avatar_client"
+                        android:elevation="@dimen/login_page_logo_elevation"
+                        android:foregroundGravity="center" />
+
+                    <TextView
+                        android:id="@+id/tv_selected_client"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="4dp"
+                        android:layout_toEndOf="@+id/iv_selected_client"
+                        android:gravity="start"
+                        android:text="@string/selectionner_un_client"
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/ed_search_textsize" />
+
+                    <ImageButton
+                        android:id="@+id/ib_clientsradio_show"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_below="@id/tv_selected_categorie"
+                        android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:foregroundGravity="center"
+                        android:src="@drawable/ic_arrow_dropdown_white"
+                        android:visibility="gone"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+
+                </LinearLayout>
+
+            </LinearLayout>
         </RelativeLayout>
 
         <LinearLayout

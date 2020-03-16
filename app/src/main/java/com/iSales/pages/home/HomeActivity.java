@@ -1,7 +1,6 @@
 package com.iSales.pages.home;
 
 import com.iSales.database.AppDatabase;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.ClientsAdapterListener;
 import com.iSales.interfaces.DialogCategorieListener;
 import com.iSales.interfaces.DialogClientListener;

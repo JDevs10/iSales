@@ -32,7 +32,6 @@ import com.iSales.R;
 import com.iSales.adapter.ProductVirtualAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.AppExecutors;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.VirtualProductEntry;
@@ -41,6 +40,9 @@ import com.iSales.interfaces.ProductVirtualAdapterListener;
 import com.iSales.model.ProduitParcelable;
 import com.iSales.model.VirtualProductParcelable;
 import com.iSales.pages.calendar.AgendaEventDetails;
+import com.iSales.pages.home.fragment.CategoriesFragment;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.ProductVirtual;
@@ -137,9 +139,15 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
     }
 
     public void initValues() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "initValues()", "Called.", ""));
-
+        new SaveLogs(getApplicationContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", DetailsProduitActivity.class.getSimpleName(),
+                        "initValues()",
+                        "Called.",
+                        ""
+                )
+        );
         mProductVirtual = new ProductVirtual();
         mProductVirtual.setRowid("" + mProduitParcelable.getId());
         mProductVirtual.setFk_product_fils("" + mProduitParcelable.getId());
@@ -273,9 +281,6 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         double prix = 0;
         double remiseVal = 0;
         double remisePercent = 0;
-
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "addPanier()", "Called.", ""));
 
         if (mQuantiteNumberBtn.getText().toString().equals("")) {
             mQuantiteNumberBtn.setError(getString(R.string.veuillez_saisir_quantite));
@@ -454,10 +459,18 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
 
         SettingsEntry config = mDb.settingsDao().getAllSettings().get(0);
 
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "executeFindproductVirtual()", "Called! && isEnableVirtualProductSync : " + config.isEnableVirtualProductSync(), ""));
+        new SaveLogs(getApplicationContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", DetailsProduitActivity.class.getSimpleName(),
+                        "executeFindproductVirtual()",
+                        "Called! && isEnableVirtualProductSync : " + config.isEnableVirtualProductSync(),
+                        ""
+                )
+        );
 
         if (config.isEnableVirtualProductSync()){
+            boolean isProductHaveVirtualProducts = false;
 
             File file_infos = new File(Environment.getExternalStorageDirectory()+"/iSales_Produits/produits_details.json");
             if (file_infos.exists()){
@@ -480,6 +493,7 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
                         Log.e(TAG, "Find VP count : "+cpt+" || rowid : "+id_product_unit);
 
                         if(mProduitParcelable.getId().equals(id_product_unit)){
+                            isProductHaveVirtualProducts = true;
                             Log.e(TAG, "Find VP count : "+cpt+" || rowid : "+id_product_unit+ " || found !!!!!");
                             // getting product infos
                             Gson gson = new Gson();
@@ -515,19 +529,27 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
                             int activePos = productVirtualList.size() >= 1 ? 1 : 0;
                             updateProductValues(productVirtualList.get(activePos));
                             break;
+                        }else{
+                            isProductHaveVirtualProducts = false;
                         }
 
                     }
 
                 } catch (IOException e) {
+                    isProductHaveVirtualProducts = false;
                     e.printStackTrace();
                 } catch (org.json.simple.parser.ParseException e) {
+                    isProductHaveVirtualProducts = false;
                     e.printStackTrace();
                 }
             }else{
+                isProductHaveVirtualProducts = false;
                 Toast.makeText(getApplicationContext(), "Aucun produit virtuel trouvé.\nVeuillez synchronise les produits dans l'onglet caterogies!", Toast.LENGTH_SHORT).show();
             }
 
+            if(!isProductHaveVirtualProducts){
+                initValues();
+            }
 
         }else{
             FindProductVirtualTask task = new FindProductVirtualTask(com.iSales.pages.detailsproduit.DetailsProduitActivity.this, mProduitParcelable.getId(), com.iSales.pages.detailsproduit.DetailsProduitActivity.this);
@@ -547,8 +569,15 @@ public class DetailsProduitActivity extends AppCompatActivity implements FindPro
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getApplicationContext(), (System.currentTimeMillis()/1000), "Ticket", DetailsProduitActivity.class.getSimpleName(), "onCreate()", "Called.", ""));
+        new SaveLogs(getApplicationContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", DetailsProduitActivity.class.getSimpleName(),
+                        "onCreate()",
+                        "Called.",
+                        ""
+                )
+        );
 
         if (getIntent().getExtras().getParcelable("produit") != null) {
             mProduitParcelable = getIntent().getExtras().getParcelable("produit");

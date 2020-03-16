@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.iSales.R;
-import com.iSales.database.entry.DebugItemEntry;
+import com.iSales.pages.ticketing.model.DebugItem;
 
 
 import java.util.ArrayList;
@@ -21,9 +21,9 @@ public class DebugAdapter extends RecyclerView.Adapter<com.iSales.adapter.DebugA
     private String TAG = DebugAdapter.class.getSimpleName();
 
     private Context mContext;
-    private List<DebugItemEntry> debugList;
+    private List<DebugItem> debugList;
 
-    public DebugAdapter(Context mContext, List<DebugItemEntry> debugList){
+    public DebugAdapter(Context mContext, List<DebugItem> debugList){
         this.mContext = mContext;
         this.debugList = debugList;
     }

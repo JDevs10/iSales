@@ -38,7 +38,6 @@ import com.iSales.R;
 import com.iSales.adapter.ClientsAdapter;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.decoration.MyDividerItemDecoration;
 import com.iSales.helper.RecyclerItemTouchHelper;
 import com.iSales.interfaces.ClientsAdapterListener;
@@ -51,6 +50,8 @@ import com.iSales.model.ClientParcelable;
 import com.iSales.pages.addcustomer.AddCustomerActivity;
 import com.iSales.pages.home.dialog.ClientProfileDialog;
 import com.iSales.pages.home.dialog.FullScreenCatPdtDialog;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Document;
@@ -99,11 +100,15 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    Recupération de la liste des produits
     private void executeFindClients() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
                         (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" executeFindClients() => called."));
+                        "DEB", ClientsFragment.class.getSimpleName(),
+                        "executeFindClients()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
@@ -121,11 +126,15 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    Recupere la lsite des clients dans la bd locale
     private void loadClients() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
                         (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" loadClients() => called."));
+                        "DEB", ClientsFragment.class.getSimpleName(),
+                        "loadClients()",
+                        "Called.",
+                        ""
+                )
+        );
 
         showProgress(true);
 //        Log.e(TAG, "loadClients: clientParcelableList=" + clientParcelableList.size() + " clientParcelableListFiltered=" + clientParcelableListFiltered.size());
@@ -144,11 +153,15 @@ public class ClientsFragment extends Fragment implements ClientsAdapterListener,
 
     //    Recupere la lsite des clients dans la bd locale
     private void initClients() {
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(getContext(),
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
                         (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" initClients() => called."));
+                        "DEB", ClientsFragment.class.getSimpleName(),
+                        "initClients()",
+                        "Called.",
+                        ""
+                )
+        );
 
         List<ClientEntry> clientEntries = mDb.clientDao().getAllClient();
         clientParcelableList = new ArrayList<>();

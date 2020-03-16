@@ -8,9 +8,10 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.ProduitEntry;
 import com.iSales.interfaces.FindProductVirtualListener;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.ProductVirtual;
@@ -37,8 +38,7 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
         this.productId = productId;
         this.mDb = AppDatabase.getInstance(this.context);
 
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask()", "Called.", ""));
+        new SaveLogs(context).writeLogFile(new DebugItem((System.currentTimeMillis()/1000), "DEB", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask()", "Called.", ""));
     }
 
     @Override
@@ -47,8 +47,8 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
 
         //Requete de connexion de l'internaute sur le serveur
         Call<ArrayList<ProductVirtual>> call = ApiUtils.getISalesRYImg(context).ryFindProductVirtual(this.productId);
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "Url : "+call.request().url(), ""));
+
+        new SaveLogs(context).writeLogFile(new DebugItem((System.currentTimeMillis()/1000), "DEB", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "Url : "+call.request().url(), ""));
 
         Log.e(TAG, "URL: "+call.request().url());
         try {
@@ -88,15 +88,15 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
                     Log.e(TAG, "doInBackground: onResponse err: " + error + " code=" + response.code());
                     findProductVirtualREST.setErrorBody(error);
 
-                    mDb.debugMessageDao().insertDebugMessage(
-                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "doInBackground: onResponse err: " + error + " code=" + response.code(), ""));
+                    new SaveLogs(context).writeLogFile(new DebugItem((System.currentTimeMillis()/1000), "DEB", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground() => onResponse() err", error + " code=" + response.code(), ""));
+
                 } catch (IOException e) {
                     Log.e(TAG, "doInBackground: ********** IOException !isSuccessful **********");
                     Log.e(TAG, "URL: "+call.request().url());
                     Log.e(TAG, "Message: "+e.getMessage());
                     Log.e(TAG, "StackTrace: "+e.getStackTrace());
-                    mDb.debugMessageDao().insertDebugMessage(
-                            new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
+                    new SaveLogs(context).writeLogFile(new DebugItem((System.currentTimeMillis()/1000), "DEB", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
+
                 }
 
                 return findProductVirtualREST;
@@ -106,8 +106,8 @@ public class FindProductVirtualTask extends AsyncTask<Void, Void, FindProductVir
             Log.e(TAG, "URL: "+call.request().url());
             Log.e(TAG, "Message: "+e.getMessage());
             Log.e(TAG, "StackTrace: "+e.getStackTrace());
-            mDb.debugMessageDao().insertDebugMessage(
-                    new DebugItemEntry(context, (System.currentTimeMillis()/1000), "Ticket", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
+            new SaveLogs(context).writeLogFile(new DebugItem((System.currentTimeMillis()/1000), "DEB", FindProductVirtualTask.class.getSimpleName(), "FindProductVirtualTask() => doInBackground()", "***** IOException *****\nMessage: "+e.getMessage(), ""+e.getStackTrace()));
+
         }
 
         return null;

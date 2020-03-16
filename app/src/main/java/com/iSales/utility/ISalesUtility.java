@@ -12,10 +12,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
 import com.iSales.R;
+import com.iSales.database.AppDatabase;
+import com.iSales.model.ISalesIncidentTable;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -24,7 +27,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -167,12 +173,16 @@ public final class ISalesUtility {
     }
 
     public static String amountFormat2(String value) {
-
+        Log.e(TAG, "amountFormat2( "+value+" )");
         if(value != null){
-            double valueDouble = Double.parseDouble(value);
-            String str = String.format(Locale.FRANCE,
-                    "%,-10.2f", valueDouble);
-            return String.valueOf(str).replace(" ", "");
+            if (value != ""){
+                double valueDouble = Double.parseDouble(value);
+                String str = String.format(Locale.FRANCE, "%,-10.2f", valueDouble);
+                return String.valueOf(str).replace(" ", "");
+            }else{
+                //the value is empty so send a 0
+                return "0";
+            }
         }else{
             return "0";
         }
@@ -425,5 +435,88 @@ public final class ISalesUtility {
                 break;
         }
         return color;
+    }
+
+    public static String[][] getAlliSalesPriorityTable(){
+        String[][] table = new String[6][3];
+        table[0][0] = "P0"; table[0][1] = "#000000"; table[0][2] = "Votre ticket sera traité dans 24 heurs ouvrables";
+        table[1][0] = "P1"; table[1][1] = "#FF0000"; table[1][2] = "Votre ticket sera traité dans 24 heurs ouvrables";
+        table[2][0] = "P2"; table[2][1] = "#FF4400"; table[2][2] = "Votre ticket sera traité dans 1-2 jours ouvrables";
+        table[3][0] = "P3"; table[3][1] = "##E8700C"; table[3][2] = "Votre ticket sera traité dans 2-3 jours ouvrables";
+        table[4][0] = "P4"; table[4][1] = "#FFFF00"; table[4][2] = "Votre ticket sera traité dans 2-3 jours ouvrables";
+        table[5][0] = "P0-P4"; table[5][1] = "#0C83E8"; table[5][2] = "Votre ticket sera traité au plus vite";
+        return table;
+    }
+
+    public String[][] getiSalesPriorityTableByPriority(String priority){
+        String[][] result = null;
+        String[][] table = getAlliSalesPriorityTable();
+
+        for (int i=0; i<table.length; i++){
+            if (table[i][0].equals(priority)){
+                result = new String[1][3];
+                result[0][0] = table[i][0]; result[0][1] = table[i][1]; result[0][2] = table[i][2];
+            }
+        }
+        return result;
+    }
+
+    public static ArrayList<ISalesIncidentTable> getiSalesIncidentList(){
+        ArrayList<ISalesIncidentTable> list = new ArrayList<>();
+        /** ############################## Cas Général ############################## **/
+        list.add(new ISalesIncidentTable("Général - Erreur réseau (même avec Internet et accès Internet)","P0"));
+        list.add(new ISalesIncidentTable("Général - Erreur envoi mail","P0"));
+        list.add(new ISalesIncidentTable("Général - Erreur de synchronization","P0"));
+        list.add(new ISalesIncidentTable("Général - Erreur de téléchargement des images","P2"));
+        list.add(new ISalesIncidentTable("Général - Ralentissement de l'application","P2"));
+        list.add(new ISalesIncidentTable("Général - Mode hors ligne ne fonction pas","P2"));
+        list.add(new ISalesIncidentTable("Général - Autre","P0-P4"));
+
+        /** ############################## Dans l'onglet Client ############################## **/
+        list.add(new ISalesIncidentTable("Client - Erreur de création d'un client","P1"));
+        list.add(new ISalesIncidentTable("Client - Erreur de récupération des clients","P1"));
+        list.add(new ISalesIncidentTable("Client - Erreur de modification d'un client","P1"));
+        list.add(new ISalesIncidentTable("Client - Erreur mise à jour d'un client","P1"));
+        list.add(new ISalesIncidentTable("Client - Erreur suppression un client","P3"));
+        list.add(new ISalesIncidentTable("Client - Erreur afficher le profile client","P2"));
+
+        /** ############################## Dans l'onglet Panier ############################## **/
+        list.add(new ISalesIncidentTable("Panier - Erreur du vidage","P0"));
+        list.add(new ISalesIncidentTable("Panier - Erreur de récupération du panier","P0"));
+        list.add(new ISalesIncidentTable("Panier - Erreur de modifier le nombre d'article","P1"));
+        list.add(new ISalesIncidentTable("Panier - Erreur mise à jour du prix HT","P1"));
+        list.add(new ISalesIncidentTable("Panier - Erreur mise à jour du prix TTC","P1"));
+
+        /** ############################## Dans l'onglet Categorie ############################## **/
+        list.add(new ISalesIncidentTable("Categorie - Erreur lors de la récupération des catégories","P1"));
+        list.add(new ISalesIncidentTable("Categorie - Erreur de filtrage des catégories","P1"));
+        list.add(new ISalesIncidentTable("Categorie - Erreur récupération des produits","P1"));
+        list.add(new ISalesIncidentTable("Categorie - Erreur récupération des images produits","P1"));
+        list.add(new ISalesIncidentTable("Categorie - Erreur de filtrage des produits","P1"));
+        list.add(new ISalesIncidentTable("Categorie - Erreur d'affichage du produit sélectionné","P1"));
+        list.add(new ISalesIncidentTable("Categorie - Erreur de récupération des produits visuel","P1"));
+
+        /** ############################## Dans l'onglet Commande ############################## **/
+        list.add(new ISalesIncidentTable("Commande - Erreur lors de l'envoi d'une commande","P4"));
+        list.add(new ISalesIncidentTable("Commande - Erreur de filtrage des commandes","P2"));
+        list.add(new ISalesIncidentTable("Commande - Erreur de relance d'un commande","P2"));
+        list.add(new ISalesIncidentTable("Commande - Erreur d'envoi des mails","P0"));
+
+        /** ############################## Dans l'onglet Profile ############################## **/
+        list.add(new ISalesIncidentTable("Profile - Erreur d'affichage du profile","P3"));
+        list.add(new ISalesIncidentTable("Profile - Erreur lors de la mise à jour de l'adresse email","P4"));
+
+        /** ############################## Dans l'onglet Agenda ############################## **/
+        list.add(new ISalesIncidentTable("Agenda - Erreur création d'un événement","P2"));
+        list.add(new ISalesIncidentTable("Agenda - Erreur de récupération des événements","P2"));
+        list.add(new ISalesIncidentTable("Agenda - Erreur de modification d'un événement","P2"));
+        list.add(new ISalesIncidentTable("Agenda - Erreur lors de la mise à jour d'un événement","P2"));
+        list.add(new ISalesIncidentTable("Agenda - Erreur suppression un d'événement","P2"));
+
+        /** ############################## Dans l'onglet Support Ticket ############################## **/
+        list.add(new ISalesIncidentTable("Support Ticket - Erreur création d'un ticket automatique","P2"));
+        list.add(new ISalesIncidentTable("Support Ticket - Erreur création d'un ticket manuel","P2"));
+        list.add(new ISalesIncidentTable("Support Ticket - Erreur d'envoi des mails","P0"));
+        return list;
     }
 }

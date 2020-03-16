@@ -23,7 +23,6 @@ import android.widget.Toast;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ClientEntry;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.interfaces.AddCustomerListener;
 import com.iSales.interfaces.FindThirdpartieListener;
 import com.iSales.pages.home.HomeActivity;
@@ -478,12 +477,6 @@ public class AddCustomerActivity extends AppCompatActivity implements FindThirdp
     }
 
     private void synchClient(){
-        mDb.debugMessageDao().insertDebugMessage(
-                new DebugItemEntry(this,
-                        (System.currentTimeMillis()/1000),
-                        "DEB",
-                        TAG+" executeFindClients() => called."));
-
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(this)) {
             Toast.makeText(this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();

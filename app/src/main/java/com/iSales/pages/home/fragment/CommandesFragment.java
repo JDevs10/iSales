@@ -44,6 +44,8 @@ import com.iSales.model.ProduitParcelable;
 import com.iSales.pages.boncmdesignature.BonCmdeSignatureActivity;
 import com.iSales.pages.detailscmde.DetailsCmdeActivity;
 import com.iSales.pages.home.dialog.ClientDialog;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Document;
 import com.iSales.remote.model.DolPhoto;
@@ -114,9 +116,27 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
     //    Recupération de la liste des produits
     private void executeFindOrder() {
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CommandesFragment.class.getSimpleName(),
+                        "executeFindOrder()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si le téléphone n'est pas connecté
         if (!com.iSales.remote.ConnectionManager.isPhoneConnected(getContext())) {
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CommandesFragment.class.getSimpleName(),
+                            "executeFindOrder()",
+                            getString(R.string.erreur_connexion),
+                            ""
+                    )
+            );
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
             showProgressDialog(false, null, null);
             return;
@@ -366,6 +386,15 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
     @Override
     public void onCommandeSelected(com.iSales.model.CommandeParcelable commandeParcelable) {
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CommandesFragment.class.getSimpleName(),
+                        "onCommandeSelected()",
+                        "ID : " + commandeParcelable.getId() + "Ref : " + commandeParcelable.getRef(),
+                        ""
+                )
+        );
 
         Intent intent = new Intent(getContext(), DetailsCmdeActivity.class);
         intent.putExtra("commande", commandeParcelable);
@@ -374,6 +403,15 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
 
     @Override
     public void onCommandeReStarted(com.iSales.model.CommandeParcelable commandeParcelable) {
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CommandesFragment.class.getSimpleName(),
+                        "onCommandeSelected()",
+                        "ID : " + commandeParcelable.getId() + "Ref : " + commandeParcelable.getRef(),
+                        ""
+                )
+        );
 
         Intent intent = new Intent(getContext(), BonCmdeSignatureActivity.class);
         intent.putExtra("commande", commandeParcelable);
@@ -550,6 +588,15 @@ public class CommandesFragment extends Fragment implements CommandeAdapterListen
         super.onCreate(savedInstanceState);
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CommandesFragment.class.getSimpleName(),
+                        "onCreate()",
+                        "Called.",
+                        ""
+                )
+        );
     }
 
     @Override

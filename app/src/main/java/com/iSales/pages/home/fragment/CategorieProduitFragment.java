@@ -36,6 +36,8 @@ import com.iSales.interfaces.DialogCategorieListener;
 import com.iSales.interfaces.FindCategorieListener;
 import com.iSales.interfaces.FindProductsListener;
 import com.iSales.model.CategorieParcelable;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Categorie;
 import com.iSales.remote.model.DolPhoto;
@@ -152,7 +154,16 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
     }
 
     public void loadCategories() {
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories() => called.").execute();
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        CategorieProduitFragment.class.getSimpleName(),
+                        "loadCategories()",
+                        "called.",
+                        ""
+                )
+        );
 
         //Getting the sharedPreference value
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -168,7 +179,16 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
             categorieEntries = mDb.categorieDao().getAllCategories();
         }
         Log.e(TAG, "loadCategories: categorieEntries=" + categories.size());
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" loadCategories: categorieEntries=" + categories.size()).execute();
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        CategorieProduitFragment.class.getSimpleName(),
+                        "loadCategories()",
+                        "categorieEntries=" + categories.size(),
+                        ""
+                )
+        );
 
         if (categorieEntries.size() <= 0) {
             Toast.makeText(getContext(), getString(R.string.aucune_categorie_trouve), Toast.LENGTH_LONG).show();
@@ -216,8 +236,6 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
     @Override
     public void onFindCategorieCompleted(FindCategoriesREST findCategoriesREST) {
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onFindCategorieCompleted() => called.").execute();
-
         mFindCategorieTask = null;
 //        affichage du formulaire de connexion
         showProgress(false);
@@ -272,7 +290,6 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
 
         this.mCategorieAdapter.notifyDataSetChanged();
         Log.e(TAG, "onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size());
-        new DebugMe(getActivity() ,getContext(), "WL-LL", TAG+" onFindCategorieCompleted: categorieSize=" + findCategoriesREST.getCategories().size()).execute();
 
     }
 

@@ -1,18 +1,6 @@
-package com.iSales.database.entry;
+package com.iSales.pages.ticketing.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.PrimaryKey;
-import android.content.Context;
-import android.util.Log;
-import android.widget.Spinner;
-
-import com.iSales.database.AppDatabase;
-import com.iSales.remote.model.DebugItem;
-
-@Entity(tableName = "debug_message")
-public class DebugItemEntry {
-
-    @PrimaryKey(autoGenerate = true)
+public class DebugItem {
     private int rowId;
     private long datetimeLong;
     private String mask;
@@ -21,23 +9,11 @@ public class DebugItemEntry {
     private String message;
     private String stackTrace;
 
-    public DebugItemEntry() {
-    }
-
-    public DebugItemEntry(Context context, long timeStamp, String mask, String message){
+    public DebugItem(long timeStamp, String mask, String className, String methodName, String message, String stackTrace){
         this.datetimeLong = timeStamp;
-        this.mask = mask + AppDatabase.getInstance(context).debugMessageDao().getAllDebugMessages().size();
-        this.className =className;
-        this.methodName =methodName;
-        this.message = message;
-        this.stackTrace = stackTrace;
-    }
-
-    public DebugItemEntry(Context context, long timeStamp, String mask, String className, String methodName, String message, String stackTrace){
-        this.datetimeLong = timeStamp;
-        this.mask = mask + AppDatabase.getInstance(context).debugMessageDao().getAllDebugMessages().size();
-        this.className =className;
-        this.methodName =methodName;
+        this.mask = mask;
+        this.className = className;
+        this.methodName = methodName;
         this.message = message;
         this.stackTrace = stackTrace;
     }

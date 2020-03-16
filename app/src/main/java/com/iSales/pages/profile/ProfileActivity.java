@@ -32,15 +32,15 @@ import android.widget.Toast;
 import com.iSales.R;
 import com.iSales.adapter.DebugAdapter;
 import com.iSales.database.AppDatabase;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.ServerEntry;
 import com.iSales.database.entry.SettingsEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.helper.DebugMe;
 import com.iSales.pages.home.viewmodel.UserViewModel;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ConnectionManager;
-import com.iSales.remote.model.DebugItem;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -425,18 +425,16 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    private List<DebugItemEntry> getDebugData(){
-        List<DebugItemEntry> debugItemEntries = mDB.debugMessageDao().getAllDebugMessages();
+    private List<DebugItem> getDebugData(){
+        List<DebugItem> debugItemEntries = new SaveLogs(this).readLogFile();
         mTotalPdtQuery = debugItemEntries.size();
 
         Log.e(TAG, "getDebugData():: debugItemEntries=" + debugItemEntries.size() +
                 " mTotalPdtQuery=" + mTotalPdtQuery);
 
         for (int i=0; i<debugItemEntries.size(); i++){
-            DebugItemEntry debugItemEntry = debugItemEntries.get(i);
+            DebugItem debugItemEntry = debugItemEntries.get(i);
             Log.e(TAG, " getDebugData():: mCurrentPdtQuery = "+i+" debugMessageID = "+debugItemEntry.getRowId());
-
-
         }
     return debugItemEntries;
     }

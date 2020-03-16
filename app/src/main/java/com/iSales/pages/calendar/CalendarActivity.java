@@ -4,26 +4,15 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.FocusFinder;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -34,9 +23,7 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -46,32 +33,24 @@ import com.iSales.R;
 import com.iSales.adapter.AgendaAdapter;
 import com.iSales.adapter.AgendaEventAdapter;
 import com.iSales.database.AppDatabase;
-import com.iSales.database.DBHelper.DatabaseHelper;
-import com.iSales.database.entry.AgendaEventEntry;
 import com.iSales.database.entry.ClientEntry;
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.database.entry.EventsEntry;
-import com.iSales.database.entry.UserEntry;
 import com.iSales.helper.DebugMe;
 import com.iSales.interfaces.FindAgendaEventsListener;
 import com.iSales.interfaces.ItemClickListenerAgenda;
-import com.iSales.pages.profile.ProfileActivity;
-import com.iSales.remote.ApiUtils;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.AgendaEvents;
 import com.iSales.remote.model.AgendaUserassigned;
 import com.iSales.remote.rest.AgendaEventsREST;
 import com.iSales.task.FindAgendaEventTask;
-import com.iSales.task.FindThirdpartieTask;
+import com.iSales.task.FindAllVirtualProductsTask;
 import com.iSales.task.SendAgendaEventTask;
-import com.iSales.utility.ISalesUtility;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -80,13 +59,12 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CalendarActivity extends AppCompatActivity implements FindAgendaEventsListener {
     private String TAG = CalendarActivity.class.getSimpleName();
 
-
+    private SaveLogs logs;
     private ImageButton previousBtn,nextBtn;
     private TextView currentDate;
     private ImageButton synchro_ib;
@@ -598,11 +576,15 @@ public class CalendarActivity extends AppCompatActivity implements FindAgendaEve
         add_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDB.debugMessageDao().insertDebugMessage(
-                        new DebugItemEntry(CalendarActivity.this,
-                                (System.currentTimeMillis()/1000),
-                                "DEB",
-                                TAG+" Add.onClick() => called.\n"));
+                new SaveLogs(getApplicationContext()).writeLogFile(
+                    new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CalendarActivity.class.getSimpleName(),
+                        "InitAddAgendaDialog()",
+                        "Add.onClick() => called.",
+                        ""
+                    )
+                );
 
                 boolean cancel = false;
                 View focusView = null;
