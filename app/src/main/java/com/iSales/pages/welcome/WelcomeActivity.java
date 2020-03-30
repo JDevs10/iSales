@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -25,8 +26,11 @@ import android.widget.Toast;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.DebugSettingsEntry;
 import com.iSales.database.entry.SettingsEntry;
+import com.iSales.pages.home.fragment.ClientsRadioFragment;
 import com.iSales.pages.login.LoginActivity;
 import com.iSales.R;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.task.SaveUserTask;
 
@@ -49,7 +53,7 @@ public class WelcomeActivity extends AppCompatActivity {
      */
     private String currentVersion, latestVersion;
     private Dialog dialog;
-
+    private AppDatabase db;
     private TextView Error_Message;
 
     /**
@@ -125,8 +129,22 @@ public class WelcomeActivity extends AppCompatActivity {
         mContentView = findViewById(R.id.fullscreen_content);
         Error_Message = findViewById(R.id.Error_Message);
 
+        db = AppDatabase.getInstance(this);
+        new SaveLogs(this).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", WelcomeActivity.class.getSimpleName(),
+                        "onCreate()",
+                        "Called.",
+                        ""
+                )
+        );
+
         // Check version on playStore
         getCurrentVersion();
+
+        //Clean debug logs every day
+        checkDebugLogs();
 
         //init debug settings
         initDebugSettings();
@@ -140,7 +158,16 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void initSettings() {
         if (AppDatabase.getInstance(getApplicationContext()).settingsDao().getAllSettings().size() == 0) {
-            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true));
+            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true, false));
+            new SaveLogs(getApplicationContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", GetLatestVersion.class.getSimpleName(),
+                            "initSettings()",
+                            "Add new App settings (ID: 1, SowDescripCataloge: true, EnableVirtualProductSync: false)",
+                            ""
+                    )
+            );
         }
     }
 
@@ -167,6 +194,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         // Check version on playStore
         getCurrentVersion();
+        checkDebugLogs();
 
     }
 
@@ -255,11 +283,32 @@ public class WelcomeActivity extends AppCompatActivity {
 //        tv.append("\n\nFile written to "+file);
     }
 
+    public void checkDebugLogs(){
+        new SaveLogs(this).delete24hLogs();
+    }
+
     private void getCurrentVersion() {
-        Log.e(TAG, " getCurrentVersion() : JL Test Version App");
+        new SaveLogs(this).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", WelcomeActivity.class.getSimpleName(),
+                        "getCurrentVersion()",
+                        "Called.",
+                        ""
+                )
+        );
 
         if (!ConnectionManager.isPhoneConnected(this)) {
             Log.e(TAG, " getCurrentVersion() : No Internet no Update");
+            new SaveLogs(this).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", WelcomeActivity.class.getSimpleName(),
+                            "getCurrentVersion()",
+                            "No Internet no Update.",
+                            ""
+                    )
+            );
             delayedHide(100);
             delayedLogged(3000);
             return;
@@ -314,6 +363,19 @@ public class WelcomeActivity extends AppCompatActivity {
         protected void onPostExecute(JSONObject jsonObject) {
             Log.e(TAG, "latestVersion: " + latestVersion);
             Log.e(TAG, "currentVersion: " + currentVersion);
+            new SaveLogs(getApplicationContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", GetLatestVersion.class.getSimpleName(),
+                            "onPostExecute()",
+                            "Called. latestVersion : " + latestVersion + " || currentVersion : " + currentVersion,
+                            ""
+                    )
+            );
+
+            Log.e(TAG, "Check version desable: latestVersion == currentVersion");
+            latestVersion = currentVersion;
+
             if (latestVersion != null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)) {
                     if (!isFinishing()) { //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
@@ -321,6 +383,15 @@ public class WelcomeActivity extends AppCompatActivity {
                     }
                 } else {
                     // if version is correct then proceed
+                    new SaveLogs(getApplicationContext()).writeLogFile(
+                            new DebugItem(
+                                    (System.currentTimeMillis()/1000),
+                                    "DEB", GetLatestVersion.class.getSimpleName(),
+                                    "onPostExecute()",
+                                    "The version is correct!",
+                                    ""
+                            )
+                    );
                     delayedHide(100);
                     delayedLogged(3000);
                 }
@@ -328,10 +399,36 @@ public class WelcomeActivity extends AppCompatActivity {
 //                delayedLogged(3000);
             } else {
                 //background.start();
-                Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +
-                        "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
-                        "Veuillez vérifier votre connexion internet !");
+                CountDownTimer countDownTimer = new CountDownTimer(10 * 1000, 1000) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        Error_Message.setText("Impossible de trouver la version sur le PlayStore\n" +
+                                "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
+                                "Veuillez vérifier votre connexion internet !\n\n" +
+                                "iSales va s'ouvrir dans "+(millisUntilFinished / 1000)+" seconds");
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        delayedHide(100);
+                        delayedLogged(1000);
+                    }
+                };
+
+                new SaveLogs(getApplicationContext()).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB", GetLatestVersion.class.getSimpleName(),
+                                "onPostExecute()",
+                                "Impossible de trouver la version sur le PlayStore\n" +
+                                        "Résultat : " + ((latestVersion == null) ? "latestVersion == NULL" : latestVersion) + "\n" +
+                                        "Veuillez vérifier votre connexion internet !",
+                                ""
+                        )
+                );
+                countDownTimer.start();
                 Toast.makeText(WelcomeActivity.this, "latestVersion == NULL", Toast.LENGTH_SHORT).show();
+
                 super.onPostExecute(jsonObject);
             }
         }
@@ -368,11 +465,31 @@ public class WelcomeActivity extends AppCompatActivity {
         builder.setPositiveButton("Mettre à jour", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                new SaveLogs(getApplicationContext()).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB", GetLatestVersion.class.getSimpleName(),
+                                "showUpdateDialog()",
+                                "User clicked on update the app.",
+                                ""
+                        )
+                );
+
                 //Save user login && token info in a backup file
                 new SaveUserTask(getApplicationContext()).SetRestoreBackUpData("SET");
 
                 //Clean app cache
                 deleteCache(WelcomeActivity.this);
+
+                new SaveLogs(getApplicationContext()).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB", GetLatestVersion.class.getSimpleName(),
+                                "showUpdateDialog()",
+                                "Open browser and surf to => https://play.google.com/store/apps/details?id=com.iSales",
+                                ""
+                        )
+                );
 
                 //Open the browser and open the url
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse

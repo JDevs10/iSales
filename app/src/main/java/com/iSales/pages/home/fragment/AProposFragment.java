@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 import com.iSales.R;
 import com.iSales.helper.DebugMe;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,7 +45,16 @@ public class AProposFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new DebugMe(getActivity() ,getContext(), "WL", TAG+" onCreate() => called.").execute();
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        AProposFragment.class.getSimpleName(),
+                        "onCreate()",
+                        "Response: ",
+                        ""
+                )
+        );
     }
 
     @Override

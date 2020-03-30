@@ -18,7 +18,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.iSales.database.entry.DebugItemEntry;
 import com.iSales.remote.ApiConnectionUrl;
 import com.iSales.task.SendMail;
 import com.kyanogen.signatureview.SignatureView;
@@ -363,12 +362,6 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
 
                                 Log.e(TAG, "onResponse: validateCustomerOrder orderRef=" + responseValiBody.getRef() +
                                         " orderId=" + responseValiBody.getId());
-
-                                mDb.debugMessageDao().insertDebugMessage(new DebugItemEntry(
-                                        getApplicationContext(),
-                                        (System.currentTimeMillis()/1000),
-                                        "DEB",
-                                        TAG+" callValidate() || onResponse responseValiBody => "+responseValiBody.toString()));
 
 //                                Mise a jour mode statut de la commande en local
                                 mDb.commandeDao().deleteAllCmde();

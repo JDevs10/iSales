@@ -7,7 +7,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.iSales.database.AppDatabase;
-import com.iSales.database.entry.DebugItemEntry;
 
 public class DebugMe extends AsyncTask<Void, Void, Void> {
     private String TAG = DebugMe.class.getSimpleName();
@@ -46,7 +45,7 @@ public class DebugMe extends AsyncTask<Void, Void, Void> {
     }
 
     private void WindowLogs(){
-        mDB.debugMessageDao().insertDebugMessage(new DebugItemEntry(mContext, (System.currentTimeMillis()/1000), "DEB", msg));
+
     }
 
     private void LiveLogs(){

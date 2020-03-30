@@ -1,13 +1,14 @@
-package com.iSales.remote.model;
+package com.iSales.database.entry;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
-import android.support.annotation.NonNull;
 
-@Entity(tableName = "virtual_product")
-public class ProductVirtual {
-    @PrimaryKey(autoGenerate = false)
-    private Long _0;
+/**
+ * Created by JDevs on 16/01/2020.
+ */
+
+public class VirtualProductEntry {
+    private String _0;
     private String rowid; // is the product of the virtual product
     private String fk_product_pere;
     private String fk_product_fils;
@@ -28,15 +29,7 @@ public class ProductVirtual {
     private String stock;
     private String local_poster_path;
 
-    public ProductVirtual() {
-    }
-
-    public Long get_0() {
-        return _0;
-    }
-
-    public void set_0(Long _0) {
-        this._0 = _0;
+    public VirtualProductEntry() {
     }
 
     public String getRowid() {

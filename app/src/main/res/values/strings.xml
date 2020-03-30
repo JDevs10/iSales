@@ -36,6 +36,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="parametres_activer_synchronisation_ProduitVirtuel">parametres_activer_synchronisation_ProduitVirtuel</string>
 
     <string name="erreur_connexion">Erreur réseau. Veuillez vérifier votre connexion internet.</string>
     <string name="parametres_connexion_incorrect">Erreur d\'authentification. Paramètres de connexion incorrects.</string>
@@ -196,6 +197,8 @@
     <string name="presentation_isales">iSales est une application de prise de commande sur tablette iPad développé par Big Data Consulting. L’application permet à vos commerciaux de terrain de prendre des commandes directement sur tablette et tout cela à partir de chez le client. Elle a été spécialement conçue pour les professionnels. C’est un logiciel unique en son genre</string>
     <string name="title_activity_parametres">Settings</string>
     <string name="parametres">Paramètres</string>
+    <string name="support_ticket">Support Ticket</string>
+    <string name="service_indisponible_email">Service indisponible. Erreur d\'envoi du mail.</string>
     <string name="echec_envoi_logo_client">Echec d\'envoi du logo client.</string>
     <string name="toutes_les_categories">Toutes les categories</string>
     <string name="note">Note</string>

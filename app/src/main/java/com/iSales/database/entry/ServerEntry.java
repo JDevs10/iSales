@@ -27,6 +27,7 @@ public class ServerEntry {
     private String note;
     private String title;
     private Boolean is_active;
+    private String completeServerName;
 
     public ServerEntry() {
 
@@ -41,7 +42,7 @@ public class ServerEntry {
     }
 
     @Ignore
-    public ServerEntry(String hostname, String hostname_img, String raison_sociale, String adresse, String code_postal, String ville, String departement, String pays, String devise, String telephone, String mail, String website, String note, String title, Boolean is_active) {
+    public ServerEntry(String hostname, String hostname_img, String raison_sociale, String adresse, String code_postal, String ville, String departement, String pays, String devise, String telephone, String mail, String website, String note, String title, Boolean is_active, String completeServerName) {
         this.hostname = hostname;
         this.hostname_img = hostname_img;
         this.raison_sociale = raison_sociale;
@@ -57,6 +58,7 @@ public class ServerEntry {
         this.note = note;
         this.title = title;
         this.is_active = is_active;
+        this.completeServerName = completeServerName;
     }
 
     public Long getId() {
@@ -185,5 +187,13 @@ public class ServerEntry {
 
     public void setHostname_img(String hostname_img) {
         this.hostname_img = hostname_img;
+    }
+
+    public String getCompleteServerName() {
+        return completeServerName;
+    }
+
+    public void setCompleteServerName(String completeServerName) {
+        this.completeServerName = completeServerName;
     }
 }

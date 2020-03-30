@@ -1,6 +1,7 @@
 package com.iSales.pages.home.fragment;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -49,45 +50,72 @@ import com.iSales.database.entry.CategorieEntry;
 import com.iSales.database.entry.PanierEntry;
 import com.iSales.database.entry.ProductCustPriceEntry;
 import com.iSales.database.entry.ProduitEntry;
+import com.iSales.database.entry.SettingsEntry;
+import com.iSales.database.entry.VirtualProductEntry;
 import com.iSales.interfaces.DialogCategorieListener;
 import com.iSales.interfaces.FindCategorieListener;
 import com.iSales.interfaces.FindImagesProductsListener;
+import com.iSales.interfaces.FindProductVirtualListener;
 import com.iSales.interfaces.FindProductsListener;
 import com.iSales.interfaces.ProduitsAdapterListener;
 import com.iSales.model.CategorieParcelable;
 import com.iSales.model.ProduitParcelable;
 import com.iSales.pages.addcategorie.AddCategorieActivity;
+import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.detailsproduit.DetailsProduitActivity;
 import com.iSales.pages.home.dialog.FullScreenCatPdtDialog;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
+import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Categorie;
 import com.iSales.remote.model.DolPhoto;
 import com.iSales.remote.model.Product;
+import com.iSales.remote.model.ProductVirtual;
 import com.iSales.remote.rest.FindCategoriesREST;
+import com.iSales.remote.rest.FindProductVirtualREST;
 import com.iSales.remote.rest.FindProductsREST;
+import com.iSales.task.FindAllVirtualProductsTask;
 import com.iSales.task.FindCategorieTask;
 import com.iSales.task.FindImagesProductsTask;
+import com.iSales.task.FindProductVirtualTask;
 import com.iSales.task.FindProductsTask;
 import com.iSales.utility.ISalesUtility;
 
+import org.json.JSONObject;
+import org.json.*;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+//import org.json.simple.JSONArray;
+//import org.json.simple.JSONObject;
+import java.io.FileWriter;
+
+import retrofit2.Call;
+import retrofit2.Response;
+
 public class CategoriesFragment extends Fragment implements ProduitsAdapterListener, DialogCategorieListener,
-        FindProductsListener, FindCategorieListener, FindImagesProductsListener {
+        FindProductsListener, FindCategorieListener, FindImagesProductsListener, FindProductVirtualListener {
 
     private static final String TAG = com.iSales.pages.home.fragment.CategoriesFragment.class.getSimpleName();
-
 
     //    task de recuperation des produits
     private FindProductsTask mFindProductsTask = null;
     //    task de recuperation des categories
     private FindCategorieTask mFindCategorieTask = null;
+    //    task de recuperation des virtuel product
+    private FindProductVirtualTask mFindVirtualProductTask = null;
+    private int totalProducts = 0;
 
     private int mPageCategorie = 0;
+    private int mPageVirtualProduct = 0;
     private int mCountRequestPdt = 0;
 
     ProgressDialog mProgressDialog;
@@ -191,11 +219,29 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     //    Recupération de la liste des produits sur le serveur
     private void executeFindProducts() {
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "executeFindProducts()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
             showProgressDialog(false, null, null);
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "executeFindProducts()",
+                            getString(R.string.erreur_connexion),
+                            ""
+                    )
+            );
             return;
         }
 
@@ -235,10 +281,29 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     //    Recupération de la liste des categories produits sur le serveur
     private void executeFindCategorieProducts() {
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "executeFindCategorieProducts()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si le téléphone n'est pas connecté
         if (!ConnectionManager.isPhoneConnected(getContext())) {
             Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "executeFindCategorieProducts()",
+                            getString(R.string.erreur_connexion),
+                            ""
+                    )
+            );
+
             showProgressDialog(false, null, null);
         }
 
@@ -248,6 +313,8 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             mFindCategorieTask = new FindCategorieTask(getContext(), com.iSales.pages.home.fragment.CategoriesFragment.this, "label", "asc", mLimit, mPageCategorie, "product");
             mFindCategorieTask.execute();
         }
+
+
     }
 
     private void initContent() {
@@ -256,6 +323,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         loadProduits(0, null, 0);
         reloadCategorieFragment();
         showProgress(false);
+
     }
 
     private void initProduits() {
@@ -297,6 +365,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             produitsParcelableList.add(produitParcelable);
         }
 
+
     }
 
     private void loadProduits(long categorieId, String searchString, int lastposition) {
@@ -309,6 +378,16 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 " categorieId=" + categorieId +
                 " searchString=" + searchString +
                 " lastposition=" + lastposition);
+
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "loadProduits()",
+                        "loadProduits: produitazero=" + produitazero + " || categorieId=" + categorieId + " || searchString=" + searchString + " || lastposition=" + lastposition,
+                        ""
+                )
+        );
 
 //        reinitialisation de la vue
         List<ProduitParcelable> emptyList = new ArrayList<>();
@@ -549,6 +628,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     //    insert a movie in database
     public void addPanier(final ProduitParcelable produitParcelable) {
         Log.e(TAG, "addPanier: id" + produitParcelable.getId());
+
         // get movie in db
         final PanierEntry panierEntryTest = mDb.panierDao().getPanierById(produitParcelable.getId());
 
@@ -592,6 +672,16 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         panierEntry.setRemise("0");
         panierEntry.setRemise_percent("0");
 
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "addPanier()",
+                        "Produit :\nID : "+panierEntry.getLabel()+"\nName : "+panierEntry.getLabel() + "\nPrix : " + panierEntry.getPrice() + "\nQte : " + panierEntry.getQuantity(),
+                        ""
+                )
+        );
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -624,85 +714,159 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 //            modification de la position de la requete courante de recupération des produits
         mCurrentPdtQuery++;
 //        Log.e(TAG, "onFindProductsCompleted: FindProductsREST getThirdparties mCurrentPdtQuery=" + mCurrentPdtQuery + " mTotalPdtQuery=" + mTotalPdtQuery);
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onFindProductsCompleted()",
+                        "mCurrentPdtQuery=" + mCurrentPdtQuery + " mTotalPdtQuery=" + mTotalPdtQuery,
+                        ""
+                )
+        );
 
-        if (findProductsREST != null && findProductsREST.getProducts() != null) {
-//            Log.e(TAG, "onFindProductsCompleted: saving product categorie=" + findProductsREST.getCategorie_id() + " pdtSize=" + findProductsREST.getProducts().size());
-            for (Product productItem : findProductsREST.getProducts()) {
-//                Log.e(TAG, "onFindProductsCompleted: tva_tx=" + productItem.getTva_tx());
-                final ProduitEntry produitEntry = new ProduitEntry();
-                produitEntry.setId(Long.parseLong(productItem.getId()));
-                produitEntry.setCategorie_id(findProductsREST.getCategorie_id());
-                produitEntry.setLabel(productItem.getLabel());
-                produitEntry.setPrice(productItem.getPrice());
-                produitEntry.setPrice_ttc(productItem.getPrice_ttc());
-                produitEntry.setRef(productItem.getRef());
-                produitEntry.setStock_reel(productItem.getStock_reel());
-                produitEntry.setDescription(productItem.getDescription());
-                produitEntry.setTva_tx(productItem.getTva_tx());
-                produitEntry.setNote(productItem.getNote());
-                produitEntry.setNote_public(productItem.getNote_public());
-                produitEntry.setNote_private(productItem.getNote_private());
+        //Si la recupération echoue, on renvoi un message d'erreur
+        if (findProductsREST == null) {
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductsREST == null");
+            //Fermeture du loader
+            showProgressDialog(false, null, null);
+            Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindProductsCompleted()",
+                            getString(R.string.service_indisponible),
+                            ""
+                    )
+            );
+            return;
+        }
 
-//                    Log.e(TAG, "onFindThirdpartieCompleted: insert produitEntry");
-//            insertion du client dans la BD
-                if (mDb.produitDao().getProduitById(produitEntry.getId()) == null) {
-                    mDb.produitDao().insertProduit(produitEntry);
-                }
-            }
-//            Log.e(TAG, "onFindProductsCompleted: mPage=" + mCurrentPdtQuery);
+        if (findProductsREST.getProducts() == null) {
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductsREST.getProducts() == null");
 
-            if (mCurrentPdtQuery >= mTotalPdtQuery - 1) {
-                Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-                //Fermeture du loader
-                //Fermeture du loader
-                showProgressDialog(false, null, null);
-
-                initContent();
-                Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
-
-                /*
-                Log.e(TAG, " onFindProductsCompleted() || findImage() => Start");
-                //showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
-
-                //Suppression des images des clients en local
-                ISalesUtility.deleteProduitsImgFolder();
-
-                findImage();
-                Log.e(TAG, " onFindProductsCompleted() || findImage() => End");
-
-                initContent();
-                */
-                return;
-            }
-        } else {
-//            Log.e(TAG, "onFindProductsCompleted: FindProductsREST getThirdparties null");
-
-            if (mCurrentPdtQuery >= mTotalPdtQuery - 1) {
+            if (mCurrentPdtQuery >= mTotalPdtQuery) {
                 Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                 //        Fermeture du loader
                 showProgressDialog(false, null, null);
-
+                Log.e(TAG, getString(R.string.liste_produits_synchronises) + " Null != Null 2");
                 Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
 //                loadProduits(-1, null, 0);
+
                 initContent();
+
 
                 return;
             }
+            Log.e(TAG, "onFindProductVirtualCompleted() => findProductsREST.getProducts() == null 22");
+            return;
+            //Products Product sync with success
         }
 
+        totalProducts += findProductsREST.getProducts().size();
+        Log.e(TAG, "onFindProductsCompleted: saving product categorie=" + findProductsREST.getCategorie_id() + " pdtSize=" + findProductsREST.getProducts().size());
+        for (Product productItem : findProductsREST.getProducts()) {
+//                Log.e(TAG, "onFindProductsCompleted: tva_tx=" + productItem.getTva_tx());
+            final ProduitEntry produitEntry = new ProduitEntry();
+            produitEntry.setId(Long.parseLong(productItem.getId()));
+            produitEntry.setCategorie_id(findProductsREST.getCategorie_id());
+            produitEntry.setLabel(productItem.getLabel());
+            produitEntry.setPrice(productItem.getPrice());
+            produitEntry.setPrice_ttc(productItem.getPrice_ttc());
+            produitEntry.setRef(productItem.getRef());
+            produitEntry.setStock_reel(productItem.getStock_reel());
+            produitEntry.setDescription(productItem.getDescription());
+            produitEntry.setTva_tx(productItem.getTva_tx());
+            produitEntry.setNote(productItem.getNote());
+            produitEntry.setNote_public(productItem.getNote_public());
+            produitEntry.setNote_private(productItem.getNote_private());
+
+//            Log.e(TAG, "onFindThirdpartieCompleted: insert produitEntry");
+//            insertion du client dans la BD
+            if (mDb.produitDao().getProduitById(produitEntry.getId()) == null) {
+                mDb.produitDao().insertProduit(produitEntry);
+            }
+        }
+//            Log.e(TAG, "onFindProductsCompleted: mPage=" + mCurrentPdtQuery);
+
+        Log.e(TAG, " mCurrentPdtQuery: "+mCurrentPdtQuery+" >= mTotalPdtQuery: "+mTotalPdtQuery);
+        if (mCurrentPdtQuery >= mTotalPdtQuery) {
+            Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+
+
+            SettingsEntry config = mDb.settingsDao().getAllSettings().get(0);
+            if (config.isEnableVirtualProductSync()){
+                if (totalProducts >= mDb.produitDao().getAllProduits().size()) {
+                    Log.e(TAG, "Get All Virtual products");
+
+                        /*
+                        virtuelProductList = new ArrayList<>();
+                        for (int x = 0; x < mDb.produitDao().getAllProduits().size(); x++){
+                            if(!mDb.produitDao().getAllProduits().get(x).getRef().contains("C") && !mDb.produitDao().getAllProduits().get(x).getRef().contains("P")) {
+                                //executeFindVirtualProducts(Long.valueOf(produitEntry.getId()));
+                                Log.e(TAG, "findVirtualProductsList: ID = " + mDb.produitDao().getAllProduits().get(x).getId() + " | Ref: "+mDb.produitDao().getAllProduits().get(x).getRef());
+
+                                virtuelProductList.add(mDb.produitDao().getAllProduits().get(x).getId());
+                            }
+                        }
+                        Log.e(TAG, "There are "+mDb.virtualProductDao().getAllVirtualProduct().size()+" to be deleted!");
+                        mDb.virtualProductDao().deleteAllVirtualProduct();
+                        virtuelProductTotalID = virtuelProductList.size();
+                        */
+                    //findVirtualProducts(true,0,9);
+                    //executeFindVirtualProducts();
+                    showProgressDialog(false, null, null);
+                    FindAllVirtualProductsTask task = new FindAllVirtualProductsTask(getContext(), CategoriesFragment.this);
+                    task.execute();
+                }
+            }else{
+                Log.e(TAG, "Products : " + totalProducts + " | " + mDb.produitDao().getAllProduits().size());
+                //Fermeture du loader
+                showProgressDialog(false, null, null);
+                Toast.makeText(getContext(), getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
+                initContent();
+            }
+
+            Log.e(TAG, "Done !");
+
+
+            /*
+            Log.e(TAG, " onFindProductsCompleted() || findImage() => Start");
+            //showProgressDialog(true, null, getString(R.string.miseajour_images_produits));
+
+            //Suppression des images des clients en local
+            ISalesUtility.deleteProduitsImgFolder();
+
+            findImage();
+            Log.e(TAG, " onFindProductsCompleted() || findImage() => End");
+
+            initContent();
+            */
+            return;
+        }
     }
 
-    void findImage() {
 
+    private void findImage() {
         final List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "findImage()",
+                        "Called, with " + produitEntries.size()+" product images.",
+                        ""
+                )
+        );
+
         mCountRequestImg = 0;
         mCountRequestImgTotal = produitEntries.size();
-        Log.e(TAG, "findImage: produitEntriesSize=" + produitEntries.size() + " mCountRequestImgTotal=" + mCountRequestImgTotal);
+        Log.e(TAG, "findImage: produitEntriesSize=" + produitEntries.size() + " || mCountRequestImgTotal=" + mCountRequestImgTotal);
         if (produitEntries.size() > 0) {
 //            setAutoOrientationEnabled(getContext(), true);
             for (ProduitEntry produitEntry : produitEntries) {
 
-//        Si le téléphone n'est pas connecté
+                //Si le téléphone n'est pas connecté
                 if (!ConnectionManager.isPhoneConnected(getContext())) {
                     showProgressDialog(false, null, null);
                     Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
@@ -718,6 +882,41 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             Toast.makeText(getContext(), "Aucun produits", Toast.LENGTH_LONG).show();
             return;
         }
+    }
+
+    @Override
+    public void onFindProductVirtualCompleted(FindProductVirtualREST findProductVirtualREST) {
+    }
+
+    @Override
+    public void onFindProductVirtualCompleted(int result) {
+        if(result == 0){
+            Toast.makeText(getContext(), "Des Produits Virtuel Synchronise", Toast.LENGTH_SHORT).show();
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindProductVirtualCompleted()",
+                            "Produit virtuel enregistre dans le fichier 'iSales_Produits/produits_details.json'",
+                            ""
+                    )
+            );
+        }
+        else if(result == -1){
+            Toast.makeText(getContext(), "Aucun Produits Virtuel Synchronise", Toast.LENGTH_SHORT).show();
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindProductVirtualCompleted()",
+                            "Erreur d'enregistrement des produits virtuel.",
+                            ""
+                    )
+            );
+        }
+
+        loadProduits(0, null, 0);
+        initContent();
     }
 
     @Override
@@ -739,6 +938,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             showProgressDialog(false, null, null);
 //            setAutoOrientationEnabled(getContext(), false);
             Toast.makeText(getContext(), getString(R.string.miseajour_images_produits_effectuee), Toast.LENGTH_LONG).show();
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindImagesProductsComplete()",
+                            getString(R.string.miseajour_images_produits_effectuee)+"\nFile path : " + pathFile,
+                            ""
+                    )
+            );
             return;
         }
     }
@@ -752,6 +960,16 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             //        Fermeture du loader
             showProgressDialog(false, null, null);
             Toast.makeText(getContext(), getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindCategorieCompleted()",
+                            getString(R.string.service_indisponible),
+                            ""
+                    )
+            );
             return;
         }
         if (findCategoriesREST.getCategories() == null) {
@@ -761,6 +979,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             mPageCategorie = 0;
 //            Toast.makeText(SynchronisationActivity.this, getString(R.string.liste_produits_synchronises), Toast.LENGTH_LONG).show();
 
+            new SaveLogs(getContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", CategoriesFragment.class.getSimpleName(),
+                            "onFindCategorieCompleted()",
+                            getString(R.string.liste_produits_synchronises),
+                            ""
+                    )
+            );
             executeFindProducts();
 
 
@@ -791,6 +1018,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         showLog();
 
         mDb = AppDatabase.getInstance(getContext().getApplicationContext());
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onCreate()",
+                        "Called.",
+                        ""
+                )
+        );
     }
 
     @Override
@@ -841,7 +1077,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                     if ((itemsCount - 1) < produitsParcelableListFiltered.size()) {
                         Log.e(TAG, "onScroll: lastPosition=" + lastPosition + " itemsCount=" + itemsCount);
                         if (produitsParcelableListFiltered.get(lastPosition).getId() == produitsParcelableListFiltered.get(itemsCount - 1).getId()
-                        && lastPosition < (produitsParcelableListFiltered.size() - 1)) {
+                                && lastPosition < (produitsParcelableListFiltered.size() - 1)) {
                             populateRecyclerviewContent(categorieIdGlobal, lastPosition, false);
 
                         }
@@ -945,7 +1181,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
         super.onCreateOptionsMenu(menu, inflater);
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -955,24 +1190,37 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 //Si le téléphone n'est pas connecté
                 if (!ConnectionManager.isPhoneConnected(getContext())) {
                     Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                    new SaveLogs(getContext()).writeLogFile(
+                            new DebugItem(
+                                    (System.currentTimeMillis()/1000),
+                                    "DEB", CategoriesFragment.class.getSimpleName(),
+                                    "onOptionsItemSelected()",
+                                    "action_fragcategorie_sync ===> " +getString(R.string.erreur_connexion),
+                                    ""
+                            )
+                    );
+
                     return true;
                 }
 
                 //Log.e(TAG, "onFindImagesProductsComplete: currOrientation="+currOrientation );
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 } else {
-                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                    Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 }
 
                 //affichage du loader dialog
                 showProgressDialog(true, null, getString(R.string.synchro_produits_encours));
 
+
                 mDb.categorieDao().deleteAllCategorie();
                 mDb.produitDao().deleteAllProduit();
+                mDb.virtualProductDao().deleteAllVirtualProduct();
 
                 //recupere la liste des produits sur le serveur
                 executeFindCategorieProducts();
+
                 return true;
 
             case R.id.action_fragcategorie_sync_image:
@@ -986,6 +1234,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                                 //Si le téléphone n'est pas connecté
                                 if (!ConnectionManager.isPhoneConnected(getContext())) {
                                     Toast.makeText(getContext(), getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                                    new SaveLogs(getContext()).writeLogFile(
+                                            new DebugItem(
+                                                    (System.currentTimeMillis()/1000),
+                                                    "DEB", CategoriesFragment.class.getSimpleName(),
+                                                    "onOptionsItemSelected()",
+                                                    "action_fragcategorie_sync ===> " +getString(R.string.erreur_connexion),
+                                                    ""
+                                            )
+                                    );
                                     return;
                                 }
 
@@ -1007,10 +1264,10 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                             }
                         })
                         .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-
-                                }
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
                         }).create();
                 dialog.show();
                 break;
@@ -1049,6 +1306,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     public void onDetailsSelected(ProduitParcelable produitParcelable) {
 //        Toast.makeText(getContext(), "Detail "+ produitParcelable.getLabel(), Toast.LENGTH_SHORT).show();
 //        Log.e(TAG, "onDetailsSelected: "+produitParcelable.getDescription());
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onDetailsSelected()",
+                        "Selected product : ID => " +produitParcelable.getId() + " || Name => " + produitParcelable.getLabel(),
+                        ""
+                )
+        );
 
         Intent intent = new Intent(getContext(), DetailsProduitActivity.class);
         intent.putExtra("produit", produitParcelable);
@@ -1063,6 +1329,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     @Override
     public void onCategorieDialogSelected(CategorieParcelable categorieParcelable) {
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "onCategorieDialogSelected()",
+                        "Selected product : ID => " +categorieParcelable.getId() + " || Name => " + categorieParcelable.getLabel(),
+                        ""
+                )
+        );
 
 //        scroll du recyclerview en debut de liste
         mRecyclerViewProduits.smoothScrollToPosition(0);
@@ -1111,6 +1386,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
     private void reloadCategorieFragment(){
         Log.e(TAG, "JL reloadCategorieFragment() ");
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", CategoriesFragment.class.getSimpleName(),
+                        "reloadCategorieFragment()",
+                        "Called.",
+                        ""
+                )
+        );
         Fragment currentFragment = getActivity().getSupportFragmentManager().findFragmentById(R.id.master_frame);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.detach(currentFragment);
@@ -1124,5 +1408,15 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
 
         //Prevent the keyboard from displaying on activity start
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+    }
+
+    private String getServeurHostname(){
+        /*
+         * Returns food (France Food Company) || soifexpress (Soif Express) || asiafood (Asia Food) || bdc (BDC)
+         */
+        String hostname = mDb.serverDao().getActiveServer(true).getHostname();
+        String new_str;
+        new_str = hostname.replace("http://"," ");
+        return new_str.replace(".apps-dev.fr/api/index.php"," ");
     }
 }

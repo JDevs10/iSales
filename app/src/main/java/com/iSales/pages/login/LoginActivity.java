@@ -35,6 +35,11 @@ import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
 import com.iSales.interfaces.OnInternauteLoginComplete;
 import com.iSales.pages.home.HomeActivity;
+//import com.iSales.pages.ticketing.TicketingActivity;
+import com.iSales.pages.ticketing.TicketingActivity;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
+import com.iSales.pages.welcome.WelcomeActivity;
 import com.iSales.remote.ApiUtils;
 import com.iSales.remote.ConnectionManager;
 import com.iSales.remote.model.Internaute;
@@ -162,6 +167,18 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
         mDb = AppDatabase.getInstance(getApplicationContext());
 
+        new SaveLogs(this).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        LoginActivity.class.getSimpleName(),
+                        "onCreate()",
+                        "Called.",
+                        ""
+                )
+        );
+
+
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(com.iSales.pages.login.LoginActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -256,8 +273,22 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             }
         });
 
+        Button  mTicketingReport = (Button) findViewById(R.id.ticketing_button);
+        mTicketingReport.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTicketingReport();
+            }
+        });
+
         mProgressView = findViewById(R.id.login_progress);
         mLoginFormView = findViewById(R.id.login_form);
+    }
+
+    private void openTicketingReport(){
+        Intent intent = new Intent(LoginActivity.this, TicketingActivity.class);
+        intent.putExtra("LOGGED_IN", "false");
+        startActivity(intent);
     }
 
     @Override
@@ -269,7 +300,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
         // Si il y a deja un user alors on va directement a l'accueil 654205564
         if (mDb.userDao().getUser().size() > 0) {
-        // Aller a la page d'accueil
+            // Aller a la page d'accueil
             Intent intent = new Intent(com.iSales.pages.login.LoginActivity.this, HomeActivity.class);
             startActivity(intent);
             return;
@@ -308,7 +339,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
                 // Si il y a deja un user alors on va directement a l'accueil
                 if (mDb.userDao().getUser().size() > 0) {
-                // Aller a la page d'accueil
+                    // Aller a la page d'accueil
                     Intent intent = new Intent(com.iSales.pages.login.LoginActivity.this, HomeActivity.class);
                     startActivity(intent);
 
@@ -329,7 +360,6 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-
         // Reset errors.
         mServerET.setError(null);
         mUsernameET.setError(null);
@@ -339,6 +369,17 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         mServer = mServerET.getText().toString().trim();
         mUsername = mUsernameET.getText().toString().trim();
         mPassword = mPasswordET.getText().toString().trim();
+
+        new SaveLogs(this).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        LoginActivity.class.getSimpleName(),
+                        "attemptLogin()",
+                        "Called.",
+                        "mServerET : "+mServerET + "\nmUsername : " + mUsername + "\nmPassword : " + mPassword
+                )
+        );
 
         boolean cancel = false;
         View focusView = null;
@@ -377,7 +418,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
 
-            String doliServer = mServerET.getText().toString();
+            String doliServer = mServerET.getText().toString().trim();
 //            String doliServer = mServer;
 
             serverEntries = mDb.serverDao().getAllServers();
@@ -386,7 +427,7 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
             while (i < serverEntries.size()) {
                 Log.e(TAG, "attemptLogin: getHostname=" + serverEntries.get(i).getHostname() + " doliServer=" + doliServer);
 //                recupere le nom de sous-domaine dans le hostname
-                if (serverEntries.get(i).getRaison_sociale().toLowerCase().contains(doliServer.toLowerCase())) {
+                if (serverEntries.get(i).getCompleteServerName().toLowerCase().equals(doliServer.toLowerCase())) {
 //                    Log.e(TAG, "attemptLogin: equaled doliServer=" + doliServer);
                     mServerChoose = serverEntries.get(i);
 
@@ -398,6 +439,16 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                 i++;
             }
 
+            new SaveLogs(this).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB",
+                            LoginActivity.class.getSimpleName(),
+                            "attemptLogin()",
+                            getString(R.string.nom_compagnie_incorrect),
+                            ""
+                    )
+            );
             Toast.makeText(LoginActivity.this, R.string.nom_compagnie_incorrect, Toast.LENGTH_LONG).show();
             return;
 
@@ -490,10 +541,11 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 //        serverEntries.add(new ServerEntry("Serveur de test Dolibarr Bananafw", "http://dolibarr.bananafw.com/api/index.php", false));
 //        serverEntries.add(new ServerEntry("France Food Compagny", "http://food.apps-dev.fr:80/api/index.php", false));
 //        serverEntries.add(new ServerEntry("SOif Express", "http://82.253.71.109/prod/soif_express/api/index.php", false));
-        serverEntries.add(new ServerEntry("http://food.apps-dev.fr/api/index.php", "http://food.apps-dev.fr/api/ryimg", "France Food company FFC", "2 rue Charles De Gaulle ZI La Mariniere,", "91070", "Bondoufle", "91 - Essonne", "France", "EURO", "0758542161", "contact@francefoodcompany.fr", "", "", "France Food company FFC", false));
-        serverEntries.add(new ServerEntry("http://soifexpress.apps-dev.fr/api/index.php", "http://soifexpress.apps-dev.fr/api/ryimg", "Soif Express", "7 AV Gabriel Peri", "91600", "Savigny Sur Orge", "91 - Essonne", "France", "EURO", "0758088361", "", "www.test.com", "", "SOIF EXPRESS", false));
-        serverEntries.add(new ServerEntry("http://asiafood.apps-dev.fr/api/index.php", "http://82.253.71.109/prod/asiafood_v8/api/ryimg", "Asia Food", "8 avenue Duval le Camus", "92210", "ST CLOUD", "92 - Hauts-de-Seine", "France", "EURO", "+33(0)177583700", "contact@asiafoodco.com", "http://www.asiafoodco.com", "", "ASIA FOOD", false));
-        serverEntries.add(new ServerEntry("http://bdc.apps-dev.fr/api/index.php", "http://82.253.71.109/prod/bdc_v8/api/ryimg", "BDC", "17 BD DE LA MUETTE", "95140", "GARGES LES GONESSE", "95 - Val-d Oise", "France", "EURO", "", "", "http://www.bigdataconsulting.fr", "", "BDC", false));
+        serverEntries.add(new ServerEntry("http://food.apps-dev.fr/api/index.php", "http://food.apps-dev.fr/api/ryimg", "France Food company FFC", "2 rue Charles De Gaulle ZI La Mariniere,", "91070", "Bondoufle", "91 - Essonne", "France", "EURO", "0758542161", "contact@francefoodcompany.fr", "", "", "France Food company FFC", false, "France Food"));
+        serverEntries.add(new ServerEntry("http://soifexpress.apps-dev.fr/api/index.php", "http://soifexpress.apps-dev.fr/api/ryimg", "Soif Express", "7 AV Gabriel Peri", "91600", "Savigny Sur Orge", "91 - Essonne", "France", "EURO", "0758088361", "", "www.test.com", "", "SOIF EXPRESS", false, "Soif Express"));
+        serverEntries.add(new ServerEntry("http://asiafood.apps-dev.fr/api/index.php", "http://asiafood.apps-dev.fr/api/ryimg", "Asia Food", "8 avenue Duval le Camus", "92210", "ST CLOUD", "92 - Hauts-de-Seine", "France", "EURO", "+33(0)177583700", "contact@asiafoodco.com", "http://www.asiafoodco.com", "", "ASIA FOOD", false, "Asia Food"));
+        serverEntries.add(new ServerEntry("http://express.apps-dev.fr/api/index.php", "http://express.apps-dev.fr/api/ryimg", "Express", "8 avenue Duval le Camus", "92210", "ST CLOUD", "92 - Hauts-de-Seine", "France", "EURO", "+33(0)177583700", "contact@Express.com", "Express Ethnique", "", "Express Ethnique", false, "Express"));
+        serverEntries.add(new ServerEntry("http://bdc.apps-dev.fr/api/index.php", "http://bdc.apps-dev.fr/api/ryimg", "BDC", "17 BD DE LA MUETTE", "95140", "GARGES LES GONESSE", "95 - Val-d Oise", "France", "EURO", "", "", "http://www.bigdataconsulting.fr", "", "BDC", false, "BDC"));
 
 //        ServerEntry serverEntry = mDb.serverDao().getActiveServer(true);
 //        if (serverEntry == null) {
@@ -509,13 +561,35 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 
     private void executeLogin(String username, String password) {
 //        masquage du formulaire de connexion
+        new SaveLogs(this).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        LoginActivity.class.getSimpleName(),
+                        "executeLogin()",
+                        "Called, (username : "+username+", password : "+password+")",
+                        ""
+                )
+        );
+
         showProgress(true);
 
         if (!ConnectionManager.isPhoneConnected(com.iSales.pages.login.LoginActivity.this)) {
             Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+            new SaveLogs(this).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB",
+                            LoginActivity.class.getSimpleName(),
+                            "executeLogin()",
+                            getString(R.string.erreur_connexion),
+                            ""
+                    )
+            );
 
 //           masquage du formulaire de connexion
             showProgress(false);
+            return;
         }
         if (mAuthTask == null) {
             Internaute internaute = new Internaute(username, password);
@@ -528,11 +602,30 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
     @Override
     public void onInternauteLoginTaskComplete(LoginREST loginREST) {
         mAuthTask = null;
+        new SaveLogs(this).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        LoginActivity.class.getSimpleName(),
+                        "onInternauteLoginTaskComplete()",
+                        "Called.",
+                        ""
+                )
+        );
 
 //        Si la connexion echoue, on renvoi un message d'authentification
         if (loginREST == null) {
             Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-
+            new SaveLogs(this).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB",
+                            LoginActivity.class.getSimpleName(),
+                            "onInternauteLoginTaskComplete()",
+                            getString(R.string.service_indisponible),
+                            ""
+                    )
+            );
 //        masquage du formulaire de connexion
             showProgress(false);
             return;
@@ -540,13 +633,31 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
         if (loginREST.getInternauteSuccess() == null) {
             if (loginREST.getErrorCode() == 404) {
                 Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
-
+                new SaveLogs(this).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                LoginActivity.class.getSimpleName(),
+                                "onInternauteLoginTaskComplete()",
+                                getString(R.string.service_indisponible),
+                                ""
+                        )
+                );
 //        masquage du formulaire de connexion
                 showProgress(false);
                 return;
             } else {
                 Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.parametres_connexion_incorrect), Toast.LENGTH_LONG).show();
-
+                new SaveLogs(this).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                LoginActivity.class.getSimpleName(),
+                                "onInternauteLoginTaskComplete()",
+                                getString(R.string.parametres_connexion_incorrect),
+                                ""
+                        )
+                );
 //        masquage du formulaire de connexion
                 showProgress(false);
                 return;
@@ -562,6 +673,8 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                 loginREST.getInternauteSuccess().getSuccess().getMessage());
         mDb.tokenDao().insertToken(tokenEntry);
 
+        Log.e(TAG , " token:  "+tokenEntry.getToken() + " || \nMessage: \n"+tokenEntry.getMessage());
+
         String sqlfilter = "login=\"" + mUsername + "\"";
 //        Log.e(TAG, "onInternauteLoginTaskComplete: sqlfilter=" + sqlfilter +
 //                " token=" + tokenEntry.getToken() +
@@ -575,6 +688,16 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     User user = responseBody.get(0);
                     Log.e(TAG , " response: "+responseBody.get(0));
 
+                    new SaveLogs(getApplicationContext()).writeLogFile(
+                            new DebugItem(
+                                    (System.currentTimeMillis()/1000),
+                                    "DEB",
+                                    LoginActivity.class.getSimpleName(),
+                                    "onInternauteLoginTaskComplete() => onResponse()",
+                                    "Response: "+responseBody.get(0),
+                                    ""
+                            )
+                    );
 //                    Enregistrement du user dans la BD
                     UserEntry userEntry = new UserEntry();
                     userEntry.setAddress(user.getAddress());
@@ -615,18 +738,68 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
                     try {
                         Log.e(TAG, "uploadDocument onResponse SignComm err: message=" + response.message() +
                                 " | code=" + response.code() + " | code=" + response.errorBody().string());
+                        new SaveLogs(getApplicationContext()).writeLogFile(
+                                new DebugItem(
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        LoginActivity.class.getSimpleName(),
+                                        "onInternauteLoginTaskComplete() => onResponse()",
+                                        "onResponse SignComm err: message=" + response.message() + " | code=" + response.code() + " | code=" + response.errorBody().string(),
+                                        ""
+                                )
+                        );
                     } catch (IOException e) {
                         Log.e(TAG, "onResponse: message=" + e.getMessage());
+                        new SaveLogs(getApplicationContext()).writeLogFile(
+                                new DebugItem(
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        LoginActivity.class.getSimpleName(),
+                                        "onInternauteLoginTaskComplete() => onResponse()",
+                                        "onResponse \"IOException\": message=" + e.getMessage(),
+                                        e.getStackTrace().toString()
+                                )
+                        );
                     }
                     if (response.code() == 404) {
                         Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                        new SaveLogs(getApplicationContext()).writeLogFile(
+                                new DebugItem(
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        LoginActivity.class.getSimpleName(),
+                                        "onInternauteLoginTaskComplete() => onResponse()",
+                                        getString(R.string.service_indisponible),
+                                        ""
+                                )
+                        );
                         return;
                     }
                     if (response.code() == 401) {
                         Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.echec_authentification), Toast.LENGTH_LONG).show();
+                        new SaveLogs(getApplicationContext()).writeLogFile(
+                                new DebugItem(
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        LoginActivity.class.getSimpleName(),
+                                        "onInternauteLoginTaskComplete() => onResponse()",
+                                        getString(R.string.echec_authentification),
+                                        ""
+                                )
+                        );
                         return;
                     } else {
                         Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.service_indisponible), Toast.LENGTH_LONG).show();
+                        new SaveLogs(getApplicationContext()).writeLogFile(
+                                new DebugItem(
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        LoginActivity.class.getSimpleName(),
+                                        "onInternauteLoginTaskComplete() => onResponse()",
+                                        getString(R.string.service_indisponible),
+                                        ""
+                                )
+                        );
                         return;
                     }
                 }
@@ -638,6 +811,16 @@ public class LoginActivity extends AppCompatActivity implements OnInternauteLogi
 //                affichage du formulaire de connexion
                 showProgress(false);
                 Toast.makeText(com.iSales.pages.login.LoginActivity.this, getString(R.string.erreur_connexion), Toast.LENGTH_LONG).show();
+                new SaveLogs(getApplicationContext()).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                LoginActivity.class.getSimpleName(),
+                                "onInternauteLoginTaskComplete() => onFailure()",
+                                getString(R.string.erreur_connexion),
+                                ""
+                        )
+                );
                 return;
             }
         });
