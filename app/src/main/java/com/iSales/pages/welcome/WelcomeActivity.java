@@ -140,9 +140,6 @@ public class WelcomeActivity extends AppCompatActivity {
                 )
         );
 
-        // Check version on playStore
-        getCurrentVersion();
-
         //Clean debug logs every day
         checkDebugLogs();
 
@@ -152,13 +149,16 @@ public class WelcomeActivity extends AppCompatActivity {
         //set default settings
         initSettings();
 
+        // Check version on playStore
+        getCurrentVersion();
+
 //        checkExternalMedia();
 //        writeToSDFile();
     }
 
     private void initSettings() {
         if (AppDatabase.getInstance(getApplicationContext()).settingsDao().getAllSettings().size() == 0) {
-            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true, false));
+            AppDatabase.getInstance(getApplicationContext()).settingsDao().insertSettings(new SettingsEntry(1, true, false, false, false));
             new SaveLogs(getApplicationContext()).writeLogFile(
                     new DebugItem(
                             (System.currentTimeMillis()/1000),
@@ -172,10 +172,20 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void initDebugSettings() {
-        AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().deleteDebugSettings();
-        AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().insertDebugSettings(new DebugSettingsEntry(1, 0));
+        if (AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().getAllDebugSettings().size() == 0) {
+            AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().insertDebugSettings(new DebugSettingsEntry(1, 0));
+            new SaveLogs(getApplicationContext()).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB", GetLatestVersion.class.getSimpleName(),
+                            "initDebugSettings()",
+                            "Add new App Debug Settings (ID: 1, checkDebug: 0)",
+                            ""
+                    )
+            );
+            Log.e(TAG, " initDebugSettings(): checkDebug = " + AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug());
+        }
 
-        Log.e(TAG, " initDebugSettings(): checkDebug = " + AppDatabase.getInstance(getApplicationContext()).debugSettingsDao().getAllDebugSettings().get(0).getCheckDebug());
     }
 
 //    @Override
@@ -192,10 +202,9 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        checkDebugLogs();
         // Check version on playStore
         getCurrentVersion();
-        checkDebugLogs();
-
     }
 
     private void hide() {
@@ -373,8 +382,8 @@ public class WelcomeActivity extends AppCompatActivity {
                     )
             );
 
-            Log.e(TAG, "Check version desable: latestVersion == currentVersion");
-            latestVersion = currentVersion;
+            //Log.e(TAG, "Check version desable: latestVersion == currentVersion");
+            //latestVersion = currentVersion;
 
             if (latestVersion != null) {
                 if (!currentVersion.equalsIgnoreCase(latestVersion)) {

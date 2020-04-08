@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.iSales.R;
 import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.model.DebugItemList;
 
 
 import java.util.ArrayList;
@@ -21,9 +22,9 @@ public class DebugAdapter extends RecyclerView.Adapter<com.iSales.adapter.DebugA
     private String TAG = DebugAdapter.class.getSimpleName();
 
     private Context mContext;
-    private List<DebugItem> debugList;
+    private List<DebugItemList> debugList;
 
-    public DebugAdapter(Context mContext, List<DebugItem> debugList){
+    public DebugAdapter(Context mContext, List<DebugItemList> debugList){
         this.mContext = mContext;
         this.debugList = debugList;
     }
@@ -52,12 +53,12 @@ public class DebugAdapter extends RecyclerView.Adapter<com.iSales.adapter.DebugA
     @Override
     public void onBindViewHolder(@NonNull DebugsViewHolder holder, int position) {
         //long millisecond = Long.parseLong(debugList.get(position).getDatetimeLong());
-        String dateString = DateFormat.format("dd-MM-yyyy @ hh:mm:ss", new Date(debugList.get(position).getDatetimeLong()*1000)).toString();
+        String dateString = DateFormat.format("dd-MM-yyyy @ hh:mm:ss", new Date(debugList.get(position).getDebugItem().getDatetimeLong()*1000)).toString();
 
 
         holder.tv_dateTime.setText(dateString);
-        holder.tv_mask.setText(debugList.get(position).getMask());
-        holder.tv_message.setText(debugList.get(position).getMessage());
+        holder.tv_mask.setText(debugList.get(position).getDebugItem().getMask());
+        holder.tv_message.setText(debugList.get(position).getDebugItem().getMessage());
     }
 
     @Override

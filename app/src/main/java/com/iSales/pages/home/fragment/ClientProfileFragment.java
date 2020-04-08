@@ -2,7 +2,9 @@ package com.iSales.pages.home.fragment;
 
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -14,10 +16,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -67,10 +72,10 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
     private EditText mNomEntreprise, mAdresse, mEmail, mPhone, mPays, mRegion, mDepartement, mVille, mNote;
     private TextView mCodeClient, mDatecreation, mDatemodification;
     private ImageView mPoster, mPosterBlurry, mCallIV, mMapIV, mMailIV;
-    private RadioButton mRadioBtnCurrent;
+    private RadioButton mRadioBtnCurrent, mSelecteClientBasket;
     private View mModifierView, mAnnulerView;
     private FloatingActionButton mLogoFloatingBtn;
-    private LinearLayout mSelecteLayout;
+    private LinearLayout mSelecteLayout, mSelecteClientBasketLayout;
 
     private static com.iSales.interfaces.MyCropImageListener myCropImageListener;
     private static com.iSales.interfaces.ClientsAdapterListener mClientsAdapterListener;
@@ -128,6 +133,9 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 
         mSelecteLayout = (LinearLayout) rootView.findViewById(R.id.fragment_client_profile_selectClient_linearLayout);
 
+        mSelecteClientBasketLayout = (LinearLayout) rootView.findViewById(R.id.fragment_client_profile_selectClientPanier_linearLayout);
+        mSelecteClientBasket = (RadioButton) rootView.findViewById(R.id.rb_clientprofile_current_panier);
+
         if (savedInstanceState != null) {
             mClientParcelable = getActivity().getIntent().getParcelableExtra("client");
 
@@ -176,7 +184,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
                 Crop.pickImage(getContext(), ClientProfileFragment.this);
             }
         });
-//        ecoute du click pour la ,odification des informations du user
+//        ecoute du click pour la modification des informations du user
         mModifierView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -194,9 +202,9 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
             @Override
             public void onClick(View view) {
                 if (mClientParcelable != null) {
-//                    Log.e(TAG, "onCheckedChanged: BEFORE checked=" + mRadioBtnCurrent.isChecked() +
-//                            " is_current=" + mClientParcelable.getIs_current() +
-//                            " idclient=" + mClientParcelable.getId());
+                    Log.e(TAG, "onCheckedChanged: BEFORE checked=" + mRadioBtnCurrent.isChecked() +
+                            " is_current=" + mClientParcelable.getIs_current() +
+                            " idclient=" + mClientParcelable.getId());
 
                     if (mClientParcelable.getIs_current() == 0) {
                         mRadioBtnCurrent.setChecked(true);
@@ -222,6 +230,31 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
             }
         });
 
+        mSelecteClientBasket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mClientParcelable != null) {
+                    Log.e(TAG, "onCheckedChanged: BEFORE Client select checked=" + mSelecteClientBasket.isChecked() +
+                            " is_current=" + mClientParcelable.getIs_current() +
+                            " idclient=" + mClientParcelable.getId());
+                    if (mClientParcelable.getIs_current() == 0) {
+                        mSelecteClientBasket.setChecked(true);
+                        mClientParcelable.setIs_current(1);
+
+                        mDb.clientDao().updateAllCurrentClient();
+                        mDb.clientDao().updateCurrentClient(1, mClientParcelable.getId());
+
+
+                    } else {
+                        mSelecteClientBasket.setChecked(false);
+                        mClientParcelable.setIs_current(0);
+
+                        mDb.clientDao().updateAllCurrentClient();
+                    }
+                }
+            }
+        });
+
         return rootView;
     }
 
@@ -230,11 +263,60 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         super.onActivityCreated(savedInstanceState);
 
         //Hide the select client option to everyone except "Asia Food"
+        Log.e(TAG, "Client : " + mDb.serverDao().getActiveServer(true).getRaison_sociale());
         if (mDb.serverDao().getActiveServer(true).getRaison_sociale().equals("Asia Food")){
             mSelecteLayout.setVisibility(View.VISIBLE);
         }else{
             mSelecteLayout.setVisibility(View.GONE);
         }
+
+        if(isDevicePhone()){
+            mSelecteClientBasketLayout.setVisibility(View.VISIBLE);
+        }else{
+            mSelecteClientBasketLayout.setVisibility(View.GONE);
+        }
+    }
+
+    private boolean isDevicePhone(){
+        boolean result = false;
+
+        int screenSize = getContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+
+        switch(screenSize) {
+            case Configuration.SCREENLAYOUT_SIZE_XLARGE:
+                Log.e("MainActivity", "XLarge screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(getContext()));
+                result = false;
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_LARGE:
+                Log.e("MainActivity", "Large screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(getContext()));
+                result = false;
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+                Log.e("MainActivity", "Normal screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(getContext()));
+                result = true;
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                Log.e("MainActivity", "Small screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(getContext()));
+                result = true;
+                break;
+            default:
+                Log.e("MainActivity", "Screen size is neither large, normal or small, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(getContext()));
+                result = false;
+        }
+
+        return result;
+    }
+
+    private static String getScreenResolution(Context context)
+    {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+
+        return "{" + width + "x" + height + "}";
     }
 
     @Override
@@ -417,8 +499,10 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
 //        masque le radio de sélection du client s'il n'est pas synchronisé avec le serveur
         if (mClientParcelable.getIs_synchro() == 0) {
             mRadioBtnCurrent.setEnabled(false);
+            mSelecteClientBasket.setEnabled(false);
         } else {
             mRadioBtnCurrent.setEnabled(true);
+            mSelecteClientBasket.setEnabled(true);
         }
 
         mRadioBtnCurrent.setChecked(false);
@@ -426,6 +510,7 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         if (clientEntry != null) {
             if (mClientParcelable.getId() == clientEntry.getId()) {
                 mRadioBtnCurrent.setChecked(true);
+                mSelecteClientBasket.setChecked(true);
             }
         }
 
@@ -483,10 +568,9 @@ public class ClientProfileFragment extends Fragment implements DialogClientListe
         mVille.setText("");
         mCodeClient.setText("");
 
-        mRadioBtnCurrent.setChecked(false);
-
 //        masque le radio de sélection du client s'il n'est pas synchronisé avec le serveur
         mRadioBtnCurrent.setEnabled(false);
+        mSelecteClientBasket.setEnabled(false);
 
 //        date de creation et de modification du client
         mDatecreation.setText("");

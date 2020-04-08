@@ -136,8 +136,38 @@
                     android:src="@drawable/ic_map_primarydark_32dp" />
             </LinearLayout>
 
+            <!-- Sélectionner le client pour affecter les pris du client -->
             <LinearLayout
                 android:id="@+id/fragment_client_profile_selectClient_linearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:divider="@drawable/divider_horizontal"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/form_paddingH"
+                android:paddingTop="@dimen/form_paddingV"
+                android:paddingEnd="@dimen/form_paddingH"
+                android:paddingBottom="@dimen/form_paddingV">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="Sélectionner les prix du Client :" />
+
+                <RadioButton
+                    android:id="@+id/rb_clientprofile_current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:buttonTint="@color/colorAccent"
+                    android:enabled="false"
+                    tools:checked="true" />
+            </LinearLayout>
+
+            <!-- Sélectionner le client pour afficher dans le panier -->
+            <LinearLayout
+                android:id="@+id/fragment_client_profile_selectClientPanier_linearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
@@ -155,7 +185,7 @@
                     android:text="Sélectionner le Client :" />
 
                 <RadioButton
-                    android:id="@+id/rb_clientprofile_current"
+                    android:id="@+id/rb_clientprofile_current_panier"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"

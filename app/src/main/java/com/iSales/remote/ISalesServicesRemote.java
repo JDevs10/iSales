@@ -166,4 +166,7 @@ public interface ISalesServicesRemote {
     @GET("product_customer_price.php")
     Call<List<ProductCustomerPrice>> ryFindProductPrice(@Query(ApiUtils.soc_id) Long productId);
 
+    // Recupération de la visibilité
+    @GET("product_visibility.php")
+    Call<String> findVisibility(@Query("productId") String productId);
 }

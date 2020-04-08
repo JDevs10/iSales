@@ -86,70 +86,86 @@
                     android:background="@drawable/ic_arrow_drop_down_primary_24dp" />
             </RelativeLayout>
 
-
-            <EditText
-                android:id="@+id/et_boncmde_acompte"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="38dp"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="4dp"
-                android:hint="Entrer l'acompte"
-                android:inputType="number" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <EditText
-                    android:id="@+id/et_boncmde_remise"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="38dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="4dp"
-                    android:layout_toStartOf="@+id/tv_boncmde_remise"
-                    android:hint="Remise en pourcentage"
-                    android:inputType="numberSigned|numberDecimal" />
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tv_boncmde_remise"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="%"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-            </RelativeLayout>
+                        <EditText
+                            android:id="@+id/et_boncmde_acompte"
+                            android:layout_width="match_parent"
+                            android:layout_height="38dp"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="4dp"
+                            android:hint="Entrer l'acompte"
+                            android:inputType="number" />
 
-            <EditText
-                android:id="@+id/et_boncmde_note_prive"
-                android:layout_width="match_parent"
-                android:layout_height="38dp"
-                android:ems="10"
-                android:hint="Note privée"
-                android:inputType="textMultiLine" />
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
-            <Switch
-                android:id="@+id/switch_boncmde_signature"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:includeFontPadding="true"
-                android:text="Synchroniser avec le serveur"
-                android:textOff="Non"
-                android:textOn="Oui" />
+                            <EditText
+                                android:id="@+id/et_boncmde_remise"
+                                android:layout_width="match_parent"
+                                android:layout_height="38dp"
+                                android:layout_centerVertical="true"
+                                android:layout_marginEnd="4dp"
+                                android:layout_toStartOf="@+id/tv_boncmde_remise"
+                                android:hint="Remise en pourcentage"
+                                android:inputType="numberSigned|numberDecimal" />
 
-            <Switch
-                android:id="@+id/switch_boncmde_partagerParEmail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="false"
-                android:includeFontPadding="true"
-                android:text="Partager la commande par adresse mail"
-                android:textOff="Non"
-                android:textOn="Oui" />
+                            <TextView
+                                android:id="@+id/tv_boncmde_remise"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="8dp"
+                                android:text="%"
+                                android:textSize="17sp"
+                                android:textStyle="bold" />
+                        </RelativeLayout>
+
+                        <EditText
+                            android:id="@+id/et_boncmde_note_prive"
+                            android:layout_width="match_parent"
+                            android:layout_height="38dp"
+                            android:ems="10"
+                            android:hint="Note privée"
+                            android:inputType="textMultiLine" />
+
+                        <Switch
+                            android:id="@+id/switch_boncmde_signature"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:includeFontPadding="true"
+                            android:text="Synchroniser avec le serveur"
+                            android:textOff="Non"
+                            android:textOn="Oui" />
+
+                        <Switch
+                            android:id="@+id/switch_boncmde_partagerParEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:checked="false"
+                            android:includeFontPadding="true"
+                            android:text="Partager la commande par adresse mail"
+                            android:textOff="Non"
+                            android:textOn="Oui" />
+
+                    </LinearLayout>
+                </ScrollView>
+            </LinearLayout>
+
         </LinearLayout>
 
         <LinearLayout

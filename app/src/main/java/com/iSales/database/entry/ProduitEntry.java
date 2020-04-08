@@ -44,6 +44,7 @@ public class ProduitEntry {
     private String note;
     private String note_private;
     private String note_public;
+    private String visibility;
 
     public ProduitEntry() {
     }
@@ -318,5 +319,13 @@ public class ProduitEntry {
 
     public void setNote_public(String note_public) {
         this.note_public = note_public;
+    }
+
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
     }
 }
