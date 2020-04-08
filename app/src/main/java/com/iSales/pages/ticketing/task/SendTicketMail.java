@@ -1,10 +1,17 @@
 package com.iSales.pages.ticketing.task;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
+import com.google.gson.Gson;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.model.ISalesIncidentTable;
 import com.iSales.pages.ticketing.TicketingActivity;
 import com.iSales.remote.ConnectionManager;
@@ -53,10 +60,12 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
     private AppDatabase db;
     private boolean internetCheck;
     private boolean LoggedIn;
+    private String VISITOR_CODE;
     private TicketingActivity task;
+    private SettingsEntry settings;
 
     //Class Constructor
-    public SendTicketMail(Context context, TicketingActivity task, String typeAction, File logFile, String email, String subject, String body, String ticketRef, ISalesIncidentTable incidentTicket, boolean LoggedIn){
+    public SendTicketMail(Context context, TicketingActivity task, String typeAction, File logFile, String email, String subject, String body, String ticketRef, ISalesIncidentTable incidentTicket, boolean LoggedIn, SettingsEntry settings, String VISITOR_CODE){
         //Initializing variables
         this.context = context;
         this.typeAction = typeAction;
@@ -70,27 +79,75 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
         db = AppDatabase.getInstance(this.context);
         this.internetCheck = true;
         this.LoggedIn = LoggedIn;
+        this.settings = settings;
+        this.VISITOR_CODE = VISITOR_CODE;
     }
 
     public String setMessage(){
-        String deviceOS = System.getProperty("os.version");     // OS version
-        String deviceSDK = android.os.Build.VERSION.SDK;        // API Level
-        String device = android.os.Build.DEVICE;                // Device
-        String deviceModel = android.os.Build.MODEL;            // Model
-        String deviceProduct = android.os.Build.PRODUCT;        // Product
-        String deviceBrand = android.os.Build.BRAND;            // Brand
+        String deviceScreenInfo = "";
+        int screenSize = context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+
+        switch(screenSize) {
+            case Configuration.SCREENLAYOUT_SIZE_XLARGE:
+                Log.e("MainActivity", "XLarge screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(context));
+                deviceScreenInfo = getScreenResolution(context);
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_LARGE:
+                Log.e("MainActivity", "XLarge screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(context));
+                deviceScreenInfo = getScreenResolution(context);
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+                Log.e("MainActivity", "Normal screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(context));
+                deviceScreenInfo = getScreenResolution(context);
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                Log.e("MainActivity", "Small screen, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(context));
+                deviceScreenInfo = getScreenResolution(context);
+                break;
+            default:
+                Log.e("MainActivity", "Screen size is neither large, normal or small, size : "+screenSize + " || getScreenResolution() => "+getScreenResolution(context));
+                deviceScreenInfo = getScreenResolution(context);
+        }
+
+        String[][] deviceSpecs = {
+                {"ID", Build.ID},
+                {"Serial", Build.SERIAL},
+                {"Model", Build.MODEL},
+                {"Manufacturer", Build.MANUFACTURER},
+                {"Brand", Build.BRAND},
+                {"Type", Build.TYPE},
+                {"User", Build.USER},
+                {"Base", Build.VERSION_CODES.BASE+""},
+                {"Incremental", Build.VERSION.INCREMENTAL},
+                {"Sdk", Build.VERSION.SDK},
+                {"Board", Build.BOARD},
+                {"Host", Build.HOST},
+                {"Fingerprint", Build.FINGERPRINT},
+                {"OS version", System.getProperty("os.version")},
+                {"Release", android.os.Build.VERSION.RELEASE},
+                {"Product", android.os.Build.PRODUCT},
+                {"Screen Resolution", deviceScreenInfo}
+        };
+
+        String deviceInfo = "";
+        for (int x = 0; x < deviceSpecs.length; x++){
+            deviceInfo += deviceSpecs[x][0] + " ===> " + deviceSpecs[x][1] + "\n";
+        }
 
         if (typeAction.equals("Automatic-Ticket")) {
             String clientName;
             String companyName;
 
+
             if(LoggedIn){
                 clientName = db.userDao().getUser().get(0).getLogin();
                 companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
+                VISITOR_CODE = "";
             }else{
                 long x = (System.currentTimeMillis()/1000);
                 clientName = "Visiteur_" + x;
                 companyName = "Visiteur-C_" + x;
+                VISITOR_CODE = "\nCode : " + VISITOR_CODE;
             }
 
             return "Bonjour Team BDC,\n\n" +
@@ -100,15 +157,14 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                     "Date: "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
                     "Sujet : "+incidentTicket.getName()+"\n" +
                     "Priorité : "+incidentTicket.getPriority()+"\n" +
-                    "Client : "+clientName+" ("+companyName+")\n" +
+                    "Client : "+clientName+" ("+companyName+")"+VISITOR_CODE+"\n" +
                     "Fichier log : '"+logFile.getName()+"' en piece joint.\n\n" +
-                    "Information sur l'appareil utiliser : \n" +
-                    "Appareil (Device) ===> "+device+"\n" +
-                    "Marque (Brand) ===> "+deviceBrand+"\n" +
-                    "Produit (Product) ===> "+deviceProduct+"\n" +
-                    "Model (Model) ===> "+deviceModel+"\n" +
-                    "SDK (SDK) ===> "+deviceSDK+"\n" +
-                    "OS (OS) ===> "+deviceOS+"\n\n" +
+                    "##########################################  Information sur l'appareil  ##########################################\n" +
+                    deviceInfo+
+                    "################################################################################################################\n\n" +
+                    "##################################### Parametre d'iSales #####################################\n" +
+                    "JSON : " + new Gson().toJson(settings) + "\n" +
+                    "##########################################################################################\n\n" +
                     "Message généré :\n" + ticketBody + "\n\n\n" +
                     "Bien Cordialement,\n" +
                     "iSales Support.";
@@ -120,10 +176,12 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             if(LoggedIn){
                 clientName = db.userDao().getUser().get(0).getLogin();
                 companyName = db.serverDao().getActiveServer(true).getRaison_sociale();
+                VISITOR_CODE = "";
             }else{
                 long x = (System.currentTimeMillis()/1000);
                 clientName = "Visiteur_" + x;
                 companyName = "Visiteur-C_" + x;
+                VISITOR_CODE = "\nCode : " + VISITOR_CODE;
             }
 
             return "Bonjour Team BDC,\n\n" +
@@ -133,20 +191,31 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
                     "Date : "+dateFormat(""+(System.currentTimeMillis()/1000))+"\n" +
                     "Sujet : "+incidentTicket.getName()+"\n" +
                     "Priorité : "+incidentTicket.getPriority()+"\n" +
-                    "Client "+clientName+" ("+companyName+")\n" +
+                    "Client "+clientName+" ("+companyName+")"+VISITOR_CODE+"\n" +
                     "Fichier log : '"+logFile.getName()+"' en piece joint.\n\n" +
-                    "Information sur l'appareil utiliser : \n" +
-                    "Appareil (Device) ===> "+device+"\n" +
-                    "Marque (Brand) ===> "+deviceBrand+"\n" +
-                    "Produit (Product) ===> "+deviceProduct+"\n" +
-                    "Model (Model) ===> "+deviceModel+"\n" +
-                    "SDK (SDK) ===> "+deviceSDK+"\n" +
-                    "OS (OS) ===> "+deviceOS+"\n\n" +
+                    "##########################################  Information sur l'appareil  ##########################################\n" +
+                    deviceInfo+
+                    "##################################################################################################################\n\n" +
+                    "##################################### Parametre d'iSales #####################################\n" +
+                    "JSON : " + new Gson().toJson(settings) + "\n" +
+                    "##########################################################################################\n\n" +
                     "Message écrit par l'utilisateur :\n" + ticketBody + "\n\n\n" +
                     "Bien Cordialement,\n" +
                     "iSales Support.";
         }
         return "NULL";
+    }
+
+    private static String getScreenResolution(Context context)
+    {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+
+        return "{" + width + "x" + height + "}";
     }
 
     private String dateFormat(String dateInString){
@@ -189,7 +258,7 @@ public class SendTicketMail extends AsyncTask<Void,Void,Void> {
             MimeMessage mm = new MimeMessage(session);
 
             //Setting sender address
-            mm.setFrom(new InternetAddress("jl@anexys.fr", "iSales Support Ticket"));
+            mm.setFrom(new InternetAddress("jl@anexys.fr", "iSales Support Ticketing"));
             //Adding receiver
             mm.addRecipient(Message.RecipientType.TO, new InternetAddress("jl@anexys.fr"));
             mm.addRecipient(Message.RecipientType.CC, new InternetAddress("commercial@anexys.fr"));

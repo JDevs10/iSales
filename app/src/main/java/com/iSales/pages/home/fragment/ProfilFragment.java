@@ -26,6 +26,7 @@ import com.iSales.pages.home.viewmodel.UserViewModel;
 import com.iSales.pages.parametres.ParametresActivity;
 import com.iSales.pages.synchronisation.SynchronisationActivity;
 import com.iSales.pages.ticketing.TicketingActivity;
+import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.utility.ISalesUtility;
 
 import java.util.List;
@@ -165,6 +166,8 @@ public class ProfilFragment extends Fragment {
                         mDb.commandeLineDao().deleteAllCmdeLine();
                         mDb.signatureDao().deleteAllSignature();
                         mDb.categorieDao().deleteAllCategorie();
+
+                        new SaveLogs(getContext()).deleteLogFile();
 
 //                Retour a la page de Login
                         getActivity().finish();

@@ -6,7 +6,7 @@ android {
         applicationId "com.iSales"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 23
+        versionCode 24
         versionName "2.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

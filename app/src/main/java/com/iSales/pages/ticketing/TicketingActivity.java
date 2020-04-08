@@ -3,8 +3,10 @@ package com.iSales.pages.ticketing;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.graphics.Color;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -13,29 +15,44 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.interfaces.SendindMailListener;
 import com.iSales.model.ISalesIncidentTable;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.model.DebugItemList;
 import com.iSales.pages.ticketing.task.SaveLogs;
 import com.iSales.pages.ticketing.task.SendTicketMail;
 import com.iSales.utility.ISalesUtility;
 
+import org.json.JSONArray;
+import org.json.simple.parser.JSONParser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class TicketingActivity extends AppCompatActivity implements SendindMailListener {
     private final String TAG = TicketingActivity.class.getSimpleName();
-    private EditText ticketing_name, ticketing_email, ticketing_body;
+    private LinearLayout ticketing_code_ll;
+    private EditText ticketing_name, ticketing_email, ticketing_body, ticketing_code_et;
     private Spinner ticketing_subject_sp;
-    private Button ticketing_save, ticketing_preview, ticketing_cancel;
+    private Button ticketing_save, ticketing_preview, ticketing_cancel, ticketing_code_btn;
     private ProgressDialog mProgressDialog;
     private boolean loggedIn;
     private String ticketing_subject;
+    private String VISITOR_CODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +71,22 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         ticketing_cancel = findViewById(R.id.ticketingActivity_ticket_cancel_btn);
         ticketing_preview = findViewById(R.id.ticketingActivity_ticket_preview_btn);
         ticketing_save = findViewById(R.id.ticketingActivity_ticket_send_btn);
+
+        ticketing_code_ll = findViewById(R.id.ticketingActivity_ticket_visitorCode_ll);
+        ticketing_code_et = findViewById(R.id.ticketingActivity_ticket_visitorCode_code_et);
+        ticketing_code_btn = findViewById(R.id.ticketingActivity_ticket_visitorCode_code_btn);
+        ticketing_code_ll.setVisibility(View.GONE);
+
+        if (!loggedIn){
+            ticketing_code_ll.setVisibility(View.VISIBLE);
+            ticketing_code_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    VISITOR_CODE = ISalesUtility.generateRandomString(8);
+                    ticketing_code_et.setText(VISITOR_CODE);
+                }
+            });
+        }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, getIncidentNameList());
         ticketing_subject_sp.setAdapter(adapter);
@@ -86,7 +119,7 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         ticketing_preview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //showPreview(ticketing_name.getText().toString(), ticketing_subject, ticketing_email.getText().toString(), ticketing_body.getText().toString());
+                showPreview(ticketing_name.getText().toString(), ticketing_subject, ticketing_email.getText().toString(), ticketing_body.getText().toString());
                 Toast.makeText(getApplicationContext(), "Cette fonctionnalité n'est pas accessible", Toast.LENGTH_SHORT).show();
             }
         });
@@ -129,6 +162,7 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
     }
 
     private void showPreview(String ticketName, String subjetTicket, String ticketEmail, String ticketBody){
+
         //get ref Ticket from date
         AppDatabase db = AppDatabase.getInstance(this);
         Date date = new Date((System.currentTimeMillis()/1000)*1000);
@@ -149,7 +183,8 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         ImageButton close_ticketPreview = mDialog.findViewById(R.id.dialog_ticket_preview_close_btn);
         TextView text_ticketPreview = mDialog.findViewById(R.id.dialog_ticket_preview_text_tv);
 
-        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", new SaveLogs(this).convertLogFileToReadableFile(), ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident, loggedIn);
+        SettingsEntry settings = db.settingsDao().getAllSettings().get(0);
+        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", new SaveLogs(this).convertLogFileToReadableFile(), ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident, loggedIn, settings, VISITOR_CODE);
 
         text_ticketPreview.setText(mSendTicketMail.setMessage());
         close_ticketPreview.setOnClickListener(new View.OnClickListener() {
@@ -214,7 +249,8 @@ public class TicketingActivity extends AppCompatActivity implements SendindMailL
         ISalesIncidentTable iSalesIncident = getISalesIncidentByName(subjetTicket);
 
         //get isales log file to send in email attachment
-        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", new SaveLogs(this).convertLogFileToReadableFile(), ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident, loggedIn);
+        SettingsEntry settings = db.settingsDao().getAllSettings().get(0);
+        SendTicketMail mSendTicketMail = new SendTicketMail(this, TicketingActivity.this, "Manuel-Ticket", new SaveLogs(this).convertLogFileToReadableFile(), ticketEmail, ticketName, ticketBody, refTicket, iSalesIncident, loggedIn, settings, VISITOR_CODE);
         mSendTicketMail.execute();
     }
 

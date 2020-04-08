@@ -38,6 +38,7 @@ public class Product {
     private String note;
     private String note_private;
     private String note_public;
+    private String show_product;
 
     public Product() {
     }
@@ -304,5 +305,13 @@ public class Product {
 
     public void setNote_public(String note_public) {
         this.note_public = note_public;
+    }
+
+    public String getShow_product() {
+        return show_product;
+    }
+
+    public void setShow_product(String show_product) {
+        this.show_product = show_product;
     }
 }

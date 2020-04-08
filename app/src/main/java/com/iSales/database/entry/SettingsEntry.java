@@ -11,6 +11,8 @@ public class SettingsEntry {
     private int id;
     private boolean showDescripCataloge;
     private boolean enableVirtualProductSync;
+    private boolean enableVisibleProductsInCatalog;
+    private boolean enableVisibleVirtualProductsInCatalog;
     private String email;
     private String email_Pwd;
     private String emailReceiverList;
@@ -19,10 +21,15 @@ public class SettingsEntry {
 
     }
 
-    public SettingsEntry(int id, boolean showDescripCataloge, boolean enableVirtualProductSync) {
+    public SettingsEntry(int id, boolean showDescripCataloge, boolean enableVirtualProductSync, boolean enableVisibleProductsInCatalog, boolean enableVisibleVirtualProductsInCatalog) {
         this.id = id;
+        this.email = "";
+        this.email_Pwd = "";
+        this.emailReceiverList = "";
         this.showDescripCataloge = showDescripCataloge;
         this.enableVirtualProductSync = enableVirtualProductSync;
+        this.enableVisibleProductsInCatalog = enableVisibleProductsInCatalog;
+        this.enableVisibleVirtualProductsInCatalog = enableVisibleVirtualProductsInCatalog;
     }
 
     public int getId() {
@@ -71,5 +78,21 @@ public class SettingsEntry {
 
     public void setEmailReceiverList(String emailReceiverList) {
         this.emailReceiverList = emailReceiverList;
+    }
+
+    public boolean isEnableVisibleProductsInCatalog() {
+        return enableVisibleProductsInCatalog;
+    }
+
+    public void setEnableVisibleProductsInCatalog(boolean enableVisibleProductsInCatalog) {
+        this.enableVisibleProductsInCatalog = enableVisibleProductsInCatalog;
+    }
+
+    public boolean isEnableVisibleVirtualProductsInCatalog() {
+        return enableVisibleVirtualProductsInCatalog;
+    }
+
+    public void setEnableVisibleVirtualProductsInCatalog(boolean enableVisibleVirtualProductsInCatalog) {
+        this.enableVisibleVirtualProductsInCatalog = enableVisibleVirtualProductsInCatalog;
     }
 }

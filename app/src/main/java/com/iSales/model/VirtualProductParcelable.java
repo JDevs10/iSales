@@ -12,6 +12,7 @@ public class VirtualProductParcelable {
     private String Name_Colis;
     private String Quantite_Colis;
     private String Price_Colis;
+    private String Status_Colis;
     private String Rowid_Palette;
     private String Ref_Palette;
     private String Price_TTC_Palette;
@@ -20,11 +21,12 @@ public class VirtualProductParcelable {
     private String Quantite_Palette;
     private String TVA_Palette;
     private String Stock_Palette;
+    private String Status_Palette;
 
     public VirtualProductParcelable() {
     }
 
-    public VirtualProductParcelable(String rowid_Colis, String ref_Colis, String price_TTC_Colis, String TVA_Colis, String stock_Colis, String name_Colis, String quantite_Colis, String price_Colis, String rowid_Palette, String ref_Palette, String price_TTC_Palette, String price_Palette, String name_Palette, String quantite_Palette, String TVA_Palette, String stock_Palette) {
+    public VirtualProductParcelable(String rowid_Colis, String ref_Colis, String price_TTC_Colis, String TVA_Colis, String stock_Colis, String name_Colis, String quantite_Colis, String price_Colis, String rowid_Palette, String ref_Palette, String price_TTC_Palette, String price_Palette, String name_Palette, String quantite_Palette, String TVA_Palette, String stock_Palette, String Status_Colis, String Status_Palette) {
         Rowid_Colis = rowid_Colis;
         Ref_Colis = ref_Colis;
         Price_TTC_Colis = price_TTC_Colis;
@@ -41,6 +43,8 @@ public class VirtualProductParcelable {
         Quantite_Palette = quantite_Palette;
         this.TVA_Palette = TVA_Palette;
         Stock_Palette = stock_Palette;
+        this.Status_Colis = Status_Colis;
+        this.Status_Palette = Status_Palette;
     }
 
     public String getRowid_Colis() {
@@ -169,5 +173,21 @@ public class VirtualProductParcelable {
 
     public void setStock_Palette(String stock_Palette) {
         Stock_Palette = stock_Palette;
+    }
+
+    public String getStatus_Colis() {
+        return Status_Colis;
+    }
+
+    public void setStatus_Colis(String status_Colis) {
+        Status_Colis = status_Colis;
+    }
+
+    public String getStatus_Palette() {
+        return Status_Palette;
+    }
+
+    public void setStatus_Palette(String status_Palette) {
+        Status_Palette = status_Palette;
     }
 }

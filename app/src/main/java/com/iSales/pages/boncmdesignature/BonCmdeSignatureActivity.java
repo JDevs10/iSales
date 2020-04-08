@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -99,7 +100,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         Calendar dateLivraison = Calendar.getInstance();
 
         dateLivraison.set(livraisonYear, livraisonMonth, livraisonDay);
-        Log.e(TAG, "pushCommande: dateCrea=" + today.getTime() + " dateLivraison=" + dateLivraison.getTime() + " livraisonYear=" + livraisonYear + " livraisonMonth=" + livraisonMonth + " livraisonDay=" + livraisonDay);
+        Log.e(TAG, "pushCommande() :: dateCrea=" + today.getTime() + " dateLivraison=" + dateLivraison.getTime() + " livraisonYear=" + livraisonYear + " livraisonMonth=" + livraisonMonth + " livraisonDay=" + livraisonDay);
         final SimpleDateFormat refOrderFormat = new SimpleDateFormat("yyMMdd-HHmmss");
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final String refOrder = String.format("PROV%s", refOrderFormat.format(today.getTime()));
@@ -112,6 +113,8 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         String dateOrder = dateFormat.format(today.getTime());
 //        String dateLivraisonOrder = dateFormat.format(dateLivraison.getTime());
         String dateLivraisonOrder = dateFormat.format(dateLivraison.getTime());
+
+        Log.e(TAG, "pushCommande() :: dateOrder = "+dateOrder+" || dateLivraisonOrder = "+dateLivraisonOrder);
 
         final CommandeEntry cmdeEntry = new CommandeEntry();
 
@@ -346,9 +349,15 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
         call.enqueue(new Callback<Long>() {
             @Override
             public void onResponse(Call<Long> call, final Response<Long> response) {
+                Log.e(TAG, "onResponse: saveCustomerOrder url = " + call.request().url());
                 if (response.isSuccessful()) {
                     final Long responseBody = response.body();
-                    Log.e(TAG, "onResponse: saveCustomerOrder orderId=" + responseBody);
+                    //Log.e(TAG, "onResponse: saveCustomerOrder orderId=" + responseBody);
+                    Log.e(TAG, "onResponse: saveCustomerOrder orderRef = " + newOrder.getRef() + "\n"+
+                            "orderId = " + responseBody + "\n" +
+                            "order date = "+newOrder.getDate()+ "\n" +
+                            "order date commande = "+newOrder.getDate_commande()+ "\n" +
+                            "order date = "+newOrder.getDate_livraison());
 
                     progressDialog.setMessage(ISalesUtility.strCapitalize(getString(R.string.validation_commande_encours)));
 
@@ -357,11 +366,18 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                     callValidate.enqueue(new Callback<Order>() {
                         @Override
                         public void onResponse(Call<Order> call, Response<Order> responseValidate) {
+                            Log.e(TAG, "onResponse: validateCustomerOrder url = " + call.request().url());
                             if (responseValidate.isSuccessful()) {
                                 final Order responseValiBody = responseValidate.body();
 
-                                Log.e(TAG, "onResponse: validateCustomerOrder orderRef=" + responseValiBody.getRef() +
-                                        " orderId=" + responseValiBody.getId());
+                               String text = "onResponse: validateCustomerOrder orderRef = " + responseValiBody.getRef() + "\n"+
+                                        "orderId = " + responseValiBody.getId() + "\n" +
+                                        "order date = "+responseValiBody.getDate()+" ==> "+new SimpleDateFormat("EEEE, dd MMMM yyyy").format(new Date(Long.valueOf(responseValiBody.getDate()) * 1000))+ "\n" +
+                                        "order date commande = "+responseValiBody.getDate_commande()+" ==> "+new SimpleDateFormat("EEEE, dd MMMM yyyy").format(new Date(Long.valueOf(responseValiBody.getDate_commande()) * 1000))+ "\n" +
+                                        "order date delivery = "+responseValiBody.getDate_livraison()+" ==> "+new SimpleDateFormat("EEEE, dd MMMM yyyy").format(new Date(Long.valueOf(responseValiBody.getDate_livraison()) * 1000));
+                                Log.e(TAG, text);
+
+
 
 //                                Mise a jour mode statut de la commande en local
                                 mDb.commandeDao().deleteAllCmde();
@@ -403,6 +419,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                 callUploadSignClient.enqueue(new Callback<String>() {
                                     @Override
                                     public void onResponse(Call<String> call, Response<String> responseSignClient) {
+                                        Log.e(TAG, "onResponse: responseSignClientBody url = " + call.request().url());
                                         if (responseSignClient.isSuccessful()) {
                                             String responseSignClientBody = responseSignClient.body();
                                             Log.e(TAG, "onResponse: responseSignClientBody=" + responseSignClientBody);
@@ -431,6 +448,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                             callUploadSignComm.enqueue(new Callback<String>() {
                                                 @Override
                                                 public void onResponse(Call<String> call, Response<String> responseSignComm) {
+                                                    Log.e(TAG, "onResponse: responseSignCommBody url = " + call.request().url());
                                                     if (responseSignComm.isSuccessful()) {
                                                         String responseSignCommBody = responseSignComm.body();
                                                         Log.e(TAG, "onResponse: responseSignCommBody=" + responseSignCommBody);
@@ -759,7 +777,7 @@ public class BonCmdeSignatureActivity extends AppCompatActivity implements Inser
                                 livraisonMonth = monthOfYear;
                                 livraisonYear = year;
 
-//                                Log.e(TAG, " dateLivraison=" + calLivraison.getTimeInMillis());
+                                Log.e(TAG, " dateLivraison=" + calLivraison.getTimeInMillis());
 
                                 SimpleDateFormat dateformat = new SimpleDateFormat("dd/MM/yyyy");
                                 String stringDateSet = dateformat.format(calLivraison.getTime());

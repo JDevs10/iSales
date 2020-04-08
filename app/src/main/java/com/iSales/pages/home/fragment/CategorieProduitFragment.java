@@ -169,7 +169,7 @@ public class CategorieProduitFragment extends Fragment implements FindCategorieL
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         //String mode = sharedPreferences.getString(getContext().getString(R.string.commande_mode), "online");
         Boolean catazero = sharedPreferences.getBoolean(getContext().getString(R.string.parametres_categories_azero), false);
-        Log.e(TAG, "loadCategories: catazero=" + catazero);
+        Log.e(TAG, "loadCategories: catazero = " + catazero);
 
         List<CategorieEntry> categorieEntries;
         List<CategorieEntry> categories = mDb.categorieDao().getCategories();

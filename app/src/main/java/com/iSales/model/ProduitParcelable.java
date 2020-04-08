@@ -50,6 +50,7 @@ public class ProduitParcelable implements Parcelable {
     private String note_public;
     private String remise;
     private String remise_percent;
+    private String visibility;
 
     private String local_poster_path;
     private DolPhoto poster;
@@ -396,6 +397,14 @@ public class ProduitParcelable implements Parcelable {
 
     public void setRemise_percent(String remise_percent) {
         this.remise_percent = remise_percent;
+    }
+
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
     }
 
     @Override

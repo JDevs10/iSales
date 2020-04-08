@@ -37,5 +37,5 @@
     <color name="snackbar_update">#1E88E5</color>
     <color name="snackbar_error">#F4511E</color>
 
-    <color name="android_default">#fff3f3f3</color>
+    <color name="android_default">#F3F3F3</color>
 </resources>

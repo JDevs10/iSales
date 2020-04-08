@@ -56,17 +56,28 @@ public class ParametresMainFragment extends PreferenceFragmentCompat implements
         prefs_1.putBoolean("parametres_activer_description", config.isShowDescripCataloge());
         prefs_1.commit();
 
-        Preference mSwith = findPreference("parametres_activer_synchronisation_ProduitVirtuel");
-
-        Log.e(TAG, "Hostname : "+getServeurHostname());
-        if ((getServeurHostname().contains("food")) || (getServeurHostname().contains("express"))) {
+        //Log.e(TAG, "Hostname : "+getServeurHostname());
+        //if ((getServeurHostname().contains("food")) || (getServeurHostname().contains("express"))) {
             SharedPreferences.Editor prefs_2 = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
             prefs_2.putBoolean("parametres_activer_synchronisation_ProduitVirtuel", config.isEnableVirtualProductSync());
             prefs_2.commit();
+            /*
             mSwith.setVisible(true);
         }else{
             mSwith.setVisible(false);
         }
+        */
+
+
+        SharedPreferences.Editor prefs_3 = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+        prefs_3.putBoolean("parametres_masquer_ProduitVirtuel_dans_catalogue", config.isEnableVisibleVirtualProductsInCatalog());
+        prefs_3.commit();
+
+        /*
+        SharedPreferences.Editor prefs_4 = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+        prefs_4.putBoolean("parametres_produits_azero", config.isEnableVisibleVirtualProductsInCatalog());
+        prefs_4.commit();
+        */
     }
     @Override
     public void onStop() {
@@ -93,6 +104,37 @@ public class ParametresMainFragment extends PreferenceFragmentCompat implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         Log.e(TAG, "onSharedPreferenceChanged: ");
+
+        //Afficher ou pas les products virtuels cacher
+        if (sharedPreferences.getBoolean("parametres_produits_azero", true)){
+            SettingsEntry config = db.settingsDao().getAllSettings().get(0);
+            config.setEnableVisibleProductsInCatalog(true);
+            db.settingsDao().updateSettings(config);
+
+            Toast.makeText(getContext(), "Activé !", Toast.LENGTH_SHORT).show();
+        }else{
+            SettingsEntry config = db.settingsDao().getAllSettings().get(0);
+            config.setEnableVisibleProductsInCatalog(false);
+            db.settingsDao().updateSettings(config);
+
+            Toast.makeText(getContext(), "Désactivé !", Toast.LENGTH_SHORT).show();
+        }
+
+        //Afficher ou pas les products virtuels cacher
+        if (sharedPreferences.getBoolean("parametres_masquer_ProduitVirtuel_dans_catalogue", true)){
+
+            SettingsEntry config = db.settingsDao().getAllSettings().get(0);
+            config.setEnableVisibleVirtualProductsInCatalog(true);
+            db.settingsDao().updateSettings(config);
+
+            Toast.makeText(getContext(), "Activé !", Toast.LENGTH_SHORT).show();
+        }else{
+            SettingsEntry config = db.settingsDao().getAllSettings().get(0);
+            config.setEnableVisibleVirtualProductsInCatalog(false);
+            db.settingsDao().updateSettings(config);
+
+            Toast.makeText(getContext(), "Désactivé !", Toast.LENGTH_SHORT).show();
+        }
 
         //Activer / Desactiver la description du produit dans le catalogue
         if (sharedPreferences.getBoolean("parametres_activer_description", true)){

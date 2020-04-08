@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.iSales.R;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.ProduitEntry;
+import com.iSales.database.entry.SettingsEntry;
 import com.iSales.interfaces.ProduitsAdapterListener;
 import com.iSales.model.ProduitParcelable;
 import com.iSales.remote.ApiUtils;
@@ -95,20 +96,43 @@ public class ProduitsAdapter extends RecyclerView.Adapter<com.iSales.adapter.Pro
 
     //    Filtre la liste des produits
     public void performFiltering(String searchString) {
+        SettingsEntry settings = mDb.settingsDao().getAllSettings().get(0);
+        Boolean showVirtualProducts = settings.isEnableVisibleVirtualProductsInCatalog();
+
+        Log.e(TAG, "performFiltering() :: searchString = "+searchString + " || showVirtualProducts = "+showVirtualProducts);
+
         if (searchString.isEmpty()) {
             produitsListFiltered = produitsList;
         } else {
             ArrayList<ProduitParcelable> filteredList = new ArrayList<>();
-            for (ProduitParcelable row : produitsList) {
 
-                // name match condition. this might differ depending on your requirement
-                // here we are looking for name or phone number match
-                if (row.getLabel().toLowerCase().contains(searchString.toLowerCase())
-                        || row.getPrice().toLowerCase().contains(searchString.toLowerCase())
-                        || row.getRef().toLowerCase().contains(searchString.toLowerCase())) {
-                    filteredList.add(row);
+            if(showVirtualProducts){
+                Log.e(TAG, "performFiltering() :: showVirtualProducts = "+showVirtualProducts);
+                for (ProduitParcelable row : produitsList) {
+
+                    // name match condition. this might differ depending on your requirement
+                    // here we are looking for name or ref number match
+                    if (!row.getLabel().toLowerCase().contains("colis") && !row.getLabel().toLowerCase().contains("palette")
+                            || row.getPrice().toLowerCase().contains(searchString.toLowerCase())
+                            || row.getRef().toLowerCase().contains(searchString.toLowerCase())) {
+                        filteredList.add(row);
+                    }
+                }
+                Log.e(TAG, "performFiltering() :: filteredList = "+filteredList.size());
+            }else{
+                Log.e(TAG, "performFiltering() :: showVirtualProducts = "+showVirtualProducts);
+                for (ProduitParcelable row : produitsList) {
+
+                    // name match condition. this might differ depending on your requirement
+                    // here we are looking for name or phone number match
+                    if (row.getLabel().toLowerCase().contains(searchString.toLowerCase())
+                            || row.getPrice().toLowerCase().contains(searchString.toLowerCase())
+                            || row.getRef().toLowerCase().contains(searchString.toLowerCase())) {
+                        filteredList.add(row);
+                    }
                 }
             }
+
 
             produitsListFiltered = filteredList;
         }

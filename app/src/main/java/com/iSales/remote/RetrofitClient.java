@@ -1,6 +1,7 @@
 package com.iSales.remote;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -58,7 +59,7 @@ public class RetrofitClient {
                             HttpUrl url = originalHttpUrl.newBuilder()
                                     .addQueryParameter(ApiUtils.DOLAPIKEY, tokenEntry.getToken())
                                     .build();
-//                            Log.e(TAG, "intercept:After url= "+url.toString());
+                            Log.e(TAG, "intercept:After url= "+url.toString());
 
                             // Request customization: add request headers
                             Request.Builder requestBuilder = original.newBuilder()

@@ -27,6 +27,7 @@ public class ProductVirtual {
     private String seuil_stock_alerte;
     private String stock;
     private String local_poster_path;
+    private String tosell;
 
     public ProductVirtual() {
     }
@@ -189,5 +190,13 @@ public class ProductVirtual {
 
     public void setLocal_poster_path(String local_poster_path) {
         this.local_poster_path = local_poster_path;
+    }
+
+    public String getTosell() {
+        return tosell;
+    }
+
+    public void setTosell(String tosell) {
+        this.tosell = tosell;
     }
 }

@@ -6,11 +6,10 @@ import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.model.DebugItemList;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -28,6 +27,7 @@ public class SaveLogs {
     private final String DirectoryName = "iSales_Logs";
     private final String FileName = "logs.json";
     private final String ReadableFileName = "log.txt";
+    private final int DEBUG_ITEM_LIST_LIMIT = 200;
 
     public SaveLogs(Context mContext){
         this.mContext = mContext;
@@ -46,128 +46,96 @@ public class SaveLogs {
                 }
             }
             if (root.exists() && data != null) {
-                ArrayList<DebugItem> logs = readLogFile();
+                ArrayList<DebugItemList> logs = readLogFile();
 
                 if(logs == null){
                     //first log to save
-                    logs = new ArrayList<>();
-                    data.setMask(data.getMask() + "-1");
-                    logs.add(data);
-
-                    JSONArray logsList = new JSONArray();
-
                     File file = new File(root + File.separator + FileName);
-                    FileWriter writer = new FileWriter(file);
+                    Log.e(TAG, " writeLogFile() 1 : Root path: "+root.getAbsolutePath()+"\nFile path: "+file.getAbsolutePath());
 
-                    for (DebugItem logs_ : logs){
-                        JSONObject log = new JSONObject();
-                        final JSONObject details = new JSONObject();
+                    //Folder || File doesn't exist
+                    //FileReader fileReader = new FileReader(file);
 
-                        details.put("rowId", 1);
-                        details.put("datetimeLong",logs_.getDatetimeLong());
-                        details.put("mask", logs_.getMask());
-                        details.put("className", logs_.getClassName());
-                        details.put("methodName", logs_.getMethodName());
-                        details.put("message", logs_.getMessage());
-                        details.put("stackTrace", logs_.getStackTrace());
+                    FileWriter fileWriter = new FileWriter(file);
 
-                        log.put("log_id", System.currentTimeMillis());
-                        log.put("DebugItem", details);
-                        logsList.put(log);
-                    }
-                    //Log.e(TAG, " writeLogFile() | logs == null :: logsList : " + logsList.toString());
+                    JSONParser parser = new JSONParser();
+                    org.json.simple.JSONArray logJsononArray = (org.json.simple.JSONArray) parser.parse("[]");
+                    Log.e(TAG, " writeLogFile() || logArray 1:  "+logJsononArray.toString());
 
+                    ArrayList<DebugItemList> mDebugItemList = new Gson().fromJson(logJsononArray.toString(), new TypeToken<ArrayList<DebugItemList>>(){}.getType());
+                    Log.e(TAG, " writeLogFile() || mDebugItemList 1:  "+mDebugItemList.size());
 
-                    writer.write(logsList.toString());
-                    writer.flush();
-                    writer.close();
+                    //add new obj
+                    data.setRowId(1);
+                    data.setMask(data.getMask() + "-1");
+                    mDebugItemList.add(new DebugItemList(System.currentTimeMillis(), data));
+                    Log.e(TAG, " writeLogFile() || mDebugItemList added 1:  "+mDebugItemList.size());
+
+                    String fileBody = new Gson().toJson(mDebugItemList);
+                    Log.e(TAG, " writeLogFile() || fileBody 1:  "+fileBody);
+
+                    fileWriter.write(fileBody);
+                    fileWriter.flush();
+                    fileWriter.close();
 
                 }else{
                     //logs were saved
-                    logs.add(data);
-
-                    JSONArray logsList = new JSONArray();
-
                     File file = new File(root + File.separator + FileName);
-                    FileWriter writer = new FileWriter(file);
+                    /*
+                    Log.e(TAG, " writeLogFile() V2: Root path: "+root.getAbsolutePath()+"\nFile path: "+file.getAbsolutePath() + " || size: " +file.length());
 
-                    int cpt = 1;
-                    for (DebugItem logs_ : logs){
-                        JSONObject log = new JSONObject();
-                        final JSONObject details = new JSONObject();
+                    FileReader fileReader = new FileReader(file);
 
-                        details.put("rowId", cpt);
-                        details.put("datetimeLong", logs_.getDatetimeLong());
+                    JSONParser parser = new JSONParser();
+                    org.json.simple.JSONArray logJsononArray = (org.json.simple.JSONArray) parser.parse(fileReader);
+                    Log.e(TAG, " writeLogFile() || logArray V2:  "+logJsononArray.toString());
 
-                        if (logs_.getMask().contains("-")){
-                            details.put("mask", logs_.getMask());
-                            Log.e(TAG, " writeLogFile() : mask 1 : " + logs_.getMask());
-                        }else{
-                            details.put("mask", logs_.getMask()+"-"+cpt);
-                            Log.e(TAG, " writeLogFile() : mask 2 : " + logs_.getMask());
-                        }
-                        details.put("className", logs_.getClassName());
-                        details.put("methodName", logs_.getMethodName());
-                        details.put("message", logs_.getMessage());
-                        details.put("stackTrace", logs_.getStackTrace());
+                    ArrayList<DebugItemList> mDebugItemList = new Gson().fromJson(logJsononArray.toString(), new TypeToken<ArrayList<DebugItemList>>(){}.getType());
+                    Log.e(TAG, " writeLogFile() || mDebugItemList V2:  "+mDebugItemList.size());
 
-                        log.put("log_id", System.currentTimeMillis());
-                        log.put("DebugItem", details);
-                        logsList.put(log);
-                        cpt++;
-                    }
+                    //add new obj
+                    DebugItemList lastDebugItemList = mDebugItemList.get(mDebugItemList.size()-1);
+                    data.setRowId((lastDebugItemList.getDebugItem().getRowId() + 1));
+                    data.setMask(data.getMask() + "-" + (lastDebugItemList.getDebugItem().getRowId() + 1));
 
-                    writer.write(logsList.toString());
-                    writer.flush();
-                    writer.close();
-                }
-            }else{
-                Log.e(TAG, " generateSaveData(): File doesn't exist, ");
-            }
+                    mDebugItemList.add(new DebugItemList(System.currentTimeMillis(), data));
+                    Log.e(TAG, " writeLogFile() || mDebugItemList added V2:  "+mDebugItemList.size());
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+                    String fileBody = new Gson().toJson(mDebugItemList);
+                    Log.e(TAG, " writeLogFile() || fileBody V2:  "+fileBody);
 
-    public ArrayList<DebugItem> readLogFile(){
-        ArrayList<DebugItem> logArray = new ArrayList<>();
+                    FileWriter fileWriter = new FileWriter(file);
 
-        try {
-            File root = new File(DirectoryLocal, DirectoryName);
-            File file = new File(root + File.separator + FileName);
-            Log.e(TAG, " readLogFile() : Root path: "+root.getAbsolutePath()+"\nFile path: "+file.getAbsolutePath());
+                    fileWriter.write(fileBody);
+                    fileWriter.flush();
+                    fileWriter.close();
+                    */
 
-            if (root.exists() && file.exists()) {
-                FileReader fileReader = new FileReader(file);
-
-                JSONParser parser = new JSONParser();
-                org.json.simple.JSONArray array = (org.json.simple.JSONArray)parser.parse(fileReader);
-
-                int cpt = 0;
-                for(Object obj : array){
-                    /* Extract each JSONObject */
-
-                    cpt++;
-                    if (obj != null){
-                        org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) obj;
-                        long id_log = (long) jsonObject.get("log_id");
-
-                        Log.e(TAG, "Find Log count : "+cpt+" || rowid : "+id_log+ " || found !!!!!");
-
-                        // getting log infos
-                        Gson gson = new Gson();
-                        DebugItem mDebugItem = gson.fromJson(jsonObject.get("DebugItem").toString(), DebugItem.class);
-                        logArray.add(mDebugItem);
+                    //add new obj
+                    DebugItemList lastDebugItemList;
+                    if (logs.size() == 0){
+                        data.setRowId(1);
+                        data.setMask(data.getMask() + "-1");
                     }else{
-                        Log.e(TAG, "Log count : "+cpt+" || NULL found !!!!!");
+                        lastDebugItemList = logs.get(logs.size()-1);
+                        data.setRowId((lastDebugItemList.getDebugItem().getRowId() + 1));
+                        data.setMask(data.getMask() + "-" + (lastDebugItemList.getDebugItem().getRowId() + 1));
                     }
+
+                    logs.add(new DebugItemList(System.currentTimeMillis(), data));
+                    Log.e(TAG, " writeLogFile() || mDebugItemList added V3:  "+logs.size());
+
+                    String fileBody = new Gson().toJson(logs);
+                    Log.e(TAG, " writeLogFile() || fileBody V3:  "+fileBody);
+
+                    FileWriter fileWriter = new FileWriter(file);
+
+                    fileWriter.write(fileBody);
+                    fileWriter.flush();
+                    fileWriter.close();
                 }
             }else{
-                Log.e(TAG, " readLogFile(): Log File doesn't exist, ");
-                return null;
+                Log.e(TAG, " writeLogFile(): File doesn't exist, ");
             }
 
         } catch (IOException e) {
@@ -175,8 +143,51 @@ public class SaveLogs {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+    }
 
-        return logArray;
+    public ArrayList<DebugItemList> readLogFile(){
+        ArrayList<DebugItemList> mDebugItemList_ = new ArrayList<>();
+
+        try{
+            File root = new File(DirectoryLocal, DirectoryName);
+            File file = new File(root + File.separator + FileName);
+            Log.e(TAG, " readLogFile() : Root path: "+root.getAbsolutePath()+"\nFile path: "+file.getAbsolutePath());
+
+            if (root.exists() && file.exists()){
+                //Folder || File doesn't exist
+                FileReader fileReader = new FileReader(file);
+
+                JSONParser parser = new JSONParser();
+                org.json.simple.JSONArray logJsononArray = (org.json.simple.JSONArray) parser.parse(fileReader);
+                Log.e(TAG, " readLogFile() || logArray:  "+logJsononArray.toString());
+
+                mDebugItemList_ = new Gson().fromJson(logJsononArray.toString(), new TypeToken<ArrayList<DebugItemList>>(){}.getType());
+                Log.e(TAG, " readLogFile() || mDebugItemList:  "+mDebugItemList_.size());
+
+                fileReader.close();
+
+                //filter the list and limit 150 debug items
+                mDebugItemList_ = logLimit(mDebugItemList_,DEBUG_ITEM_LIST_LIMIT);
+
+                return mDebugItemList_;
+
+            }else{
+                //Folder && File exist
+                //Log.e(TAG, " readLogFile() : Log File doesn't exist. ");
+                if (!root.exists()){
+                    Log.e(TAG, " readLogFile() : Directory root not created: " + root.exists());
+                }
+                if (!file.exists()){
+                    Log.e(TAG, " readLogFile() : File not created: ");
+                }
+                return null;
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return mDebugItemList_;
     }
 
     public File convertLogFileToReadableFile() {
@@ -190,7 +201,7 @@ public class SaveLogs {
             if (root.exists() && file.exists()) {
                 File newFile = new File(root + File.separator + ReadableFileName);
 
-                ArrayList<DebugItem> logs = readLogFile();
+                ArrayList<DebugItemList> logs = readLogFile();
                 FileWriter writer = new FileWriter(newFile);
 
                 body += "#################################################################################################################\n";
@@ -200,11 +211,11 @@ public class SaveLogs {
                 writer.write(body);
                 writer.flush();
 
-                for (DebugItem debugItem : logs){
-                    body = DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugItem.getDatetimeLong()*1000)).toString() + " | Mask : " + debugItem.getMask() + "\n" +
-                            "Class : " + debugItem.getClassName() + " => Method : " + debugItem.getMethodName() + "\n" +
-                            "Message : " + debugItem.getMessage() + "\n" +
-                            "StraceStack : " + debugItem.getStackTrace() + "\n";
+                for (DebugItemList debugItem : logs){
+                    body = DateFormat.format("dd-MM-yyyy hh:mm:ss", new Date(debugItem.getDebugItem().getDatetimeLong()*1000)).toString() + " | Mask : " + debugItem.getDebugItem().getMask() + "\n" +
+                            "Class : " + debugItem.getDebugItem().getClassName() + " => Method : " + debugItem.getDebugItem().getMethodName() + "\n" +
+                            "Message : " + debugItem.getDebugItem().getMessage() + "\n" +
+                            "StraceStack : " + debugItem.getDebugItem().getStackTrace() + "\n";
 
                     writer.append(body);
                     writer.flush();
@@ -223,54 +234,68 @@ public class SaveLogs {
         return null;
     }
 
+    public void deleteLogFile(){
+        File root = new File(DirectoryLocal, DirectoryName);
+        File file = new File(root + File.separator + FileName);
+        Log.e(TAG, " deleteLogFile() :: Root path: "+root.getAbsolutePath());
+        Log.e(TAG, " deleteLogFile() :: File path: "+file.getAbsolutePath() + " || size: "+file.length());
+
+        if (root.exists() && file.exists()) {
+            file.delete();
+            root.delete();
+            Log.e(TAG, " deleteLogFile(): Log Root and File were deleted!");
+        }else{
+            Log.e(TAG, " deleteLogFile(): Log Root and File doesn't exist.");
+        }
+    }
+
+    private ArrayList<DebugItemList> logLimit(ArrayList<DebugItemList> list, int limits){
+        Log.e(TAG, " logLimit() :: list size: "+ list.size() + " || limits: "+limits);
+        if (list.size() > limits){
+
+            ArrayList<DebugItemList> newList = new ArrayList<>(list.subList((limits-1), list.size()));
+            Log.e(TAG, " logLimit() :: newList size: "+newList.size());
+            return newList;
+        }
+        return list;
+    }
+
     public void delete24hLogs(){
-        ArrayList<DebugItem> logArray = new ArrayList<>();
 
         try {
             File root = new File(DirectoryLocal, DirectoryName);
-            Log.e(TAG, " delete24hLogs() :: root path: "+root.getAbsolutePath());
+            File file = new File(root + File.separator + FileName);
+            Log.e(TAG, " delete24hLogs() :: Root path: "+root.getAbsolutePath());
+            Log.e(TAG, " delete24hLogs() :: File path: "+file.getAbsolutePath() + " || size: "+file.length());
 
-            if (root.exists()) {
-                File file = new File(root + File.separator + FileName);
-                FileReader fileReader = new FileReader(file);
+            if (root.exists() && file.exists()) {
 
-                JSONParser parser = new JSONParser();
-                org.json.simple.JSONArray array = (org.json.simple.JSONArray)parser.parse(fileReader);
+                ArrayList<DebugItemList> mDebugItemList = readLogFile();
 
-                for(Object obj : array){
-                    /* Extract each JSONObject */
-
-                    if(obj != null){
-                        org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) obj;
-                        Gson gson = new Gson();
-                        DebugItem mDebugItem = gson.fromJson(jsonObject.get("DebugItem").toString(), DebugItem.class);
-                        logArray.add(mDebugItem);
-                    }
-                }
-
-                //remove all logs after 24h
+                int cpt = 0;
                 long time = (System.currentTimeMillis()/1000) - 86400000;
-                for(int x = 0; x < logArray.size(); x++){
-
-                    if(logArray.get(x).getDatetimeLong() < time){
-                        logArray.remove(x);
+                for (DebugItemList item : mDebugItemList) {
+                    if (item.getDebugItem().getDatetimeLong() < time) {
+                        mDebugItemList.remove(item);
+                        cpt++;
                     }
                 }
+                Log.e(TAG, " delete24hLogs() :: "+cpt+" Debug Log Items cleaned!");
 
-                JSONArray logsList = new JSONArray(logArray);
-                FileWriter writer = new FileWriter(file);
+                String fileBody = new Gson().toJson(mDebugItemList);
+                Log.e(TAG, " delete24hLogs() || fileBody :  "+fileBody);
 
-                writer.write(logsList.toString());
-                writer.flush();
-                writer.close();
+                FileWriter fileWriter = new FileWriter(file);
+
+                fileWriter.write(fileBody);
+                fileWriter.flush();
+                fileWriter.close();
 
             }else{
                 Log.e(TAG, " readLogFile(): Log File doesn't exist, ");
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
             e.printStackTrace();
         }
     }

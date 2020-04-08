@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -437,6 +438,28 @@ public final class ISalesUtility {
         return color;
     }
 
+    public static String generateRandomString(int length) {
+        final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
+        final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
+        final String NUMBER = "0123456789";
+        final String DATA_FOR_RANDOM_STRING = CHAR_LOWER + CHAR_UPPER + NUMBER;
+        SecureRandom random = new SecureRandom();
+
+        if (length < 1) throw new IllegalArgumentException();
+
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int rndCharAt = random.nextInt(DATA_FOR_RANDOM_STRING.length());
+            char rndChar = DATA_FOR_RANDOM_STRING.charAt(rndCharAt);
+            sb.append(rndChar);
+
+            if(sb.toString().length() == 4 && length > 4){
+                sb.append(" - ");
+            }
+        }
+        return sb.toString();
+    }
+
     public static String[][] getAlliSalesPriorityTable(){
         String[][] table = new String[6][3];
         table[0][0] = "P0"; table[0][1] = "#000000"; table[0][2] = "Votre ticket sera traité dans 24 heurs ouvrables";
@@ -467,6 +490,7 @@ public final class ISalesUtility {
         list.add(new ISalesIncidentTable("Général - Erreur réseau (même avec Internet et accès Internet)","P0"));
         list.add(new ISalesIncidentTable("Général - Erreur envoi mail","P0"));
         list.add(new ISalesIncidentTable("Général - Erreur de synchronization","P0"));
+        list.add(new ISalesIncidentTable("Général - Demande réinitialisation du mot de passe","P1"));
         list.add(new ISalesIncidentTable("Général - Erreur de téléchargement des images","P2"));
         list.add(new ISalesIncidentTable("Général - Ralentissement de l'application","P2"));
         list.add(new ISalesIncidentTable("Général - Mode hors ligne ne fonction pas","P2"));

@@ -60,6 +60,7 @@ import com.iSales.interfaces.FindProductsListener;
 import com.iSales.interfaces.ProduitsAdapterListener;
 import com.iSales.model.CategorieParcelable;
 import com.iSales.model.ProduitParcelable;
+import com.iSales.model.Visible;
 import com.iSales.pages.addcategorie.AddCategorieActivity;
 import com.iSales.pages.calendar.CalendarActivity;
 import com.iSales.pages.detailsproduit.DetailsProduitActivity;
@@ -79,6 +80,7 @@ import com.iSales.task.FindAllVirtualProductsTask;
 import com.iSales.task.FindCategorieTask;
 import com.iSales.task.FindImagesProductsTask;
 import com.iSales.task.FindProductVirtualTask;
+import com.iSales.task.FindProductVisibilityTask;
 import com.iSales.task.FindProductsTask;
 import com.iSales.utility.ISalesUtility;
 
@@ -99,6 +101,7 @@ import java.util.Objects;
 import java.io.FileWriter;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CategoriesFragment extends Fragment implements ProduitsAdapterListener, DialogCategorieListener,
@@ -361,35 +364,44 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             produitParcelable.setNote(produitEntry.getNote());
             produitParcelable.setNote_private(produitEntry.getNote_private());
             produitParcelable.setNote_public(produitEntry.getNote_public());
+            produitParcelable.setVisibility(produitEntry.getVisibility());
+
+            Log.e(TAG, "initProduits: rowid = "+produitEntry.getId()+" || produitParcelable.setVisibility = " + produitEntry.getVisibility());
 
             produitsParcelableList.add(produitParcelable);
         }
 
-
     }
 
     private void loadProduits(long categorieId, String searchString, int lastposition) {
+        SettingsEntry settings = mDb.settingsDao().getAllSettings().get(0);
         List<ProduitParcelable> produitParcelables;
-//        Getting the sharedPreference value
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-//        String mode = sharedPreferences.getString(getContext().getString(R.string.commande_mode), "online");
-        Boolean produitazero = sharedPreferences.getBoolean(getContext().getString(R.string.parametres_produits_azero), false);
-        Log.e(TAG, "loadProduits: produitazero=" + produitazero +
-                " categorieId=" + categorieId +
-                " searchString=" + searchString +
-                " lastposition=" + lastposition);
 
+//        Getting the sharedPreference value
+        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        //Boolean produitazero = sharedPreferences.getBoolean(getContext().getString(R.string.parametres_produits_azero), false);
+        //Boolean showVirtualProducts = settings.isEnableVisibleVirtualProductsInCatalog();
+        Boolean produitazero = false;
+        Boolean hideVirtualProductInCatalog = mDb.settingsDao().getAllSettings().get(0).isEnableVisibleVirtualProductsInCatalog();
+
+        String logText = "loadProduits: produitazero = " + produitazero +
+                " || enableVirtualProductInCatalog = "+hideVirtualProductInCatalog +
+                " || categorieId = " + categorieId +
+                " || searchString = " + searchString +
+                " || lastposition = " + lastposition;
+
+        Log.e(TAG, logText);
         new SaveLogs(getContext()).writeLogFile(
                 new DebugItem(
                         (System.currentTimeMillis()/1000),
                         "DEB", CategoriesFragment.class.getSimpleName(),
                         "loadProduits()",
-                        "loadProduits: produitazero=" + produitazero + " || categorieId=" + categorieId + " || searchString=" + searchString + " || lastposition=" + lastposition,
+                        logText,
                         ""
                 )
         );
 
-//        reinitialisation de la vue
+//      reinitialisation de la vue
         List<ProduitParcelable> emptyList = new ArrayList<>();
         this.mProduitsAdapter.setContentList(emptyList, true);
 
@@ -405,9 +417,9 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 }
             } else {
                 if (searchString == null || searchString.equals("")) {
-                    produitParcelables = filterByCategorie(categorieId);
+                    produitParcelables = filterByCategorie(categorieId, hideVirtualProductInCatalog);
                 } else {
-                    produitParcelables = filterByCategorieSearchstr(categorieId, searchString);
+                    produitParcelables = filterByCategorieSearchstr(categorieId, searchString, hideVirtualProductInCatalog);
                 }
             }
         } else {
@@ -419,9 +431,9 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
                 }
             } else {
                 if (searchString == null || searchString.equals("")) {
-                    produitParcelables = filterBy();
+                    produitParcelables = filterBy(hideVirtualProductInCatalog);
                 } else {
-                    produitParcelables = filterByStr(searchString);
+                    produitParcelables = filterByStr(searchString, hideVirtualProductInCatalog);
                 }
             }
         }
@@ -476,7 +488,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     }
 
     private List<ProduitParcelable> filterByCategorieAZero(long categorieId) {
-//        Log.e(TAG, "filterByCategorieAZero: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
+        Log.e(TAG, "filterByCategorieAZero: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
         for (ProduitParcelable item : produitsParcelableList) {
@@ -489,7 +501,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     }
 
     private List<ProduitParcelable> filterByCategorieSearchstrAZero(long categorieId, String searchString) {
-//        Log.e(TAG, "filterByCategorieSearchstrAZero: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
+        Log.e(TAG, "filterByCategorieSearchstrAZero: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
         for (ProduitParcelable item : produitsParcelableList) {
@@ -503,37 +515,72 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         return list;
     }
 
-    private List<ProduitParcelable> filterByCategorie(long categorieId) {
-//        Log.e(TAG, "filterByCategorie: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
+    private List<ProduitParcelable> filterByCategorie(long categorieId, boolean hideVirtualProductInCatalog) {
+        Log.e(TAG, "filterByCategorie: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
-        for (ProduitParcelable item : produitsParcelableList) {
+        if (hideVirtualProductInCatalog){
+            for (ProduitParcelable item : produitsParcelableList) {
 //            Log.e(TAG, "filterByCategorie:item ref=" + item.getRef() + " cat_id=" + item.getCategorie_id());
-            if (item.getCategorie_id() == categorieId) {
-                list.add(item);
+                if (item.getCategorie_id() == categorieId
+                        && !item.getLabel().toLowerCase().contains("colis") && !item.getLabel().toLowerCase().contains("palette")
+                        && !checkVirtuelProduct(item.getRef())) {
+                    list.add(item);
+                }
+            }
+        }else{
+            for (ProduitParcelable item : produitsParcelableList) {
+//            Log.e(TAG, "filterByCategorie:item ref=" + item.getRef() + " cat_id=" + item.getCategorie_id());
+                if (item.getCategorie_id() == categorieId) {
+                    list.add(item);
+                }
             }
         }
-
         return list;
     }
 
-    private List<ProduitParcelable> filterByCategorieSearchstr(long categorieId, String searchString) {
-//        Log.e(TAG, "filterByCategorieSearchstr: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
+    private boolean checkVirtuelProduct(String ref){
+        Log.e(TAG, "checkVirtuelProduct ref = " + ref);
+
+        boolean result = false;
+        String reference = ref.substring(ref.length() - 2, ref.length() - 1);
+        Log.e(TAG, "checkVirtuelProduct reference = " + reference);
+
+        if(reference.equals("C") || reference.equals("P")){
+            Log.e(TAG, "checkVirtuelProduct result = " + result);
+            result = true;
+        }
+        return result;
+    }
+
+    private List<ProduitParcelable> filterByCategorieSearchstr(long categorieId, String searchString, boolean hideVirtualProductInCatalog) {
+        Log.e(TAG, "filterByCategorieSearchstr: categorieId=" + categorieId + " parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
-        for (ProduitParcelable item : produitsParcelableList) {
-            if (item.getCategorie_id() == categorieId
-                    && (item.getLabel().toLowerCase().contains(searchString)
-                    || item.getRef().toLowerCase().contains(searchString))) {
-                list.add(item);
+        if (hideVirtualProductInCatalog){
+            for (ProduitParcelable item : produitsParcelableList) {
+                if (item.getCategorie_id() == categorieId
+                        && (item.getLabel().toLowerCase().contains(searchString)
+                        || item.getRef().toLowerCase().contains(searchString))
+                        && !item.getLabel().toLowerCase().contains("colis") && !item.getLabel().toLowerCase().contains("palette")
+                        && !checkVirtuelProduct(item.getRef())) {
+                    list.add(item);
+                }
+            }
+        }else{
+            for (ProduitParcelable item : produitsParcelableList) {
+                if (item.getCategorie_id() == categorieId
+                        && (item.getLabel().toLowerCase().contains(searchString)
+                        || item.getRef().toLowerCase().contains(searchString))) {
+                    list.add(item);
+                }
             }
         }
-
         return list;
     }
 
     private List<ProduitParcelable> filterByAZero() {
-//        Log.e(TAG, "filterByAZero: parcelableList=" + produitsParcelableList.size());
+        Log.e(TAG, "filterByAZero: parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
         for (ProduitParcelable item : produitsParcelableList) {
@@ -546,7 +593,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
     }
 
     private List<ProduitParcelable> filterBySearchstrAZero(String searchString) {
-//        Log.e(TAG, "filterByCategorieSearchstr: searchString=" + searchString + " parcelableList=" + produitsParcelableList.size());
+        Log.e(TAG, "filterByCategorieSearchstr: searchString=" + searchString + " parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
         for (ProduitParcelable item : produitsParcelableList) {
@@ -560,29 +607,48 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         return list;
     }
 
-    private List<ProduitParcelable> filterBy() {
-//        Log.e(TAG, "filterBy: parcelableList=" + produitsParcelableList.size());
+    private List<ProduitParcelable> filterBy(boolean hideVirtualProductInCatalog) {
+        Log.e(TAG, "filterBy: parcelableList=" + produitsParcelableList.size());
         List<ProduitParcelable> list = new ArrayList<>();
 
-        for (ProduitParcelable item : produitsParcelableList) {
-            list.add(item);
-        }
-
-        return list;
-    }
-
-    private List<ProduitParcelable> filterByStr(String searchString) {
-//        Log.e(TAG, "filterByStr: searchString=" + searchString + " parcelableList=" + produitsParcelableList.size());
-        List<ProduitParcelable> list = new ArrayList<>();
-
-        for (ProduitParcelable item : produitsParcelableList) {
-//            Log.e(TAG, "filterByStr:item ref=" + item.getRef() + " cat_id=" + item.getCategorie_id());
-            if (item.getLabel().toLowerCase().contains(searchString)
-                    || item.getRef().toLowerCase().contains(searchString)) {
+        if (hideVirtualProductInCatalog){
+            for (ProduitParcelable item : produitsParcelableList) {
+                if (!item.getLabel().toLowerCase().contains("colis") && !item.getLabel().toLowerCase().contains("palette")
+                        && !checkVirtuelProduct(item.getRef())){
+                    list.add(item);
+                }
+            }
+        }else{
+            for (ProduitParcelable item : produitsParcelableList) {
                 list.add(item);
             }
         }
+        return list;
+    }
 
+    private List<ProduitParcelable> filterByStr(String searchString, boolean hideVirtualProductInCatalog) {
+        Log.e(TAG, "filterByStr: searchString=" + searchString + " parcelableList=" + produitsParcelableList.size());
+        List<ProduitParcelable> list = new ArrayList<>();
+
+        if (hideVirtualProductInCatalog){
+            for (ProduitParcelable item : produitsParcelableList) {
+//            Log.e(TAG, "filterByStr:item ref=" + item.getRef() + " cat_id=" + item.getCategorie_id());
+                if (item.getLabel().toLowerCase().contains(searchString)
+                        && !item.getLabel().toLowerCase().contains("colis") && !item.getLabel().toLowerCase().contains("palette")
+                        && !checkVirtuelProduct(item.getRef())
+                        || item.getRef().toLowerCase().contains(searchString)) {
+                    list.add(item);
+                }
+            }
+        }else{
+            for (ProduitParcelable item : produitsParcelableList) {
+//            Log.e(TAG, "filterByStr:item ref=" + item.getRef() + " cat_id=" + item.getCategorie_id());
+                if (item.getLabel().toLowerCase().contains(searchString)
+                        || item.getRef().toLowerCase().contains(searchString)) {
+                    list.add(item);
+                }
+            }
+        }
         return list;
     }
 
@@ -766,7 +832,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         totalProducts += findProductsREST.getProducts().size();
         Log.e(TAG, "onFindProductsCompleted: saving product categorie=" + findProductsREST.getCategorie_id() + " pdtSize=" + findProductsREST.getProducts().size());
         for (Product productItem : findProductsREST.getProducts()) {
-//                Log.e(TAG, "onFindProductsCompleted: tva_tx=" + productItem.getTva_tx());
+//          Log.e(TAG, "onFindProductsCompleted: tva_tx=" + productItem.getTva_tx());
             final ProduitEntry produitEntry = new ProduitEntry();
             produitEntry.setId(Long.parseLong(productItem.getId()));
             produitEntry.setCategorie_id(findProductsREST.getCategorie_id());
@@ -781,6 +847,21 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             produitEntry.setNote_public(productItem.getNote_public());
             produitEntry.setNote_private(productItem.getNote_private());
 
+            FindProductVisibilityTask visibilityTask = new FindProductVisibilityTask(getContext());
+            ArrayList<Visible> mVisibleList = visibilityTask.readVisibleFile();
+            int count = mVisibleList.size();
+            for(int x = 0; x < count; x ++){
+
+                Visible mVisible = mVisibleList.get(x);
+                Log.e(TAG, "onFindProductsCompleted: " + x+"/"+count+" || id: "+mVisible.getRowid()+" || visible: "+mVisible.getVisible());
+                if (productItem.getId().equals(mVisible.getRowid())){
+                    produitEntry.setVisibility(mVisible.getVisible());
+                    break;
+                }
+            }
+
+            Log.e(TAG, "onFindProductsCompleted: produitEntry.getVisibility = " + produitEntry.getVisibility());
+
 //            Log.e(TAG, "onFindThirdpartieCompleted: insert produitEntry");
 //            insertion du client dans la BD
             if (mDb.produitDao().getProduitById(produitEntry.getId()) == null) {
@@ -793,6 +874,7 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         if (mCurrentPdtQuery >= mTotalPdtQuery) {
             Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
+            new FindProductVisibilityTask(getContext()).deleteFile();
 
             SettingsEntry config = mDb.settingsDao().getAllSettings().get(0);
             if (config.isEnableVirtualProductSync()){
@@ -844,6 +926,57 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
             */
             return;
         }
+    }
+
+    private String getProductsVisibility(String id){
+        final String[] msg = {""};
+        final String[] visibility_info = {null};
+        final Call<String> call = ApiUtils.getISalesRYImg(getContext()).findVisibility(id);
+
+        Log.e(TAG, "getProductsVisibility :: URL "+call.request().url());
+        msg[0] += "getProductsVisibility :: URL "+call.request().url()+"\n";
+
+        try {
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    if(response.isSuccessful()){
+                        visibility_info[0] = response.body();
+                        Log.e(TAG, "getProductsVisibility :onResponse: response.isSuccessful "+response.message() + " || body : "+ visibility_info[0]);
+                        msg[0] += "- getProductsVisibility :onResponse: body : "+ visibility_info[0] + "\n\n";
+                    }else{
+                        try {
+                            Log.e(TAG, "getProductsVisibility: getProductsVisibility :: err: " + response.errorBody().string() + " code=" + response.code());
+                            msg[0] += "- getProductsVisibility :onResponse: err: " + response.errorBody().string() + " code=" + response.code() + "\n\n";
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            msg[0] += "- getProductsVisibility :onResponse:IOException:: err : "+ e.getMessage() + "\n\n";
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    msg[0] += "- getProductsVisibility :onFailure:IOException:: err : "+ t.getMessage() + "\n\n";
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            msg[0] += "- getProductsVisibility :IOException:  IOException : " + e.getMessage() + "\n\n";
+        }
+        new SaveLogs(getContext()).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB", FindProductsTask.class.getSimpleName(),
+                        "getProductsVisibility()",
+                        "Message : " + msg[0],
+                        ""
+                )
+        );
+
+        return visibility_info[0];
     }
 
 

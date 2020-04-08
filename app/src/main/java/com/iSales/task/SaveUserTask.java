@@ -11,6 +11,8 @@ import android.widget.Toast;
 import com.iSales.database.AppDatabase;
 import com.iSales.database.entry.TokenEntry;
 import com.iSales.database.entry.UserEntry;
+import com.iSales.pages.ticketing.model.DebugItem;
+import com.iSales.pages.ticketing.task.SaveLogs;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,6 +38,16 @@ public class SaveUserTask {
     }
 
     public void SetRestoreBackUpData(String task){
+        new SaveLogs(mContext).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        SaveUserTask.class.getSimpleName(),
+                        "SetRestoreBackUpData()",
+                        "Called. ",
+                        "task = "+task
+                )
+        );
         if (task.equals("SET") || task.equals("Set") || task.equals("set")){
             Log.e(TAG, " SetRestoreBackUpData( SET )");
             generateSaveData(mContext, FileNameBackUp, backUpData());
@@ -47,6 +59,17 @@ public class SaveUserTask {
     }
 
     private void generateSaveData(Context context, String FileName, String Body) {
+        new SaveLogs(mContext).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        SaveUserTask.class.getSimpleName(),
+                        "generateSaveData()",
+                        "FileName = "+FileName + " || Body = "+Body,
+                        ""
+                )
+        );
+
         try {
             File root = new File(DirectoryLocal, DirectoryName);
             Log.e(TAG, " root path: "+root.getAbsolutePath());
@@ -64,6 +87,17 @@ public class SaveUserTask {
                 writer.append(Body);
                 writer.flush();
                 writer.close();
+
+                new SaveLogs(mContext).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                SaveUserTask.class.getSimpleName(),
+                                "generateSaveData()",
+                                "File created : "+file.getAbsolutePath(),
+                                ""
+                        )
+                );
             }else{
                 Log.e(TAG, " generateSaveData(): File doesn't exist, ");
             }
@@ -256,6 +290,16 @@ public class SaveUserTask {
     }
 
     private void restoreFileData(Context context){
+        new SaveLogs(mContext).writeLogFile(
+                new DebugItem(
+                        (System.currentTimeMillis()/1000),
+                        "DEB",
+                        SaveUserTask.class.getSimpleName(),
+                        "restoreFileData()",
+                        "Caled.",
+                        ""
+                )
+        );
         String line = "";
         try {
             File file = new File(DirectoryLocal, DirectoryName+File.separator+FileNameBackUp);
@@ -355,17 +399,57 @@ public class SaveUserTask {
 
                     } catch (IOException e) {
                         e.printStackTrace();
+                        new SaveLogs(mContext).writeLogFile(
+                                new DebugItem(
+                                        (System.currentTimeMillis()/1000),
+                                        "DEB",
+                                        SaveUserTask.class.getSimpleName(),
+                                        "restoreFileData()",
+                                        e.getMessage(),
+                                        e.getStackTrace().toString()
+                                )
+                        );
                     }
 
                 }else if(check.equals("UPDATED=1")){
                     Log.e(TAG, "UPDATED=1");
+                    new SaveLogs(mContext).writeLogFile(
+                            new DebugItem(
+                                    (System.currentTimeMillis()/1000),
+                                    "DEB",
+                                    SaveUserTask.class.getSimpleName(),
+                                    "restoreFileData()",
+                                    "UPDATED=1",
+                                    ""
+                            )
+                    );
                 }
 
             }else{
                 Log.e(TAG, "Restoring Data after update, File = ' "+file.getPath()+" ' does not exist. Or its the first time.");
+                new SaveLogs(mContext).writeLogFile(
+                        new DebugItem(
+                                (System.currentTimeMillis()/1000),
+                                "DEB",
+                                SaveUserTask.class.getSimpleName(),
+                                "restoreFileData()",
+                                "Restoring Data after update, File = ' "+file.getPath()+" ' does not exist. Or its the first time.",
+                                ""
+                        )
+                );
             }
         } catch (Exception e) {
             e.printStackTrace();
+            new SaveLogs(mContext).writeLogFile(
+                    new DebugItem(
+                            (System.currentTimeMillis()/1000),
+                            "DEB",
+                            SaveUserTask.class.getSimpleName(),
+                            "restoreFileData()",
+                            e.getMessage(),
+                            e.getStackTrace().toString()
+                    )
+            );
         }
     }
 }

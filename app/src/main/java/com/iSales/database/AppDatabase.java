@@ -48,7 +48,7 @@ import com.iSales.remote.model.ProductVirtual;
  */
 
 @Database(entities = {ProductVirtual.class, SettingsEntry.class, EventsEntry.class, AgendaUserassignedEntry.class, AgendaEventEntry.class, DebugSettingsEntry.class, ProduitEntry.class, ClientEntry.class, CategorieEntry.class, PanierEntry.class, TokenEntry.class, UserEntry.class, CommandeEntry.class, CommandeLineEntry.class, SignatureEntry.class, ServerEntry.class, PaymentTypesEntry.class, ProductCustPriceEntry.class},
-        version = 22,
+        version = 25,
         exportSchema = false)
 //@TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {

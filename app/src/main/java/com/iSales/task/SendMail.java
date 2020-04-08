@@ -45,6 +45,8 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
     private ClientParcelable userSelected;
     private Order data;
 
+    private boolean isEmail_Pwd = true;
+
     private AppDatabase mDB;
 
     //Progressdialog to show while sending email
@@ -87,7 +89,7 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
     private String dateFormat(String dateInString){
         Log.e("SendMail", "deteFormat: date before => "+dateInString);
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
         long dateLong = Long.valueOf(dateInString);
         Log.e("SendMail", "deteFormat: date before => "+sdf.format(new Date(dateLong*1000)));
         return sdf.format(new Date(dateLong*1000));
@@ -102,8 +104,8 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
 
         if (settings.getEmail() == null || settings.getEmail().isEmpty() ||
             settings.getEmail_Pwd() == null || settings.getEmail_Pwd().isEmpty()){
+            isEmail_Pwd = false;
             Log.e("SendMail", "Veuillez configurer votre adresse mail dans votre profile!");
-            Toast.makeText(context, "Veuillez configurer votre adresse mail dans votre profile!", Toast.LENGTH_LONG).show();
             return null;
         }
 
@@ -161,5 +163,13 @@ public class SendMail extends AsyncTask<Void,Void,Void> {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        if (!isEmail_Pwd){
+            Toast.makeText(context, "Veuillez configurer votre adresse mail dans votre profile!", Toast.LENGTH_LONG).show();
+        }
     }
 }

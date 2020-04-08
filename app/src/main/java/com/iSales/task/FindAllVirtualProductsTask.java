@@ -158,6 +158,7 @@ public class FindAllVirtualProductsTask extends AsyncTask<Void, Void, Integer> {
                             details.put("Quantite_Colis", virtualArrayList.get(0).getQty());
                             details.put("TVA_Colis", virtualArrayList.get(0).getTva_tx());
                             details.put("Stock_Colis", virtualArrayList.get(0).getStock());
+                            details.put("Status_Colis", virtualArrayList.get(0).getTosell());
 
                             //calcule palette et autres
                             for (int i = 1; i < virtualArrayList.size(); i++) {
@@ -174,6 +175,7 @@ public class FindAllVirtualProductsTask extends AsyncTask<Void, Void, Integer> {
                                 details.put("Quantite_Palette", virtualArrayList.get(i).getQty());
                                 details.put("TVA_Palette", virtualArrayList.get(i).getTva_tx());
                                 details.put("Stock_Palette", virtualArrayList.get(i).getStock());
+                                details.put("Status_Palette", virtualArrayList.get(i).getTosell());
 
                             }
                             //                        details.put("id_produit_unit : ",produit.getId());
@@ -203,13 +205,9 @@ public class FindAllVirtualProductsTask extends AsyncTask<Void, Void, Integer> {
                 }
 
 
-
-
-
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
 
         try {
