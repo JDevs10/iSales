@@ -36,6 +36,8 @@ public class FindProductVisibilityTask {
     }
 
     public ArrayList<Product> writeVisibleFile(final ArrayList<Product> data){
+        FileWriter fileWriter = null;
+        /*
         try {
             File root = new File(DirectoryLocal, DirectoryName);
             Log.e(TAG, "writeLogFile() :: root path: "+root.getAbsolutePath());
@@ -56,7 +58,7 @@ public class FindProductVisibilityTask {
                 final ArrayList<Visible> newData = new ArrayList<>();
                 String msg = "";
                 for(int x = 0; x < data.size(); x++){
-                    final Call<String> call = ApiUtils.getISalesRYImg(mContext).findVisibility(data.get(x).getId());
+                    Call<String> call = ApiUtils.getISalesRYImg(mContext).findVisibility(data.get(x).getId());
 
                     Log.e(TAG, "getProductsVisibility :: URL "+call.request().url());
                     msg += "getProductsVisibility :: URL "+call.request().url()+"\n";
@@ -83,9 +85,14 @@ public class FindProductVisibilityTask {
                     } catch (IOException e) {
                         e.printStackTrace();
                         msg += "- getProductsVisibility :IOException: x : "+x+" ||  IOException : " + e.getMessage() + "\n\n";
+                        call.cancel();
+                        call = null;
                     }
                 }
                 Log.e(TAG, "Message : "+msg);
+                */
+
+                ////////////////////////
 
                 /*
                 for (int x = 0; x < data.size(); x++){
@@ -117,37 +124,53 @@ public class FindProductVisibilityTask {
 
                             @Override
                             public void onFailure(Call<String> call, Throwable t) {
+                                t.getStackTrace();
                                 //msg[0] += "- getProductsVisibility :onFailure:IOException:: err : "+ t.getMessage() + "\n\n";
                             }
                         });
+
                     }catch (Exception e){
-                        Log.e(TAG, " writeLogFile() || Exception :  "+e.getMessage());
+                        e.getStackTrace();
                     }
                 }
                 */
+
+                //////////////////////////
+        /*
                 Log.e(TAG, " writeLogFile() || newData size :  "+newData.size());
 
                 String fileBody = new Gson().toJson(newData);
                 Log.e(TAG, " writeLogFile() || fileBody :  "+fileBody);
 
-                FileWriter fileWriter = new FileWriter(file);
+                fileWriter = new FileWriter(file);
 
                 fileWriter.write(fileBody);
                 fileWriter.flush();
                 fileWriter.close();
-            }else{
+            }else {
                 Log.e(TAG, " writeLogFile(): File doesn't exist, ");
-            }
 
+            }
         } catch (IOException e) {
             e.printStackTrace();
+            try {
+                if(fileWriter != null){
+                    fileWriter.close();
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
+        */
         return data;
     }
 
     public ArrayList<Visible> readVisibleFile(){
         ArrayList<Visible> mVisibleItemList_ = new ArrayList<>();
 
+        /*
+
+        FileReader fileReader = null;
         try{
             File root = new File(DirectoryLocal, DirectoryName);
             File file = new File(root + File.separator + FILE_NAME);
@@ -155,7 +178,7 @@ public class FindProductVisibilityTask {
 
             if (root.exists() && file.exists()){
                 //Folder || File doesn't exist
-                FileReader fileReader = new FileReader(file);
+                fileReader = new FileReader(file);
 
                 JSONParser parser = new JSONParser();
                 org.json.simple.JSONArray logJsononArray = (org.json.simple.JSONArray) parser.parse(fileReader);
@@ -181,8 +204,15 @@ public class FindProductVisibilityTask {
 
         }catch (Exception e){
             e.printStackTrace();
+            try {
+                if(fileReader != null){
+                    fileReader.close();
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
-
+        */
         return mVisibleItemList_;
     }
 

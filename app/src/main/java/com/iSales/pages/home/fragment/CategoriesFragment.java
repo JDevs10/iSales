@@ -928,58 +928,6 @@ public class CategoriesFragment extends Fragment implements ProduitsAdapterListe
         }
     }
 
-    private String getProductsVisibility(String id){
-        final String[] msg = {""};
-        final String[] visibility_info = {null};
-        final Call<String> call = ApiUtils.getISalesRYImg(getContext()).findVisibility(id);
-
-        Log.e(TAG, "getProductsVisibility :: URL "+call.request().url());
-        msg[0] += "getProductsVisibility :: URL "+call.request().url()+"\n";
-
-        try {
-            call.enqueue(new Callback<String>() {
-                @Override
-                public void onResponse(Call<String> call, Response<String> response) {
-                    if(response.isSuccessful()){
-                        visibility_info[0] = response.body();
-                        Log.e(TAG, "getProductsVisibility :onResponse: response.isSuccessful "+response.message() + " || body : "+ visibility_info[0]);
-                        msg[0] += "- getProductsVisibility :onResponse: body : "+ visibility_info[0] + "\n\n";
-                    }else{
-                        try {
-                            Log.e(TAG, "getProductsVisibility: getProductsVisibility :: err: " + response.errorBody().string() + " code=" + response.code());
-                            msg[0] += "- getProductsVisibility :onResponse: err: " + response.errorBody().string() + " code=" + response.code() + "\n\n";
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            msg[0] += "- getProductsVisibility :onResponse:IOException:: err : "+ e.getMessage() + "\n\n";
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    msg[0] += "- getProductsVisibility :onFailure:IOException:: err : "+ t.getMessage() + "\n\n";
-                }
-            });
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            msg[0] += "- getProductsVisibility :IOException:  IOException : " + e.getMessage() + "\n\n";
-        }
-        new SaveLogs(getContext()).writeLogFile(
-                new DebugItem(
-                        (System.currentTimeMillis()/1000),
-                        "DEB", FindProductsTask.class.getSimpleName(),
-                        "getProductsVisibility()",
-                        "Message : " + msg[0],
-                        ""
-                )
-        );
-
-        return visibility_info[0];
-    }
-
-
     private void findImage() {
         final List<ProduitEntry> produitEntries = mDb.produitDao().getAllProduits();
         new SaveLogs(getContext()).writeLogFile(

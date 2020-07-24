@@ -147,7 +147,6 @@ public class SaveLogs {
 
     public ArrayList<DebugItemList> readLogFile(){
         ArrayList<DebugItemList> mDebugItemList_ = new ArrayList<>();
-
         try{
             File root = new File(DirectoryLocal, DirectoryName);
             File file = new File(root + File.separator + FileName);
@@ -186,7 +185,6 @@ public class SaveLogs {
         }catch (Exception e){
             e.printStackTrace();
         }
-
         return mDebugItemList_;
     }
 
